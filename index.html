@@ -1330,14 +1330,26 @@ function starsMarkup(rating){
   return out;
 }
 
-/* Initial state: if reviews are empty, render ONLY the empty-state message. */
-function renderReviews(){
-  var reviews = getReviews();
+/* renderReviews(): explicitly window-bound. Reads directly from
+   safeStorage each call (not a cached array) so it always reflects
+   the latest state. Loops the array backwards so newest reviews show
+   first while each delete button still carries the TRUE index into
+   the original (non-reversed) stored array. */
+window.renderReviews = function() {
+  var container = document.getElementById('review-container')
+    || document.getElementById('reviews-list')
+    || document.getElementById('reviews-container');
   var summaryWrap = document.getElementById('review-summary-wrap');
-  var container = document.getElementById('review-container');
+  if (!container) return;
 
-  if(reviews.length === 0){
-    summaryWrap.innerHTML = '';
+  var reviews = [];
+  try { reviews = JSON.parse(safeStorage.getItem('nikora_reviews')) || []; }
+  catch(e) { reviews = []; }
+
+  var adminActive = safeStorage.getItem('nikora_admin_active') === 'true';
+
+  if (reviews.length === 0) {
+    if (summaryWrap) summaryWrap.innerHTML = '';
     container.innerHTML = '<div class="glass-card review-empty">' +
       '<svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6.6L22 9.3l-5 5 1.2 7.1L12 18l-6.2 3.4L7 14.3l-5-5 7.1-.7z"/></svg>' +
       '<p>No customer reviews yet. Be the first to share your ritual experience!</p>' +
@@ -1346,49 +1358,54 @@ function renderReviews(){
     return;
   }
 
-  var avg = reviews.reduce(function(sum, r){ return sum + Number(r.rating); }, 0) / reviews.length;
-  summaryWrap.innerHTML = '<div class="review-summary">' +
-    '<div class="review-score">' + avg.toFixed(1) + '</div>' +
-    '<div>' + starsMarkup(Math.round(avg)) +
-      '<div class="review-meta">' + reviews.length + ' verified review' + (reviews.length===1?'':'s') + '</div>' +
-    '</div>' +
-  '</div>';
-
-  var reversed = reviews.slice().reverse();
-  var adminActive = isAdmin();
-  var listHtml = '<div class="review-list">';
-  for(var i=0;i<reversed.length;i++){
-    var r = reversed[i];
-    var originalIndex = reviews.length - 1 - i; // reversed[i] maps back to this index in the stored array
-    var deleteBtn = adminActive
-      ? '<button onclick="deleteReview(' + originalIndex + ')" class="admin-delete-rev-btn" style="color:red; background:none; border:none; cursor:pointer; font-size:12px; margin-left:auto;">🗑 Delete</button>'
-      : '';
-    listHtml += '<div class="glass-card review-card">' +
-      '<div class="rcard-head">' + starsMarkup(Number(r.rating)) + deleteBtn + '</div>' +
-      '<div class="rname">' + escapeHtml(r.name) + '</div>' +
-      '<div class="rtext">' + escapeHtml(r.text) + '</div>' +
-      '<div class="rdate">' + escapeHtml(r.date) + '</div>' +
+  if (summaryWrap) {
+    var avg = reviews.reduce(function(sum, r){ return sum + Number(r.rating); }, 0) / reviews.length;
+    summaryWrap.innerHTML = '<div class="review-summary">' +
+      '<div class="review-score">' + avg.toFixed(1) + '</div>' +
+      '<div>' + starsMarkup(Math.round(avg)) +
+        '<div class="review-meta">' + reviews.length + ' verified review' + (reviews.length===1?'':'s') + '</div>' +
+      '</div>' +
     '</div>';
   }
-  listHtml += '</div>';
-  container.innerHTML = listHtml;
+
+  var html = '<div class="review-list">';
+  // Loop through original array backwards (newest first) while keeping the exact original index
+  for (var i = reviews.length - 1; i >= 0; i--) {
+    var rev = reviews[i];
+    var deleteBtnHtml = adminActive
+      ? '<button type="button" onclick="deleteReview(' + i + ')" class="admin-delete-rev-btn" style="color:red; background:none; border:none; cursor:pointer; font-size:12px; margin-left:auto;">🗑 Delete</button>'
+      : '';
+
+    html += '<div class="glass-card review-card">' +
+      '<div class="rcard-head">' + starsMarkup(Number(rev.rating)) + deleteBtnHtml + '</div>' +
+      '<div class="rname">' + escapeHtml(rev.name) + '</div>' +
+      '<div class="rtext">' + escapeHtml(rev.text) + '</div>' +
+      '<div class="rdate">' + escapeHtml(rev.date || '') + '</div>' +
+    '</div>';
+  }
+  html += '</div>';
+  container.innerHTML = html;
 
   initTactileCards();
-}
+};
 
-/* deleteReview(index): admin-only control. Reads the stored reviews
-   array, splices out the item at `index`, saves it back via
-   safeStorage, and re-renders. */
-function deleteReview(index){
-  if(!isAdmin()) return;
-  var reviews = getReviews();
-  if(index < 0 || index >= reviews.length) return;
-  if(!confirm('Delete this review permanently?')) return;
-  reviews.splice(index, 1);
-  saveReviewsToStorage(reviews);
-  renderReviews();
-  showToast('Review deleted.');
-}
+/* deleteReview(originalIndex): explicitly window-bound. Reads directly
+   from safeStorage, splices the exact index, saves, and re-renders —
+   no confirm() dialog, since sandboxed preview iframes can block or
+   silently no-op window.confirm(), which would make delete appear
+   broken even though the underlying logic was correct. */
+window.deleteReview = function(originalIndex) {
+  var reviews = [];
+  try { reviews = JSON.parse(safeStorage.getItem('nikora_reviews')) || []; }
+  catch(e) { reviews = []; }
+
+  if (originalIndex >= 0 && originalIndex < reviews.length) {
+    reviews.splice(originalIndex, 1);
+    safeStorage.setItem('nikora_reviews', JSON.stringify(reviews));
+    renderReviews();
+    showToast('Review deleted.');
+  }
+};
 
 window.openReviewModal = function(){
   document.getElementById('rev-name').value = '';
