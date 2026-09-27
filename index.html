@@ -11,6 +11,11 @@
 <!-- Firebase (compat build — plain <script> globals, no bundler/import needed) -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<!-- Vercel Speed Insights -->
+<script type="module">
+  import { injectSpeedInsights } from 'https://cdn.jsdelivr.net/npm/@vercel/speed-insights@1/dist/index.mjs';
+  injectSpeedInsights();
+</script>
 <style>
 :root{
   --canvas:#FAF8F5;
