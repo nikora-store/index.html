@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<script>
+/* Anti-flicker: apply the saved theme before first paint ('theme' key, legacy 'nikora_theme' fallback). */
+(function(){
+  try{
+    var saved = localStorage.getItem('theme') || localStorage.getItem('nikora_theme');
+    if(saved === 'light' || saved === 'dark'){ document.documentElement.setAttribute('data-theme', saved); }
+  }catch(e){}
+  /* scroll-reveal is only armed when JS runs, so content is never hidden without it */
+  document.documentElement.classList.add('js-on');
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Reviews — NIKORA</title>
+<meta name="description" content="Read real customer experiences with NIKORA beauty devices, or share your own review with photos.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Firebase (compat build — plain <script> globals, no bundler/import needed) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<style>
+:root{
+  --canvas:#FAF8F5;
+  --canvas-rgb:250,248,245;
+  --card-bg: rgba(255,255,255,0.65);
+  --card-border: rgba(230,220,210,0.6);
+  --text:#1A1615;
+  --text-soft: rgba(26,22,21,0.62);
+  --text-faint: rgba(26,22,21,0.4);
+  --gold:#C59B56;
+  --gold-rgb:197,155,86;
+  --rose:#D81E5B;
+  --rose-rgb:216,30,91;
+  --line: rgba(26,22,21,0.1);
+  --surface-raised: rgba(255,255,255,0.85);
+  --shadow-ambient: 0 20px 60px -20px rgba(60,45,30,0.18);
+  --success:#2E6B4F;
+  color-scheme: light;
+}
+[data-theme="dark"]{
+  --canvas:#0D0B12;
+  --canvas-rgb:13,11,18;
+  --card-bg: rgba(25,20,32,0.55);
+  --card-border: rgba(255,255,255,0.08);
+  --text:#F7F4F0;
+  --text-soft: rgba(247,244,240,0.64);
+  --text-faint: rgba(247,244,240,0.38);
+  --gold:#E5BA73;
+  --gold-rgb:229,186,115;
+  --rose:#FF527B;
+  --rose-rgb:255,82,123;
+  --line: rgba(255,255,255,0.09);
+  --surface-raised: rgba(30,25,38,0.9);
+  --shadow-ambient: 0 20px 70px -20px rgba(0,0,0,0.6);
+  color-scheme: dark;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+
+/* ================= 1. LIVE ANIMATED GRADIENT BACKGROUND ================= */
+body {
+  background: linear-gradient(-45deg, #FAF7F2, #F8F4F0, #F5EFE6, #FAF7F2);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+  margin:0;
+  color:var(--text);
+  font-family:'Montserrat',sans-serif;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  transition:color .4s ease;
+}
+[data-theme="dark"] body {
+  background: linear-gradient(-45deg, #0D0B12, #170E1B, #2A0F1D, #0D0B12);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@media (prefers-reduced-motion: reduce){
+  body{animation:none;}
+  *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+}
+
+img{max-width:100%;display:block;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+.container{
+  width:100%;
+  max-width:1240px;
+  margin:0 auto;
+  padding:0 clamp(20px,4vw,48px);
+}
+:focus-visible{outline:2px solid var(--rose); outline-offset:3px; border-radius:4px;}
+
+/* ---------------- ADMIN (MERCHANT MODE) BAR ----------------
+   Sits directly below the shared nav.js header (73px, sticky), so it pins under it instead of covering it. */
+#admin-topbar{
+  display:none; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap;
+  background:#e11d48; color:#fff; padding:10px 16px; font-size:12.5px; font-weight:600; letter-spacing:.02em;
+  position:sticky; top:73px; z-index:390;
+}
+body.admin-mode #admin-topbar{display:flex;}
+#admin-topbar .bar-label{display:inline-flex; align-items:center; gap:8px;}
+#admin-topbar button{
+  background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.4); color:#fff;
+  padding:6px 14px; border-radius:100px; font-size:11.5px; font-weight:700; cursor:pointer;
+}
+#admin-topbar button:hover{background:rgba(255,255,255,0.3);}
+
+/* ---------------- LOGO (footer) ----------------
+   The header, "More" dropdown and mobile drawer are rendered and styled entirely by nav.js. */
+.logo{
+  font-family:'Playfair Display',serif;
+  font-size:26px; letter-spacing:.06em; font-weight:600;
+}
+.logo em{font-style:italic; color:var(--gold);}
+
+.btn-primary{
+  background:var(--text); color:var(--canvas);
+  padding:16px 30px; border-radius:100px; border:none;
+  font-size:13.5px; font-weight:600; letter-spacing:.03em;
+  display:inline-flex; align-items:center; gap:10px;
+  transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s ease;
+  box-shadow:0 12px 30px -12px rgba(26,22,21,0.4);
+}
+.btn-primary:hover{transform:translateY(-2px); box-shadow:0 16px 36px -12px rgba(26,22,21,0.5);}
+.btn-primary svg{width:14px;height:14px;stroke:currentColor;fill:none;transition:transform .25s ease;}
+.btn-primary:hover svg{transform:translateX(3px);}
+.btn-ghost{font-size:13.5px; font-weight:600; color:var(--text); padding:16px 8px; border-bottom:1px solid var(--text); display:inline-flex; align-items:center; gap:8px;}
+
+/* ---------------- SECTION HEADERS ---------------- */
+.section{padding:clamp(60px,8vw,100px) 0;}
+.section-head{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:44px; flex-wrap:wrap;}
+.section-head h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(28px,3.4vw,40px); margin:0; letter-spacing:-.01em;}
+.section-head h2 em{font-style:italic;color:var(--gold);}
+.section-head p{margin:8px 0 0; color:var(--text-soft); font-size:14.5px; max-width:440px;}
+.section-link{font-size:13px; font-weight:600; border-bottom:1px solid var(--text); padding-bottom:2px; white-space:nowrap; background:none; border-left:none; border-right:none; border-top:none;}
+
+/* ================= TACTILE 3D CARD SPOTLIGHT ================= */
+.glass-card{
+  --mouse-x:50%; --mouse-y:50%;
+  position:relative;
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  border-radius:22px;
+  backdrop-filter:blur(20px) saturate(180%);
+  transition:transform .12s ease-out, box-shadow .25s ease;
+  box-shadow:var(--shadow-ambient);
+  transform-style:preserve-3d;
+  will-change:transform;
+}
+.glass-card::after{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:radial-gradient(350px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.45), transparent 70%);
+  opacity:0; transition:opacity .3s ease;
+}
+[data-theme="dark"] .glass-card::after{
+  background:radial-gradient(350px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.14), transparent 70%);
+}
+.glass-card:hover::after{opacity:1;}
+
+/* ---------------- FOOTER ---------------- */
+footer.site{border-top:1px solid var(--line); padding:60px 0 30px; margin-top:20px;}
+.footer-grid{display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; margin-bottom:44px;}
+@media (max-width:760px){ .footer-grid{grid-template-columns:1fr 1fr;} }
+.footer-col h5{font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); font-weight:600; margin:0 0 16px;}
+.footer-col a, .footer-col p{display:block; font-size:13.5px; color:var(--text-soft); margin-bottom:11px; line-height:1.5;}
+.footer-col a:hover{color:var(--text);}
+.footer-bottom{display:flex; justify-content:space-between; align-items:center; padding-top:26px; border-top:1px solid var(--line); font-size:12px; color:var(--text-faint); flex-wrap:wrap; gap:12px;}
+
+/* ================= 3. CLICK-LOCK & OVERLAY CSS FIX ================= */
+.modal-overlay, .cart-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 9998;
+  display: flex; align-items: center; justify-content: center;
+  padding:20px;
+}
+.modal-overlay.active, .cart-overlay.active {
+  opacity: 1; visibility: visible; pointer-events: auto;
+}
+.modal-card, .cart-drawer, .modal-box { z-index: 9999; position: relative; }
+#cart-drawer { z-index: 9999; }
+
+.modal-box, .modal-card{
+  background:var(--surface-raised); border:1px solid var(--card-border); border-radius:22px;
+  width:100%; max-width:440px; padding:36px; max-height:88vh; overflow-y:auto;
+  box-shadow:0 40px 90px -20px rgba(0,0,0,0.5);
+}
+.modal-box.wide{max-width:640px;}
+.modal-close, .close-btn{position:absolute; top:18px; right:18px; background:none; border:none; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background .2s ease; font-size:16px; color:var(--text); cursor:pointer;}
+.modal-close:hover, .close-btn:hover{background:var(--line);}
+.modal-close svg{width:16px;height:16px;stroke:var(--text);}
+.modal-box h3, .modal-card h3{font-family:'Playfair Display',serif; font-size:22px; font-weight:500; margin:0 0 20px;}
+.modal-box .modal-sub{font-size:13px; color:var(--text-soft); margin:0 0 24px;}
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:11.5px; font-weight:600; letter-spacing:.03em; text-transform:uppercase; color:var(--text-faint); margin-bottom:7px;}
+.field input, .field select, .field textarea,
+.modal-card input[type="password"]{
+  width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line);
+  background:rgba(var(--canvas-rgb),0.5); color:var(--text); font-family:inherit; font-size:13.5px;
+  margin-bottom:16px;
+}
+.field textarea{resize:vertical; min-height:70px;}
+.field input:focus, .field select:focus, .field textarea:focus,
+.modal-card input:focus{border-color:var(--gold); outline:none;}
+.field-row{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.form-error{font-size:12.5px; color:var(--rose); margin:-4px 0 14px; display:none;}
+.form-error.show{display:block;}
+.modal-submit, .submit-btn, .admin-submit-btn, .primary-btn{
+  width:100%; padding:15px; border-radius:100px; border:none; background:var(--text); color:var(--canvas);
+  font-size:13px; font-weight:600; letter-spacing:.03em; margin-top:8px; cursor:pointer;
+}
+
+/* ---------------- CART DRAWER layout (slide-in panel, not centered) ---------------- */
+#cart-drawer{
+  position:fixed; top:0; right:0; bottom:0; left:auto; margin:0; width:min(420px,100%); background:var(--surface-raised);
+  transform:translateX(100%); transition:transform .35s ease;
+  display:flex; flex-direction:column; border-left:1px solid var(--card-border);
+  max-width:none; padding:0; border-radius:0; box-shadow:none;
+  opacity:1; visibility:visible; pointer-events:none;
+}
+#cart-drawer.active{
+  transform:translateX(0) !important;
+  pointer-events:auto;
+  visibility:visible;
+  display:flex;
+}
+.cart-head{padding:24px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); flex-shrink:0;}
+.cart-head h3{font-family:'Playfair Display',serif; font-size:20px; margin:0; font-weight:500;}
+.cart-close-btn{
+  width:38px; height:38px; border-radius:50%; border:1px solid var(--line); background:var(--card-bg);
+  display:flex; align-items:center; justify-content:center; color:var(--text); cursor:pointer;
+  transition:background .2s ease, border-color .2s ease, transform .15s ease;
+}
+.cart-close-btn:hover{background:var(--line); border-color:var(--gold); transform:rotate(90deg);}
+#cart-drawer svg{fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
+.cart-close-btn svg{width:16px; height:16px; stroke-width:2.2;}
+#cart-drawer{overflow:hidden;}
+.ship-progress-wrap{padding:16px 24px; border-bottom:1px solid var(--line); flex-shrink:0;}
+.ship-progress-text{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-soft); margin-bottom:8px; line-height:1.4;}
+.ship-progress-text svg{width:14px; height:14px; stroke:var(--gold);}
+.ship-progress-text.unlocked{color:var(--success); font-weight:600;}
+.ship-progress-text.unlocked svg{stroke:var(--success);}
+.ship-progress-bar{height:6px; border-radius:100px; background:var(--line); overflow:hidden;}
+.ship-progress-fill{height:100%; background:linear-gradient(90deg,var(--gold),var(--rose)); width:0%; transition:width .4s ease;}
+.ship-progress-fill.unlocked{background:linear-gradient(90deg,var(--success),var(--gold));}
+.cart-items{flex:0 1 auto; overflow-y:auto; padding:6px 24px; min-height:0;}
+.cart-item{display:flex; gap:14px; padding:16px 0; border-bottom:1px solid var(--line);}
+.ci-thumb{width:62px; height:62px; border-radius:12px; overflow:hidden; flex-shrink:0; background:var(--surface-tint,var(--card-bg)); border:1px solid var(--line); display:flex; align-items:center; justify-content:center;}
+.ci-thumb img{width:100%; height:100%; object-fit:cover;}
+.ci-thumb svg{width:22px; height:22px; color:var(--text-faint); stroke-width:1.6;}
+.ci-info{flex:1; min-width:0;}
+.ci-top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+.ci-title{font-size:13px; font-weight:600; line-height:1.35;}
+.ci-price{font-size:12px; color:var(--text-soft); margin-top:3px;}
+.ci-bottom{display:flex; align-items:center; justify-content:space-between; margin-top:10px;}
+.qty-ctrl{display:inline-flex; align-items:center; gap:2px; border:1px solid var(--line); border-radius:100px; padding:2px;}
+.qty-ctrl button{width:26px; height:26px; border-radius:50%; border:none; background:none; color:var(--text); display:flex; align-items:center; justify-content:center; transition:background .2s ease;}
+.qty-ctrl button:hover{background:var(--line);}
+.qty-ctrl button svg{width:12px; height:12px; stroke-width:2.4;}
+.qty-ctrl span{font-size:12.5px; font-weight:600; min-width:22px; text-align:center;}
+.ci-line-total{font-size:13px; font-weight:700; color:var(--gold);}
+.ci-remove{width:30px; height:30px; flex-shrink:0; border-radius:50%; border:1px solid var(--line); background:none; color:var(--text-faint); display:flex; align-items:center; justify-content:center; transition:color .2s ease, border-color .2s ease, background .2s ease;}
+.ci-remove svg{width:14px; height:14px;}
+.ci-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5); background:rgba(225,29,72,.08);}
+.cart-empty{padding:28px 24px 22px; text-align:center; color:var(--text-soft); font-size:13.5px; line-height:1.55;}
+.cart-foot{padding:18px 24px 22px; border-top:1px solid var(--line); flex-shrink:0;}
+
+/* ---------------- IN-CART RECOMMENDATIONS: auto-scrolling horizontal carousel ---------------- */
+.cart-recs-section{border-top:1px solid var(--line); padding:16px 24px 4px; flex-shrink:0;}
+.cart-recs-head{display:flex; align-items:center; gap:7px; font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin-bottom:12px;}
+.cart-recs-head svg{width:14px; height:14px; stroke:var(--gold);}
+.cart-recs-grid{
+  display:flex; gap:12px; overflow-x:auto; overflow-y:hidden; padding-bottom:14px;
+  -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;
+  scrollbar-width:thin; scrollbar-color:var(--line) transparent;
+}
+.cart-recs-grid::-webkit-scrollbar{height:5px;}
+.cart-recs-grid::-webkit-scrollbar-track{background:transparent;}
+.cart-recs-grid::-webkit-scrollbar-thumb{background:var(--line); border-radius:100px;}
+.cart-rec-card{
+  flex:0 0 130px; background:var(--card-bg); border:1px solid var(--card-border);
+  border-radius:14px; padding:10px; display:flex; flex-direction:column; gap:7px;
+}
+.cart-rec-thumb{width:100%; aspect-ratio:4/3; border-radius:10px; overflow:hidden; background:var(--surface-tint,var(--card-bg)); display:flex; align-items:center; justify-content:center;}
+.cart-rec-thumb img{width:100%; height:100%; object-fit:cover; pointer-events:none; -webkit-user-drag:none;}
+.cart-rec-thumb svg{width:24px; height:24px; color:var(--text-faint); stroke-width:1.6;}
+.cart-rec-title{
+  font-size:11.5px; font-weight:600; line-height:1.35; color:var(--text); min-height:2.7em;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.cart-rec-price{font-size:12.5px; font-weight:700; color:var(--gold); font-family:'Playfair Display',serif;}
+.cart-rec-add{
+  display:flex; align-items:center; justify-content:center; gap:4px; margin-top:auto;
+  padding:7px 8px; border-radius:100px; border:1px solid var(--gold); background:transparent; color:var(--gold);
+  font-size:10.5px; font-weight:700; letter-spacing:.02em; cursor:pointer; transition:background .2s ease, color .2s ease;
+}
+.cart-rec-add svg{width:11px; height:11px; stroke-width:2.6;}
+.cart-rec-add:hover{background:var(--gold); color:#241c0f;}
+.cart-sub-row{display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:10px; color:var(--text-soft);}
+.cart-sub-row strong{color:var(--text); font-size:17px;}
+.cart-checkout{
+  width:100%; padding:16px; border-radius:100px; border:none; background:var(--gold); color:#241c0f;
+  font-weight:700; font-size:13.5px; margin-bottom:14px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
+}
+.cart-checkout svg{width:15px; height:15px;}
+.cart-recs-done{font-size:12.5px; color:var(--text-soft); line-height:1.5; padding:4px 0 16px;}
+
+/* ---------------- PROMO CODE (cart footer) ---------------- */
+.cart-sub-row[hidden], .promo-active[hidden]{display:none;}
+.promo-box{margin-bottom:12px;}
+.promo-toggle{
+  width:100%; display:flex; align-items:center; gap:8px; background:none; border:none; padding:2px 0 10px;
+  color:var(--text-soft); font-size:12.5px; font-weight:600; cursor:pointer; text-align:left;
+}
+.promo-toggle:hover{color:var(--text);}
+.promo-toggle svg{width:15px; height:15px; stroke:var(--gold);}
+.promo-toggle .promo-chev{margin-left:auto; width:14px; height:14px; stroke:var(--text-faint); transition:transform .25s ease;}
+.promo-box.open .promo-chev{transform:rotate(180deg);}
+.promo-body{display:none; padding-bottom:6px;}
+.promo-box.open .promo-body{display:block;}
+.promo-form{display:flex; gap:8px;}
+.promo-form input{
+  flex:1; min-width:0; padding:11px 16px; border-radius:100px; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); font:inherit; font-size:13px; letter-spacing:.06em; text-transform:uppercase;
+  outline:none; transition:border-color .2s ease;
+}
+.promo-form input::placeholder{text-transform:none; letter-spacing:0; color:var(--text-faint);}
+.promo-form input:focus{border-color:var(--gold);}
+.promo-apply{
+  display:inline-flex; align-items:center; gap:6px; padding:0 18px; border-radius:100px; border:1px solid var(--gold);
+  background:transparent; color:var(--gold); font-size:12.5px; font-weight:700; cursor:pointer; transition:background .2s ease, color .2s ease;
+}
+.promo-apply svg{width:14px; height:14px; stroke-width:2.4;}
+.promo-apply:hover{background:var(--gold); color:#241c0f;}
+.promo-msg{font-size:11.5px; line-height:1.4; min-height:0; margin-top:6px;}
+.promo-msg:empty{display:none;}
+.promo-msg.err{color:#e11d48;}
+.promo-msg.ok{color:var(--success);}
+.promo-active{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 8px 8px 12px; border-radius:100px; border:1px solid var(--success); background:rgba(46,107,79,.08);}
+.promo-chip{display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--text); min-width:0;}
+.promo-chip svg{width:15px; height:15px; stroke:var(--success);}
+.promo-chip b{letter-spacing:.06em;}
+.promo-chip em{font-style:normal; color:var(--success); font-weight:700;}
+.promo-remove{display:inline-flex; align-items:center; gap:4px; padding:5px 10px; border-radius:100px; border:1px solid var(--line); background:var(--card-bg); color:var(--text-soft); font-size:11px; font-weight:700; cursor:pointer; flex-shrink:0;}
+.promo-remove svg{width:11px; height:11px; stroke-width:2.6;}
+.promo-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5);}
+.cart-discount-row span:last-child{color:var(--success); font-weight:700;}
+.cart-total-row{margin-top:-2px; padding-top:8px; border-top:1px dashed var(--line);}
+.cart-total-row span{color:var(--text); font-weight:600;}
+.cart-total-row strong{color:var(--gold);}
+@media (max-height:900px){ #cart-drawer .trust-badges{display:none;} }
+@media (hover:none){ .promo-form input{font-size:16px;} }
+
+/* ---------------- ADMIN: promo code management ---------------- */
+.promo-admin-title{font-family:'Playfair Display',serif; font-size:17px; font-weight:500; margin:6px 0 4px;}
+.promo-admin-sub{font-size:12px; color:var(--text-soft); margin:0 0 14px;}
+.promo-admin-form{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+.promo-admin-form .pa-wide{grid-column:1 / -1;}
+.promo-admin-form input, .promo-admin-form select{
+  width:100%; box-sizing:border-box; padding:10px 12px; border-radius:12px; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); font:inherit; font-size:13px; outline:none;
+}
+.promo-admin-form input:focus, .promo-admin-form select:focus{border-color:var(--gold);}
+.promo-admin-form label{display:block; font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin-bottom:4px;}
+.promo-admin-create{
+  grid-column:1 / -1; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:100px;
+  border:none; background:var(--gold); color:#241c0f; font-weight:700; font-size:13px; cursor:pointer;
+}
+.promo-admin-create svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.4; stroke-linecap:round;}
+.promo-admin-error{font-size:12px; color:#e11d48; min-height:0; margin-top:8px;}
+.promo-admin-error:empty{display:none;}
+.promo-admin-error.ok{color:var(--success);}
+.promo-admin-list{margin-top:14px; display:flex; flex-direction:column; gap:8px;}
+.pa-row{display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--card-bg);}
+.pa-row .pa-main{flex:1; min-width:0;}
+.pa-row .pa-code{font-weight:700; letter-spacing:.06em; font-size:13px;}
+.pa-row .pa-desc{font-size:11.5px; color:var(--text-soft); margin-top:2px;}
+.pa-chip{font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:3px 8px; border-radius:100px; background:rgba(46,107,79,.12); color:var(--success);}
+.pa-chip.expired{background:rgba(225,29,72,.1); color:#e11d48;}
+.pa-del{width:32px; height:32px; flex-shrink:0; border-radius:50%; border:1px solid var(--line); background:none; color:var(--text-faint); display:flex; align-items:center; justify-content:center; cursor:pointer;}
+.pa-del svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+.pa-del:hover{color:#e11d48; border-color:rgba(225,29,72,.5); background:rgba(225,29,72,.08);}
+.pa-empty{font-size:12.5px; color:var(--text-soft); text-align:center; padding:12px;}
+
+/* ---------------- PHOTO LIGHTBOX ---------------- */
+#nk-lightbox{
+  position:fixed; inset:0; z-index:10050; display:flex; align-items:center; justify-content:center; padding:24px;
+  background:rgba(10,8,12,.88); opacity:0; visibility:hidden; transition:opacity .25s ease, visibility 0s linear .25s;
+}
+#nk-lightbox.active{opacity:1; visibility:visible;}
+#nk-lightbox img{max-width:min(92vw,900px); max-height:86vh; border-radius:14px; box-shadow:0 30px 80px rgba(0,0,0,.6); object-fit:contain; background:#111;}
+#nk-lightbox .nk-lightbox-close{
+  position:absolute; top:18px; right:18px; width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.1); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+#nk-lightbox .nk-lightbox-close svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round;}
+.review-photo img, .rphoto img{cursor:zoom-in;}
+
+/* ---------------- shared modal / form kit (promo manager, hero image) ---------------- */
+[hidden]{display:none !important;}
+.nk-modal-overlay{
+  position:fixed; inset:0; z-index:10020; display:flex; align-items:center; justify-content:center; padding:20px;
+  background:rgba(10,8,12,.6); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+  opacity:0; visibility:hidden; transition:opacity .25s ease, visibility 0s linear .25s;
+}
+.nk-modal-overlay.active{opacity:1; visibility:visible;}
+.nk-modal-card{
+  position:relative; width:100%; max-width:480px; max-height:90vh; overflow-y:auto;
+  background:var(--surface-raised); color:var(--text); border:1px solid var(--card-border);
+  border-radius:24px; padding:30px 26px 26px; box-shadow:0 30px 80px rgba(0,0,0,.35);
+  transform:translateY(12px); transition:transform .25s ease;
+}
+.nk-modal-overlay.active .nk-modal-card{transform:none;}
+.nk-modal-card h3{font-family:'Playfair Display',serif; font-size:22px; font-weight:500; margin:0 0 6px; padding-right:34px;}
+.nk-modal-sub{font-size:12.5px; color:var(--text-soft); margin:0 0 18px; line-height:1.5;}
+.nk-modal-close{
+  position:absolute; top:14px; right:14px; width:36px; height:36px; border-radius:50%; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+.nk-modal-close svg{width:15px; height:15px; stroke:currentColor; fill:none;}
+.nk-modal-close:hover{border-color:var(--gold);}
+.nk-primary, .nk-ghost{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 20px; border-radius:100px;
+  font-weight:700; font-size:13px; cursor:pointer; transition:background .2s ease, color .2s ease, border-color .2s ease;
+}
+.nk-primary{border:none; background:var(--gold); color:#241c0f;}
+.nk-primary:hover{filter:brightness(1.06);}
+.nk-ghost{border:1px solid var(--line); background:transparent; color:var(--text-soft);}
+.nk-ghost:hover{border-color:var(--gold); color:var(--text);}
+.nk-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;}
+.nk-actions .nk-primary{flex:1;}
+.nk-field{margin-bottom:14px;}
+.nk-lbl{display:block; font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin-bottom:6px;}
+.nk-error{font-size:12px; color:#e11d48; margin:0 0 10px; min-height:0;}
+.nk-error:empty{display:none;}
+/* image field: upload a photo (Base64) or paste a URL, with preview + Remove */
+.nk-img-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.nk-img-btn{
+  display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:100px; border:1px dashed var(--line);
+  color:var(--text-soft); font-size:12.5px; font-weight:600; cursor:pointer; margin:0; text-transform:none; letter-spacing:0;
+  transition:border-color .2s ease, color .2s ease;
+}
+.nk-img-btn:hover{border-color:var(--gold); color:var(--gold);}
+.nk-img-btn svg{width:16px; height:16px; stroke:currentColor; fill:none;}
+.nk-img-or{font-size:11px; color:var(--text-faint);}
+.nk-img-row input[type=text]{
+  flex:1; min-width:150px; box-sizing:border-box; padding:10px 14px; border-radius:100px; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); font:inherit; font-size:13px; outline:none;
+}
+.nk-img-row input[type=text]:focus{border-color:var(--gold);}
+.nk-img-preview{display:none; align-items:center; gap:12px; margin-top:10px;}
+.nk-img-preview.show{display:flex;}
+.nk-img-preview img{width:84px; height:84px; object-fit:cover; border-radius:12px; border:1px solid var(--card-border); background:var(--surface-tint);}
+.nk-img-remove{display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:100px; border:1px solid var(--line); background:var(--card-bg); color:var(--text-soft); font-size:11.5px; font-weight:700; cursor:pointer;}
+.nk-img-remove svg{width:12px; height:12px; stroke:currentColor; fill:none;}
+.nk-img-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5);}
+/* admin top bar: explicit "Manage Promo Codes" button */
+#admin-topbar #admin-promo-btn{display:inline-flex; align-items:center; gap:6px;}
+#admin-topbar svg{width:14px; height:14px; stroke:currentColor; fill:none; flex-shrink:0;}
+@media (max-width:460px){ #admin-promo-btn .bar-btn-text{display:none;} }
+.nk-modal-overlay.active, #nk-lightbox.active{transition:opacity .25s ease, visibility 0s;}
+.trust-badges{display:flex; flex-wrap:wrap; gap:8px; justify-content:center;}
+.trust-badge{display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:600; color:var(--text-soft); border:1px solid var(--line); border-radius:100px; padding:6px 10px;}
+.trust-badge svg{width:13px; height:13px; stroke:var(--gold); fill:none; flex-shrink:0;}
+.icon-inline{display:inline-flex; align-items:center; gap:8px;}
+.icon-inline svg{width:14px; height:14px; stroke:currentColor; fill:none; flex-shrink:0;}
+.drawer-close-btn svg, .close-btn svg, .modal-close svg{width:16px; height:16px; stroke:currentColor; fill:none;}
+.pc-add{display:flex; align-items:center; justify-content:center; gap:8px;}
+.pc-add svg{width:15px; height:15px; stroke:currentColor; fill:none;}
+
+.toast{
+  position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--text); color:var(--canvas); padding:14px 24px; border-radius:100px; font-size:13px; font-weight:500;
+  z-index:3000; opacity:0; pointer-events:none; transition:all .3s ease; display:flex; align-items:center; gap:10px;
+  box-shadow:0 20px 40px -12px rgba(0,0,0,0.4);
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+.toast svg{width:15px;height:15px;stroke:var(--success);fill:none; flex-shrink:0;}
+.visually-hidden{position:absolute; width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
+
+/* ================= REVIEWS PAGE ================= */
+html.js-on .reveal{opacity:0; transform:translateY(22px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1);}
+html.js-on .reveal.in{opacity:1; transform:none;}
+.stars{display:flex; gap:2px;}
+.stars svg{width:15px; height:15px; fill:var(--gold); stroke:none;}
+
+/* ---------------- HERO + HEADER CARD ---------------- */
+.rv-hero{position:relative; padding:clamp(60px,8vw,100px) 0 clamp(26px,3.5vw,44px); overflow:hidden; text-align:center;}
+.rv-hero::before{
+  content:""; position:absolute; inset:-20% -10% auto -10%; height:560px; pointer-events:none;
+  background: radial-gradient(600px 380px at 30% 15%, rgba(var(--gold-rgb),0.2), transparent 70%),
+              radial-gradient(520px 340px at 80% 10%, rgba(var(--rose-rgb),0.1), transparent 70%);
+}
+.rv-hero .container{position:relative; z-index:1;}
+.rv-eyebrow{
+  display:inline-flex; align-items:center; gap:8px; margin-bottom:22px;
+  font-size:11.5px; letter-spacing:.08em; font-weight:700; text-transform:uppercase;
+  color:var(--gold); border:1px solid rgba(var(--gold-rgb),.45); border-radius:100px; padding:7px 14px; background:rgba(var(--gold-rgb),.08);
+}
+.rv-eyebrow svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+h1.rv-title{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(34px,4.8vw,60px); line-height:1.08; letter-spacing:-.01em; margin:0 auto 20px; max-width:860px;}
+h1.rv-title em{font-style:italic; color:var(--gold);}
+.rv-sub{font-size:clamp(15.5px,1.4vw,17.5px); line-height:1.65; color:var(--text-soft); max-width:600px; margin:0 auto;}
+
+.rv-headcard{max-width:900px; margin:clamp(28px,4vw,42px) auto 0; padding:clamp(22px,3.2vw,34px) clamp(22px,3.6vw,40px); border-radius:30px; text-align:left;
+  display:grid; grid-template-columns:1fr auto; gap:20px 32px; align-items:center;}
+@media (max-width:720px){ .rv-headcard{grid-template-columns:1fr; text-align:center; justify-items:center;} }
+.rv-headcard h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(22px,2.6vw,29px); margin:0 0 8px; line-height:1.2;}
+.rv-headcard p{margin:0; font-size:14.5px; line-height:1.6; color:var(--text-soft); max-width:480px;}
+.rv-sum{display:none; align-items:center; gap:14px; margin-top:16px; flex-wrap:wrap;}
+.rv-sum.show{display:flex;}
+@media (max-width:720px){ .rv-sum{justify-content:center;} }
+.rv-sum-score{font-family:'Playfair Display',serif; font-size:40px; font-weight:600; line-height:1;}
+.rv-sum-score span{font-size:18px; color:var(--text-soft); font-weight:500; margin-left:2px;}
+.rv-sum-meta{font-size:13px; color:var(--text-soft); line-height:1.5;}
+.rv-sum-meta strong{color:var(--text);}
+.rv-sum-ver{display:inline-flex; align-items:center; gap:5px; margin-left:10px; color:var(--success); font-weight:600;}
+.rv-sum-ver svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+.rv-cta{display:flex; flex-direction:column; align-items:center; gap:12px;}
+.rv-cta .btn-primary{padding:17px 32px; cursor:pointer; white-space:nowrap;}
+.rv-cta .btn-primary svg{width:17px; height:17px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:none;}
+.rv-cta .btn-primary:hover svg{transform:none;}
+.rv-support{font-size:12.5px; color:var(--text-faint); text-align:center; line-height:1.5;}
+.rv-support a{color:var(--text); font-weight:600; border-bottom:1px solid rgba(var(--gold-rgb),.6);}
+.rv-support a:hover{color:var(--gold);}
+
+/* ---------------- FILTER + SORT BAR ---------------- */
+.rv-toolbar{display:flex; align-items:center; justify-content:space-between; gap:14px 20px; flex-wrap:wrap; margin-bottom:26px;}
+.rv-chips{display:flex; gap:10px; flex-wrap:wrap;}
+.rv-chip{
+  display:inline-flex; align-items:center; gap:8px; padding:11px 20px; border-radius:100px; cursor:pointer;
+  font:inherit; font-size:13px; font-weight:600; color:var(--text-soft);
+  background:var(--card-bg); border:1px solid var(--line); transition:border-color .2s ease, background .2s ease, color .2s ease;
+}
+.rv-chip svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+.rv-chip:hover{border-color:rgba(var(--gold-rgb),.6); color:var(--text);}
+.rv-chip[aria-pressed="true"]{background:var(--text); color:var(--canvas); border-color:var(--text);}
+.rv-sort{display:flex; align-items:center; gap:10px; font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint);}
+.rv-sort select{
+  appearance:none; -webkit-appearance:none; padding:11px 40px 11px 18px; border-radius:100px; font:inherit; font-size:13px; font-weight:600; letter-spacing:0; text-transform:none;
+  color:var(--text); background:var(--card-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center;
+  border:1px solid var(--line); cursor:pointer;
+}
+.rv-sort select:focus{border-color:var(--gold); outline:none;}
+
+/* ---------------- REVIEW LIST (cards come from reviews-data.js) ---------------- */
+.rv-admin{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; padding-top:12px; border-top:1px solid var(--line);}
+.admin-delete-review-btn, .admin-verify-review-btn{display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:100px; font-size:11px; font-weight:700; cursor:pointer; font-family:inherit; transition:background .2s ease, color .2s ease;}
+.admin-delete-review-btn{border:1px solid rgba(225,29,72,.4); background:rgba(225,29,72,.06); color:#e11d48;}
+.admin-delete-review-btn:hover{background:#e11d48; color:#fff;}
+.admin-verify-review-btn{display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:100px; font-size:11px; font-weight:700; cursor:pointer; font-family:inherit; transition:background .2s ease, color .2s ease;}
+.admin-verify-review-btn:hover{background:var(--success); color:#fff;}
+.admin-delete-review-btn svg, .admin-verify-review-btn svg{width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+.rv-loading{padding:48px 0; text-align:center; font-size:13.5px; color:var(--text-faint);}
+
+/* ---------------- REVIEW MODAL ---------------- */
+#review-modal .modal-box{max-width:620px; padding:clamp(24px,4vw,38px);}
+#review-modal .modal-box h3{margin-bottom:6px;}
+.rf-note{font-size:11.5px; color:var(--text-faint); margin:-8px 0 16px; line-height:1.5;}
+.field .opt{font-weight:400; text-transform:none; letter-spacing:0; opacity:.7; margin-left:4px;}
+.rf-avatar-row{display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+.rf-avatar{
+  position:relative; width:72px; height:72px; border-radius:50%; overflow:hidden; flex:none; display:grid; place-items:center;
+  border:2px dashed rgba(var(--gold-rgb),.6); background:rgba(var(--gold-rgb),.1); color:var(--gold);
+}
+.rf-avatar.has{border-style:solid;}
+.rf-avatar svg{width:30px; height:30px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;}
+.rf-avatar img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none;}
+.rf-avatar.has img{display:block;}
+.rf-avatar.has svg{display:none;}
+.rf-btns{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+.rf-pick{
+  display:inline-flex; align-items:center; gap:8px; margin:0 !important; padding:10px 16px; border-radius:100px; border:1px dashed var(--line);
+  color:var(--text-soft) !important; font-size:12.5px !important; font-weight:600 !important; letter-spacing:0 !important; text-transform:none !important; cursor:pointer;
+  transition:border-color .2s ease, color .2s ease;
+}
+.rf-pick:hover, .rf-pick:focus-within{border-color:var(--gold); color:var(--gold) !important;}
+.rf-pick svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+.rf-remove{
+  display:none; align-items:center; gap:5px; padding:8px 13px; border-radius:100px; border:1px solid var(--line); background:var(--card-bg); color:var(--text-soft);
+  font:inherit; font-size:11.5px; font-weight:700; cursor:pointer;
+}
+.rf-remove.show{display:inline-flex;}
+.rf-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5);}
+.rf-remove svg{width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2.4; stroke-linecap:round;}
+.rf-stars{display:flex; gap:4px; margin-bottom:16px;}
+.rf-star{width:42px; height:42px; display:grid; place-items:center; background:none; border:none; border-radius:10px; cursor:pointer; padding:0;}
+.rf-star svg{width:30px; height:30px; fill:none; stroke:var(--text-faint); stroke-width:1.6; stroke-linejoin:round; transition:fill .15s ease, stroke .15s ease, transform .15s ease;}
+.rf-star.on svg{fill:var(--gold); stroke:var(--gold);}
+.rf-star:hover svg{transform:scale(1.12);}
+.rf-star:focus-visible{outline:2px solid var(--gold); outline-offset:1px;}
+.rf-rate-label{margin-left:10px; align-self:center; font-size:12.5px; font-weight:600; color:var(--text-soft);}
+  position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%; border:none; cursor:pointer; padding:0;
+  background:rgba(0,0,0,.65); color:#fff; display:grid; place-items:center;
+}
+.rf-hp{position:absolute !important; left:-9999px !important; width:1px; height:1px; overflow:hidden;}
+.rf-submit[disabled]{opacity:.65; cursor:progress;}
+.rf-foot{margin:14px 0 0; text-align:center; font-size:12px; color:var(--text-faint); line-height:1.55;}
+.rf-foot a{color:var(--text); font-weight:600; border-bottom:1px solid rgba(var(--gold-rgb),.6);}
+@media (max-width:520px){ .field-row{grid-template-columns:1fr;} }
+
+/* ---------------- CLOSING CTA ---------------- */
+.cta-banner{position:relative; overflow:hidden; text-align:center; border-radius:32px; padding:clamp(44px,7vw,84px) clamp(22px,5vw,60px);}
+.cta-banner::before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background: radial-gradient(520px 300px at 20% 0%, rgba(var(--gold-rgb),.28), transparent 70%),
+              radial-gradient(480px 300px at 90% 100%, rgba(var(--rose-rgb),.16), transparent 70%);
+}
+.cta-banner > *{position:relative;}
+.cta-banner h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(30px,4.2vw,50px); line-height:1.1; margin:0 0 14px; letter-spacing:-.01em;}
+.cta-banner h2 em{font-style:italic; color:var(--gold);}
+.cta-banner p{margin:0 auto 30px; max-width:500px; font-size:15.5px; line-height:1.6; color:var(--text-soft);}
+.cta-fine{display:block; margin-top:18px; font-size:12px; color:var(--text-faint);}
+.cta-banner .btn-primary{padding:18px 36px;}
+
+@media (prefers-reduced-motion: reduce){
+  html.js-on .reveal{opacity:1; transform:none; transition:none;}
+  .rphoto img, .rf-star svg{transition:none !important;}
+}
+</style>
+</head>
+<body>
+<script src="nav.js"></script>
+
+<div id="admin-topbar">
+  <span class="bar-label"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>Merchant Mode Active</span>
+  <button type="button" id="admin-promo-btn" aria-label="Manage Promo Codes"><svg class="ico" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.4"/></svg><span class="bar-btn-text">Manage Promo Codes</span></button>
+  <button type="button" id="exit-admin-btn" onclick="lockAdmin()">Exit Admin</button>
+</div>
+
+<main id="top">
+
+  <!-- ================= 1. HERO & SUBMISSION HEADER ================= -->
+  <section class="rv-hero" aria-labelledby="rv-h1">
+    <div class="container">
+      <span class="rv-eyebrow reveal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6.6L22 9.3l-5 5 1.2 7.1L12 18l-6.2 3.4L7 14.3l-5-5 7.1-.7z"/></svg>Community Reviews</span>
+      <h1 class="rv-title reveal" id="rv-h1">Real Customer <em>Experiences</em> &amp; Feedback</h1>
+      <p class="rv-sub reveal">Read genuine experiences from our community or share your own journey with NIKORA.</p>
+
+      <div class="glass-card rv-headcard reveal">
+        <div>
+          <h2>Share your journey</h2>
+          <p>Your honest feedback helps others choose with confidence. Add a photo to show your real results.</p>
+          <div class="rv-sum" id="rv-sum" aria-live="polite">
+            <div class="rv-sum-score" id="rv-sum-score"></div>
+            <div>
+              <div id="rv-sum-stars"></div>
+              <div class="rv-sum-meta" id="rv-sum-meta"></div>
+            </div>
+          </div>
+        </div>
+        <div class="rv-cta">
+          <button type="button" class="btn-primary" id="rv-open"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>Leave a Review</button>
+          <div class="rv-support">Need help with an order instead?<br><a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 2 + 3. FILTERS, SORT & REVIEW GRID ================= -->
+  <section class="section" id="reviews" aria-labelledby="rv-list-h2" style="padding-top:clamp(20px,3vw,34px);">
+    <div class="container">
+      <h2 id="rv-list-h2" class="sr-only" style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);">Customer reviews</h2>
+
+      <div class="rv-toolbar">
+        <div class="rv-chips" role="group" aria-label="Filter reviews">
+          <button type="button" class="rv-chip" data-filter="all" aria-pressed="true">All Reviews</button>
+          <button type="button" class="rv-chip" data-filter="photos" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg>With Photos</button>
+          <button type="button" class="rv-chip" data-filter="verified" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg>Verified Buyers</button>
+        </div>
+        <label class="rv-sort" for="rv-sort">Sort by
+          <select id="rv-sort">
+            <option value="recent">Most Recent</option>
+            <option value="rating">Highest Rated</option>
+          </select>
+        </label>
+      </div>
+      <div id="reviews-container"><div class="rv-loading">Loading reviews&hellip;</div></div>
+    </div>
+  </section>
+
+  <!-- ================= 5. CLOSING CTA ================= -->
+  <section class="section" style="padding-top:clamp(30px,4vw,50px);" aria-labelledby="cta-h2">
+    <div class="container">
+      <div class="glass-card cta-banner reveal">
+        <h2 id="cta-h2">Ready to Start Your <em>Skincare Journey?</em></h2>
+        <p>Red light, EMS microcurrents and warmth, in a five-minute daily ritual.</p>
+        <a class="btn-primary" href="catalog.html">Explore Collection <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <span class="cta-fine">Free Express Shipping on orders over $50</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="site">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <a href="index.html" class="logo" style="font-size:22px;">NIK<em>ora</em></a>
+        <p style="margin-top:14px;">Smart care. Instant glow. Beauty tech designed around the routine you actually have time for.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Shop</h5>
+        <a href="catalog.html">Full Catalog</a>
+        <a href="index.html">Home</a>
+        <a href="reviews.html">Verified Reviews</a>
+      </div>
+      <div class="footer-col">
+        <h5>Support</h5>
+        <a href="track-order.html">Track Order</a>
+        <a href="guarantee.html">Guarantee</a>
+        <a href="returns.html">Start a Return</a>
+        <a href="faq.html">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <a href="science.html">Science</a>
+        <a href="mailto:nikora.support@gmail.com">Contact Support</a>
+        <p>nikora.support@gmail.com</p>
+        <p>Mon&ndash;Fri, 9am&ndash;6pm ET</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 NIKORA. All rights reserved.</span>
+      <span id="merchant-access-link" onclick="openAdminModal()" style="opacity: 0.3; cursor: pointer;">Merchant Access</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ================= WRITE A REVIEW MODAL ================= -->
+<div class="modal-overlay" id="review-modal" aria-hidden="true">
+  <div class="modal-box wide" role="dialog" aria-modal="true" aria-labelledby="rf-title">
+    <button type="button" class="modal-close" id="rf-close" aria-label="Close"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <h3 id="rf-title">Write a review</h3>
+    <p class="modal-sub">Share your honest experience with NIKORA.</p>
+
+    <form id="rev-form" novalidate autocomplete="off">
+      <input type="text" class="rf-hp" id="rf-website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+      <div class="field">
+        <label>Profile Photo <span class="opt">(optional)</span></label>
+        <div class="rf-avatar-row">
+          <div class="rf-avatar" id="rf-avatar-box"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><img id="rf-avatar-img" alt="Your profile photo preview"></div>
+          <div class="rf-btns">
+            <label class="rf-pick" for="rf-avatar-file"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>Upload photo</label>
+            <input type="file" id="rf-avatar-file" accept="image/*" hidden>
+            <button type="button" class="rf-remove" id="rf-avatar-remove"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Remove</button>
+          </div>
+        </div>
+        <p class="rf-note" style="margin:10px 0 0;">A real photo builds trust. Without one, we show your initials.</p>
+      </div>
+
+      <div class="field">
+        <label for="rf-name">Customer Name</label>
+        <input type="text" id="rf-name" maxlength="60" autocomplete="name" required>
+      </div>
+
+      <div class="field">
+        <label id="rf-rate-lbl">Your Rating</label>
+        <div class="rf-stars" id="rf-stars" role="radiogroup" aria-labelledby="rf-rate-lbl"></div>
+      </div>
+
+      <div class="field">
+        <label for="rf-text">Your Review</label>
+        <textarea id="rf-text" maxlength="1200" rows="4" required placeholder="How did your skin look and feel? Tell us about glow, texture and your experience."></textarea>
+      </div>
+
+      <div class="form-error" id="rf-error" role="alert" aria-live="assertive"></div>
+      <button type="submit" class="submit-btn rf-submit" id="rf-submit">Submit Review</button>
+      <p class="rf-foot">Questions about your order? Contact <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a></p>
+    </form>
+  </div>
+</div>
+
+<!-- ================= ADMIN LOGIN MODAL ================= -->
+<div id="admin-modal" class="modal-overlay">
+  <div class="modal-card">
+    <button class="close-btn" onclick="closeAdminModal()" aria-label="Close"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <h3>Merchant Studio Access</h3>
+    <div id="admin-form">
+      <input type="password" id="admin-pin" placeholder="Enter PIN" required />
+      <button type="button" class="primary-btn" onclick="unlockAdmin()">Unlock Studio</button>
+    </div>
+    <button type="button" id="admin-lock-btn" class="primary-btn" style="display:none; background:#d9534f; margin-top:12px;" onclick="lockAdmin()"><span class="icon-inline"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>Lock Studio &amp; Logout</span></button>
+  </div>
+</div>
+
+<!-- ================= CART DRAWER ================= -->
+<div class="cart-overlay" id="cart-overlay"></div>
+<div id="cart-drawer" aria-label="Shopping cart">
+  <div class="cart-head">
+    <h3>Your Bag</h3>
+    <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="ship-progress-wrap">
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Add $50.00 more to unlock FREE Express Shipping</div>
+    <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
+  </div>
+  <div class="cart-items" id="cart-items-list"></div>
+  <div class="cart-recs-section" id="cart-recs-section">
+    <div class="cart-recs-head">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-9M14 17H5M17 3l3 4-3 4M7 21l-3-4 3-4"/></svg>
+      Frequently Bought Together
+    </div>
+    <div class="cart-recs-grid" id="cart-recs-grid"></div>
+  </div>
+  <div class="cart-foot">
+    <div class="promo-box" id="promo-box">
+      <button type="button" class="promo-toggle" id="promo-toggle" aria-expanded="false" aria-controls="promo-body"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.4"/></svg><span>Have a promo code?</span><svg class="promo-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="promo-body" id="promo-body">
+        <div class="promo-form">
+          <input type="text" id="promo-input" placeholder="Enter code" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" aria-label="Promo code">
+          <button type="button" class="promo-apply" id="promo-apply"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Apply</button>
+        </div>
+      </div>
+      <div class="promo-msg" id="promo-msg" role="status" aria-live="polite"></div>
+      <div class="promo-active" id="promo-active" hidden></div>
+    </div>
+    <div class="cart-sub-row"><span>Subtotal</span><strong id="cart-subtotal">$0.00</strong></div>
+    <div class="cart-sub-row cart-discount-row" id="cart-discount-row" hidden><span id="cart-discount-label"></span><span id="cart-discount-amount"></span></div>
+    <div class="cart-sub-row cart-total-row" id="cart-total-row" hidden><span>Total</span><strong id="cart-total">$0.00</strong></div>
+    <button type="button" class="cart-checkout" id="checkout-btn" onclick="window.location.href='checkout.html'">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+      Secure Checkout
+    </button>
+    <div class="trust-badges" id="cart-trust-badges"></div>
+  </div>
+</div>
+
+<!-- ================= PROMO CODE MANAGER (admin only, opened from the red admin bar) ================= -->
+<div class="nk-modal-overlay" id="promo-modal" aria-hidden="true">
+  <div class="nk-modal-card" role="dialog" aria-modal="true" aria-label="Manage promo codes">
+    <button type="button" class="nk-modal-close" data-nk-close aria-label="Close"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+
+    <div id="promo-admin-panel">
+      <h4 class="promo-admin-title">Manage Promo Codes</h4>
+      <p class="promo-admin-sub">Codes are stored live in Firebase and apply to every page&rsquo;s cart.</p>
+      <div class="promo-admin-form">
+        <div class="pa-wide"><label for="pa-code">Code name</label><input type="text" id="pa-code" placeholder="e.g. NIKORA15" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false"></div>
+        <div><label for="pa-type">Discount type</label><select id="pa-type"><option value="percent">Percent (%)</option><option value="fixed">Fixed amount ($)</option></select></div>
+        <div><label for="pa-value">Value</label><input type="number" id="pa-value" placeholder="15" min="0" step="0.01" inputmode="decimal"></div>
+        <div class="pa-wide"><label for="pa-expires">Expires (optional)</label><input type="date" id="pa-expires"></div>
+        <button type="button" class="promo-admin-create" id="pa-create"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Create promo code</button>
+      </div>
+      <div class="promo-admin-error" id="pa-error" role="status" aria-live="polite"></div>
+      <div class="promo-admin-list" id="pa-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span id="toast-text"></span></div>
+
+<script>
+/* ---------------- Safe storage (falls back to memory if blocked) ---------------- */
+/* ================= 1. SAFE STORAGE WRAPPER (iframe-safe) =================
+   Every localStorage/sessionStorage call is wrapped in try/catch so a
+   SecurityError thrown inside a sandboxed preview iframe never halts
+   script execution — it falls back to an in-memory object instead. */
+var safeStorage = {
+  getItem: function(key){
+    try { return localStorage.getItem(key); }
+    catch(e) { return window['_mem_' + key] || null; }
+  },
+  setItem: function(key, val){
+    try { localStorage.setItem(key, val); }
+    catch(e) { window['_mem_' + key] = val; }
+  },
+  removeItem: function(key){
+    try { localStorage.removeItem(key); }
+    catch(e) { delete window['_mem_' + key]; }
+  }
+};
+var safeSession = {
+  getItem: function(key){
+    try { return sessionStorage.getItem(key); }
+    catch(e) { return window['_smem_' + key] || null; }
+  },
+  setItem: function(key, val){
+    try { sessionStorage.setItem(key, val); }
+    catch(e) { window['_smem_' + key] = val; }
+  },
+  removeItem: function(key){
+    try { sessionStorage.removeItem(key); }
+    catch(e) { delete window['_smem_' + key]; }
+  }
+};
+
+/* ================= FIREBASE REALTIME SYNC =================
+   '/products' is shared with catalog.html / product.html. This page's
+   card overrides are keyed by their static slug (e.g. "wand"), which
+   never collides with the numeric ids ("1".."11") those two pages use
+   in the same object. '/reviews/home' holds this page's general
+   testimonials — they aren't tied to one product id, so "home" is used
+   as a stand-in productId for this shared path. Firebase is the source
+   of truth when reachable; 'nikora_products' / 'nikora_reviews' remain
+   local caches so the page still works fully offline or if Firebase
+   fails to load. */
+var firebaseConfig = {
+  apiKey: "AIzaSyCCHdCGRQCiKdeHRkC4e6bnvrMwUIq80TY",
+  authDomain: "nikora-store.firebaseapp.com",
+  databaseURL: "https://nikora-store-default-rtdb.firebaseio.com",
+  projectId: "nikora-store",
+  storageBucket: "nikora-store.firebasestorage.app",
+  messagingSenderId: "840991674151",
+  appId: "1:840991674151:web:f656f83210d412684ee302",
+  measurementId: "G-EDM84G1JPG"
+};
+var firebaseReady = false;
+var db = null;
+try{
+  if(typeof firebase !== 'undefined'){
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    firebaseReady = true;
+  }
+}catch(e){
+  console.warn('Firebase unavailable — continuing on local data only.', e);
+  firebaseReady = false;
+}
+
+
+var ADMIN_PIN = "Nikora#2026";
+var FREE_SHIP_THRESHOLD = 50;
+var SHIP_COST = 4.99;
+
+function escapeHtml(str){
+  var div = document.createElement('div');
+  div.textContent = str == null ? '' : str;
+  return div.innerHTML;
+}
+
+/* ================= UNIFIED CART MODULE (identical on index / catalog / product) =================
+   - Cart lives in localStorage 'nikora_cart' as [{id,title,price,qty}] and is mirrored to
+     Firebase '/carts/<cartId>' (last-write-wins by timestamp) so every page and tab stays in sync.
+   - Thumbnails + "Frequently Bought Together" come live from Firebase '/products'.
+   - Drawer close (X button, overlay, Escape) uses delegated listeners so it can never be lost
+     when the drawer's contents are re-rendered. */
+var NK_FREE_SHIP = 50;
+var NK_MAX_RECS = 8;
+var NK_SCROLL_SPEED = 28;   /* carousel auto-scroll, px per second */
+var NK_ICONS = {
+  minus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>',
+  plus:  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>',
+  image: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg>',
+  truck: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>'
+};
+
+/* Fallback pool so the recommendations strip is NEVER empty (used until Firebase '/products' answers, or if it fails/is empty). */
+var NK_FALLBACK = [
+  { id:'1',  name:'NIKORA RED Light & EMS Facial Wand 4-in-1', price:34.99, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
+  { id:'2',  name:'3D EMS Gua Sha Sculptor', price:24.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400' },
+  { id:'3',  name:'Hydro-Vacuum Pore Cleaner', price:29.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
+  { id:'4',  name:'LED Therapy Mask 7-in-1 Pro', price:49.99, category:'LED Therapy', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
+  { id:'5',  name:'EMS Body Sculptor RF', price:59.99, category:'Body Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'6',  name:'Sonic Eye Massager', price:19.99, category:'Eye Care', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
+  { id:'7',  name:'Ultrasonic Skin Scrubber', price:24.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
+  { id:'8',  name:'Thermal Neck & Face Massager', price:39.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' }
+];
+
+function nkEsc(str){
+  var d = document.createElement('div');
+  d.textContent = str == null ? '' : str;
+  return d.innerHTML;
+}
+
+/* ---- product data (normalises catalog {name,img}, index overrides {title,imgUrl}, product {images[]}) ---- */
+function nkNormalize(p, key){
+  if(!p || typeof p !== 'object' || p._deleted) return null;
+  var name = p.name || p.title;
+  var price = Number(p.price);
+  if(!name || !(price > 0)) return null;
+  var img = (Array.isArray(p.images) && p.images[0]) || p.img || p.imgUrl || '';
+  return { id: String(p.id != null ? p.id : key), name: String(name), price: price, img: String(img || ''), category: p.category || '' };
+}
+function nkListFromObject(obj){
+  var out = [];
+  Object.keys(obj || {}).forEach(function(k){ var n = nkNormalize(obj[k], k); if(n) out.push(n); });
+  return out;
+}
+var NK_PRODUCTS = (typeof ALL_PRODUCTS !== 'undefined' && ALL_PRODUCTS)
+  ? ALL_PRODUCTS.map(function(p){ return nkNormalize(p, p && p.id); }).filter(Boolean)
+  : [];
+function nkFind(id){
+  for(var i=0;i<NK_PRODUCTS.length;i++){ if(NK_PRODUCTS[i].id === String(id)) return NK_PRODUCTS[i]; }
+  if(typeof resolveProduct === 'function'){ try{ var rp = nkNormalize(resolveProduct(id), id); if(rp) return rp; }catch(e){} }
+  for(var j=0;j<NK_FALLBACK.length;j++){ if(NK_FALLBACK[j].id === String(id)) return NK_FALLBACK[j]; }
+  return null;
+}
+function nkThumb(img, alt){
+  return img ? '<img src="' + nkEsc(img) + '" alt="' + nkEsc(alt) + '" loading="lazy" draggable="false">' : NK_ICONS.image;
+}
+
+/* ---- cart storage + Firebase mirror ---- */
+var NK_CART_REF = null;
+function nkCartId(){
+  var id = safeStorage.getItem('nikora_cart_id');
+  if(!id){
+    id = 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    safeStorage.setItem('nikora_cart_id', id);
+  }
+  return id;
+}
+function getCart(){
+  try{ var c = JSON.parse(safeStorage.getItem('nikora_cart')); return Array.isArray(c) ? c : []; }
+  catch(e){ return []; }
+}
+function nkPushCart(cart, ts){
+  if(!NK_CART_REF) return;
+  try{
+    NK_CART_REF.set({ items: cart, updatedAt: ts }).catch(function(err){ console.warn('Firebase cart write failed', err); });
+  }catch(e){ console.warn('Firebase cart write failed', e); }
+}
+function saveCart(cart){
+  var ts = Date.now();
+  safeStorage.setItem('nikora_cart', JSON.stringify(cart));
+  safeStorage.setItem('nikora_cart_ts', String(ts));
+  nkPushCart(cart, ts);
+}
+function nkCleanItems(raw){
+  var arr = Array.isArray(raw) ? raw : (raw && typeof raw === 'object' ? Object.keys(raw).map(function(k){ return raw[k]; }) : []);
+  return arr.filter(function(i){ return i && i.id != null && i.title && Number(i.price) >= 0 && Number(i.qty) > 0; })
+            .map(function(i){ return { id: String(i.id), title: String(i.title), price: Number(i.price), qty: Math.floor(Number(i.qty)) }; });
+}
+function nkSyncCartFromFirebase(){
+  if(typeof firebaseReady === 'undefined' || !firebaseReady) return;
+  try{
+    NK_CART_REF = db.ref('carts/' + nkCartId());
+    NK_CART_REF.on('value', function(snap){
+      var v = snap.val();
+      var localTs = Number(safeStorage.getItem('nikora_cart_ts')) || 0;
+      if(!v){                                   /* nothing in the cloud yet: publish what we have */
+        var lc = getCart();
+        if(lc.length) nkPushCart(lc, localTs || Date.now());
+        return;
+      }
+      var remoteTs = Number(v.updatedAt) || 0;
+      if(remoteTs > localTs){                   /* newer cloud copy (other tab / page): adopt it */
+        safeStorage.setItem('nikora_cart', JSON.stringify(nkCleanItems(v.items)));
+        safeStorage.setItem('nikora_cart_ts', String(remoteTs));
+        renderCart();
+      } else if(localTs > remoteTs){            /* local copy is newer: publish it */
+        nkPushCart(getCart(), localTs);
+      }
+    }, function(err){ console.warn('Firebase cart sync error — using local cart.', err); });
+  }catch(e){ console.warn('Firebase cart sync unavailable', e); }
+}
+
+/* ---- cart actions ---- */
+function bumpCartBadge(){
+  var badge = document.getElementById('cart-count');
+  if(!badge) return;
+  badge.classList.remove('bump');
+  void badge.offsetWidth;
+  badge.classList.add('bump');
+}
+/* Silent add: no drawer, no toast. */
+function cartAdd(id, title, price, qty){
+  id = String(id);
+  var cart = getCart(), found = null;
+  for(var i=0;i<cart.length;i++){ if(String(cart[i].id) === id){ found = cart[i]; break; } }
+  if(found){ found.qty += (qty || 1); } else { cart.push({ id: id, title: title, price: Number(price), qty: qty || 1 }); }
+  saveCart(cart);
+  renderCart();
+}
+/* Card / CTA add: adds, confirms, and opens the drawer. */
+window.addToCart = function(id, title, price){
+  cartAdd(id, title, price, 1);
+  bumpCartBadge();
+  showToast(title + ' added to your bag.');
+  openCart();
+};
+/* Recommendation add: adds WITHOUT closing or re-opening the drawer. */
+function addRecommended(id){
+  var p = nkFind(id);
+  if(!p) return;
+  cartAdd(p.id, p.name, p.price, 1);
+  bumpCartBadge();
+  showToast(p.name + ' added to your bag.');
+}
+function changeQty(id, delta){
+  var cart = getCart(), item = null;
+  for(var i=0;i<cart.length;i++){ if(String(cart[i].id) === String(id)){ item = cart[i]; break; } }
+  if(!item) return;
+  item.qty += delta;
+  if(item.qty <= 0){ cart = cart.filter(function(c){ return String(c.id) !== String(id); }); }
+  saveCart(cart);
+  renderCart();
+}
+function removeFromCart(id){
+  saveCart(getCart().filter(function(c){ return String(c.id) !== String(id); }));
+  renderCart();
+}
+
+/* ---- recommendations carousel ---- */
+var NK_CAR = { raf: 0, pos: 0, last: 0, hover: false, touching: false, resumeAt: 0, bound: false };
+var NK_REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+function nkCarouselPeriod(g){
+  if(g.getAttribute('data-loop') !== '1') return 0;
+  var gap = parseFloat(getComputedStyle(g).columnGap) || 12;
+  return (g.scrollWidth + gap) / 2;      /* the card set is rendered twice; one set = one loop */
+}
+function nkCarouselStep(ts){
+  var drawer = document.getElementById('cart-drawer');
+  var g = document.getElementById('cart-recs-grid');
+  if(!drawer || !g || !drawer.classList.contains('active') || NK_REDUCED){ NK_CAR.raf = 0; return; }
+  var dt = NK_CAR.last ? Math.min(64, ts - NK_CAR.last) : 16;
+  NK_CAR.last = ts;
+  var period = nkCarouselPeriod(g);
+  if(period > 0){
+    var busy = NK_CAR.hover || NK_CAR.touching || Date.now() < NK_CAR.resumeAt || g.contains(document.activeElement);
+    if(busy){ NK_CAR.pos = g.scrollLeft; }                        /* user is in control: just track */
+    else{
+      NK_CAR.pos += NK_SCROLL_SPEED * dt / 1000;
+      if(NK_CAR.pos >= period) NK_CAR.pos -= period;              /* seamless wrap */
+      g.scrollLeft = NK_CAR.pos;
+    }
+  }
+  NK_CAR.raf = requestAnimationFrame(nkCarouselStep);
+}
+function nkCarouselStart(){
+  if(NK_CAR.raf || NK_REDUCED) return;
+  NK_CAR.last = 0;
+  NK_CAR.raf = requestAnimationFrame(nkCarouselStep);
+}
+function nkCarouselBind(){
+  var g = document.getElementById('cart-recs-grid');
+  if(!g || NK_CAR.bound) return;
+  NK_CAR.bound = true;
+  function hold(ms){ NK_CAR.resumeAt = Date.now() + ms; }
+  g.addEventListener('mouseenter', function(){ NK_CAR.hover = true; });
+  g.addEventListener('mouseleave', function(){ NK_CAR.hover = false; hold(400); });
+  g.addEventListener('touchstart', function(){ NK_CAR.touching = true; }, { passive: true });
+  g.addEventListener('touchend', function(){ NK_CAR.touching = false; hold(2500); }, { passive: true });
+  g.addEventListener('touchcancel', function(){ NK_CAR.touching = false; hold(2500); }, { passive: true });
+  g.addEventListener('wheel', function(){ hold(2500); }, { passive: true });
+  g.addEventListener('pointerdown', function(){ hold(2500); });
+  g.addEventListener('scroll', function(){                        /* manual swipes also loop seamlessly */
+    var period = nkCarouselPeriod(g);
+    if(period > 0 && g.scrollLeft >= period){ g.scrollLeft -= period; }
+  }, { passive: true });
+}
+
+function renderCartRecs(cart){
+  var section = document.getElementById('cart-recs-section');
+  var grid = document.getElementById('cart-recs-grid');
+  if(!section || !grid) return;
+
+  var excluded = {};
+  cart.forEach(function(c){ excluded[String(c.id)] = true; });
+  var current = (typeof CURRENT_PRODUCT !== 'undefined' && CURRENT_PRODUCT) ? CURRENT_PRODUCT : null;
+  if(current) excluded[String(current.id)] = true;               /* product page: skip the item being viewed */
+
+  var pool = NK_PRODUCTS.length ? NK_PRODUCTS : NK_FALLBACK;
+  var candidates = pool.filter(function(p){ return !excluded[p.id]; });
+  if(current && current.category){
+    candidates = candidates.filter(function(p){ return p.category === current.category; })
+      .concat(candidates.filter(function(p){ return p.category !== current.category; }));
+  }
+  var picks = candidates.slice(0, NK_MAX_RECS);
+
+  section.style.display = 'block';                               /* the recommendations section is NEVER hidden */
+  if(!picks.length){
+    grid.removeAttribute('data-loop');
+    grid.scrollLeft = 0;
+    grid.innerHTML = '<div class="cart-recs-done">You\u2019ve added everything in the collection \u2014 a complete routine.</div>';
+    return;
+  }
+
+  function card(p, clone){
+    return '<div class="cart-rec-card"' + (clone ? ' aria-hidden="true"' : '') + '>' +
+      '<div class="cart-rec-thumb">' + nkThumb(p.img, p.name) + '</div>' +
+      '<div class="cart-rec-title">' + nkEsc(p.name) + '</div>' +
+      '<div class="cart-rec-price">$' + p.price.toFixed(2) + '</div>' +
+      '<button type="button" class="cart-rec-add" data-action="add-rec" data-id="' + nkEsc(p.id) + '"' + (clone ? ' tabindex="-1"' : '') + ' aria-label="Add ' + nkEsc(p.name) + ' to bag">' + NK_ICONS.plus + 'Add</button>' +
+    '</div>';
+  }
+  var first = picks.map(function(p){ return card(p, false); }).join('');
+  var viewW = grid.clientWidth || 372;
+  var loops = !NK_REDUCED && picks.length * 142 > viewW;         /* only loop when the strip actually overflows */
+  var prev = grid.scrollLeft;
+  grid.innerHTML = loops ? first + picks.map(function(p){ return card(p, true); }).join('') : first;
+  if(loops) grid.setAttribute('data-loop', '1'); else grid.removeAttribute('data-loop');
+  grid.scrollLeft = loops ? prev : 0;                            /* adding an item must not snap the strip back */
+  NK_CAR.pos = grid.scrollLeft;
+  nkCarouselStart();
+}
+
+function renderCart(){
+  var cart = getCart();
+  var wrap = document.getElementById('cart-items-list');
+  var subtotal = 0, count = 0;
+
+  if(!cart.length){
+    wrap.innerHTML = '<div class="cart-empty">Your bag is empty. Add a favorite below to start your routine:</div>';
+  } else {
+    wrap.innerHTML = cart.map(function(item){
+      var price = Number(item.price) || 0;
+      subtotal += price * item.qty;
+      count += item.qty;
+      var prod = nkFind(item.id);
+      var id = nkEsc(item.id);
+      return '<div class="cart-item">' +
+        '<div class="ci-thumb">' + nkThumb(prod && prod.img, item.title) + '</div>' +
+        '<div class="ci-info">' +
+          '<div class="ci-top">' +
+            '<div><div class="ci-title">' + nkEsc(item.title) + '</div><div class="ci-price">$' + price.toFixed(2) + ' each</div></div>' +
+            '<button type="button" class="ci-remove" data-action="remove-item" data-id="' + id + '" aria-label="Remove ' + nkEsc(item.title) + '">' + NK_ICONS.trash + '</button>' +
+          '</div>' +
+          '<div class="ci-bottom">' +
+            '<div class="qty-ctrl">' +
+              '<button type="button" data-action="qty-dec" data-id="' + id + '" aria-label="Decrease quantity">' + NK_ICONS.minus + '</button>' +
+              '<span>' + item.qty + '</span>' +
+              '<button type="button" data-action="qty-inc" data-id="' + id + '" aria-label="Increase quantity">' + NK_ICONS.plus + '</button>' +
+            '</div>' +
+            '<div class="ci-line-total">$' + (price * item.qty).toFixed(2) + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  document.getElementById('cart-subtotal').textContent = '$' + subtotal.toFixed(2);
+  var promo = nkPromoCalc(subtotal);
+  var discount = promo ? promo.discount : 0;
+  var payable = Math.max(0, subtotal - discount);
+  nkPromoRender(promo, payable);
+  var badge = document.getElementById('cart-count');
+  if(badge) badge.textContent = count;
+
+  var text = document.getElementById('ship-progress-text');
+  var fill = document.getElementById('ship-progress-fill');
+  var unlocked = payable >= NK_FREE_SHIP;
+  fill.style.width = Math.min(100, (payable / NK_FREE_SHIP) * 100) + '%';
+  text.classList.toggle('unlocked', unlocked);
+  fill.classList.toggle('unlocked', unlocked);
+  text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
+    ? 'You\u2019ve unlocked FREE Express Shipping!'
+    : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
+
+  renderCartRecs(cart);
+}
+
+/* ---- open / close (single source of truth for every page) ---- */
+window.openCart = function(){
+  document.getElementById('cart-drawer').classList.add('active');
+  document.getElementById('cart-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  var g = document.getElementById('cart-recs-grid');
+  if(g){ NK_CAR.pos = g.scrollLeft; }
+  nkCarouselStart();
+};
+window.closeCart = function(){
+  var drawer = document.getElementById('cart-drawer');
+  var overlay = document.getElementById('cart-overlay');
+  if(drawer){ drawer.classList.remove('active'); drawer.classList.remove('open'); }
+  if(overlay){ overlay.classList.remove('active'); overlay.classList.remove('open'); }
+  document.body.style.overflow = '';
+};
+
+/* Called once on page load. Everything is delegated, so re-rendering the drawer never breaks it. */
+var NK_CART_READY = false;
+function initCartSync(){
+  if(NK_CART_READY) return;
+  NK_CART_READY = true;
+
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    if(t.closest('.cart-close-btn')){ closeCart(); return; }                              /* X button */
+    if(t.classList && t.classList.contains('cart-overlay')){ closeCart(); return; }       /* dark background */
+    var a = t.closest('#cart-drawer [data-action]');
+    if(!a) return;
+    var act = a.getAttribute('data-action'), id = a.getAttribute('data-id');
+    if(act === 'qty-inc') changeQty(id, 1);
+    else if(act === 'qty-dec') changeQty(id, -1);
+    else if(act === 'remove-item') removeFromCart(id);
+    else if(act === 'add-rec') addRecommended(id);
+  });
+  nkBindPromoAndTools();
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){ closeCart(); nkLightboxClose(); nkModalCloseAll(); }
+  });
+
+  nkCarouselBind();
+
+  if(!NK_PRODUCTS.length && typeof getAllProductsFallback === 'function'){
+    try{ NK_PRODUCTS = getAllProductsFallback().map(function(p){ return nkNormalize(p, p && p.id); }).filter(Boolean); }catch(e){}
+  }
+  if(typeof firebaseReady !== 'undefined' && firebaseReady){
+    db.ref('products').on('value', function(snap){
+      var list = nkListFromObject(snap.val());
+      if(list.length){ NK_PRODUCTS = list; }
+      renderCart();
+    }, function(err){ console.warn('Cart products sync error — using local data.', err); });
+    nkSyncCartFromFirebase();
+    nkPromoInit();
+  } else {
+    NK_PROMOS = nkClone(NK_PROMO_FALLBACK); NK_PROMOS_LOADED = true;
+  }
+  renderCart();
+}
+
+
+/* ================= PROMO CODES =================
+   Firebase '/promocodes/<CODE>' = { code, type:'percent'|'fixed', value, active, expiresAt? (ms) }.
+   The applied code (just the name) is kept in localStorage 'nikora_promo' and is re-validated
+   against live data on every render. NOTE: this discount is a client-side display; the checkout
+   step must re-validate the code before charging. */
+var NK_PROMO_FALLBACK = { GLOW10: { code:'GLOW10', type:'percent', value:10, active:true } };
+var NK_PROMOS = null, NK_PROMOS_LOADED = false, NK_PROMO_REF = null, NK_PROMO_OPEN = false, NK_PROMO_NOTE = '';
+function nkClone(o){ return JSON.parse(JSON.stringify(o)); }
+function nkPromoKey(s){ return String(s == null ? '' : s).toUpperCase().replace(/[^A-Z0-9_-]/g, ''); }
+function nkPromoMap(obj){
+  var out = {};
+  Object.keys(obj || {}).forEach(function(k){
+    var p = obj[k]; if(!p || typeof p !== 'object') return;
+    var code = nkPromoKey(p.code || k); if(!code) return;
+    out[code] = { code: code, type: p.type === 'fixed' ? 'fixed' : 'percent', value: Number(p.value) || 0,
+                  active: p.active !== false, expiresAt: p.expiresAt ? Number(p.expiresAt) : 0 };
+  });
+  return out;
+}
+function nkPromoStatus(p){
+  if(!p || p.active === false || !(p.value > 0)) return 'invalid';
+  if(p.expiresAt && Date.now() > p.expiresAt) return 'expired';
+  return 'ok';
+}
+function nkPromoDesc(p){ return p.type === 'percent' ? (p.value + '% OFF') : ('$' + Number(p.value).toFixed(2) + ' OFF'); }
+function nkMoney(n){ return '$' + (Math.round(n * 100) / 100).toFixed(2); }
+function nkPromoApplied(){ return nkPromoKey(safeStorage.getItem('nikora_promo')); }
+
+function nkPromoCalc(subtotal){
+  var code = nkPromoApplied();
+  if(!code || !NK_PROMOS_LOADED) return null;
+  var p = NK_PROMOS && NK_PROMOS[code], st = nkPromoStatus(p);
+  if(st !== 'ok'){                                    /* deleted / expired since it was applied */
+    safeStorage.setItem('nikora_promo', '');
+    NK_PROMO_NOTE = 'Code ' + code + (st === 'expired' ? ' has expired' : ' is no longer valid') + ' and was removed.';
+    return null;
+  }
+  var d = p.type === 'percent' ? subtotal * Math.min(100, p.value) / 100 : p.value;
+  d = Math.min(Math.round(d * 100) / 100, subtotal);
+  return { code: code, promo: p, discount: d };
+}
+function nkPromoMsg(text, kind){
+  var m = document.getElementById('promo-msg'); if(!m) return;
+  m.textContent = text || ''; m.className = 'promo-msg' + (kind ? ' ' + kind : '');
+}
+function nkPromoRender(promo, payable){
+  var box = document.getElementById('promo-box'); if(!box) return;
+  var active = document.getElementById('promo-active'), toggle = document.getElementById('promo-toggle');
+  var applied = !!promo;
+  box.classList.toggle('open', NK_PROMO_OPEN && !applied);
+  toggle.setAttribute('aria-expanded', String(NK_PROMO_OPEN && !applied));
+  toggle.style.display = applied ? 'none' : '';
+  active.hidden = !applied;
+  if(applied){
+    active.innerHTML = '<span class="promo-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.4"/></svg><b>' + nkEsc(promo.code) + '</b><em>' + nkEsc(nkPromoDesc(promo.promo)) + '</em></span>' +
+      '<button type="button" class="promo-remove" id="promo-remove" aria-label="Remove promo code ' + nkEsc(promo.code) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Remove</button>';
+  } else { active.innerHTML = ''; }
+  if(NK_PROMO_NOTE){ nkPromoMsg(NK_PROMO_NOTE, 'err'); NK_PROMO_NOTE = ''; }
+  var row = document.getElementById('cart-discount-row'), tot = document.getElementById('cart-total-row');
+  var show = applied && promo.discount > 0;
+  row.hidden = !show; tot.hidden = !show;
+  if(show){
+    document.getElementById('cart-discount-label').textContent = 'Discount (' + promo.code + ')';
+    document.getElementById('cart-discount-amount').textContent = '-' + nkMoney(promo.discount);
+    document.getElementById('cart-total').textContent = nkMoney(payable);
+  }
+}
+function nkPromoApply(){
+  var input = document.getElementById('promo-input'); if(!input) return;
+  var code = nkPromoKey(input.value);
+  if(!code){ nkPromoMsg('Please enter a promo code.', 'err'); return; }
+  function finish(){
+    var p = NK_PROMOS && NK_PROMOS[code], st = nkPromoStatus(p);
+    if(st === 'expired'){ nkPromoMsg('Sorry, code ' + code + ' has expired.', 'err'); return; }
+    if(st !== 'ok'){ nkPromoMsg('That code isn\u2019t valid. Please check it and try again.', 'err'); return; }
+    safeStorage.setItem('nikora_promo', code);
+    input.value = ''; nkPromoMsg('', '');
+    renderCart();
+    showToast('Promo code ' + code + ' applied (' + nkPromoDesc(p) + ').');
+  }
+  if(NK_PROMOS === null && NK_PROMO_REF){                /* codes still loading: fetch once, then validate */
+    NK_PROMO_REF.once('value').then(function(s){ NK_PROMOS = nkPromoMap(s.val()); NK_PROMOS_LOADED = true; finish(); })
+      .catch(function(){ nkPromoMsg('Could not check the code right now. Please try again.', 'err'); });
+  } else { finish(); }
+}
+function nkPromoRemove(){
+  safeStorage.setItem('nikora_promo', ''); nkPromoMsg('', ''); renderCart();
+}
+function nkPromoInit(){
+  try{
+    NK_PROMO_REF = db.ref('promocodes');
+    NK_PROMO_REF.on('value', function(snap){
+      NK_PROMOS = nkPromoMap(snap.val()); NK_PROMOS_LOADED = true;
+      renderCart(); nkPromoAdminRender();
+    }, function(err){
+      console.warn('Promo codes sync error \u2014 using built-in list.', err);
+      if(NK_PROMOS === null){ NK_PROMOS = nkClone(NK_PROMO_FALLBACK); NK_PROMOS_LOADED = true; renderCart(); }
+    });
+    /* Seed GLOW10 once, only if the list has never been seeded and is empty (so an admin can delete it for good). */
+    db.ref('promoMeta/seeded').once('value').then(function(s){
+      if(s.val() === true) return;
+      return NK_PROMO_REF.once('value').then(function(ps){
+        if(ps.val()){ return db.ref('promoMeta/seeded').set(true); }
+        return NK_PROMO_REF.child('GLOW10').set({ code:'GLOW10', type:'percent', value:10, active:true, createdAt:Date.now() })
+          .then(function(){ return db.ref('promoMeta/seeded').set(true); });
+      });
+    }).catch(function(e){ console.warn('Promo seed skipped', e); });
+  }catch(e){ NK_PROMOS = nkClone(NK_PROMO_FALLBACK); NK_PROMOS_LOADED = true; }
+}
+
+/* ---- admin: promo management panel (lives inside #admin-modal) ---- */
+function nkIsAdmin(){ return typeof isAdmin === 'function' && isAdmin(); }
+/* ---- shared modal helpers ---- */
+function nkModalOpen(id){
+  var m = document.getElementById(id); if(!m) return;
+  m.classList.add('active'); m.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
+}
+function nkModalClose(id){
+  var m = document.getElementById(id); if(!m) return;
+  m.classList.remove('active'); m.setAttribute('aria-hidden', 'true');
+  if(!document.querySelector('.nk-modal-overlay.active')) document.body.style.overflow = '';
+}
+function nkModalCloseAll(){
+  Array.prototype.forEach.call(document.querySelectorAll('.nk-modal-overlay.active'), function(m){ nkModalClose(m.id); });
+}
+function nkPromoModalOpen(){
+  if(!nkIsAdmin()) return;                       /* promo management is admin-only */
+  nkPromoAdminMsg('', false);
+  nkPromoAdminRender();
+  nkModalOpen('promo-modal');
+}
+
+function nkPromoAdminMsg(t, ok){ var e = document.getElementById('pa-error'); if(e){ e.textContent = t || ''; e.className = 'promo-admin-error' + (ok ? ' ok' : ''); } }
+function nkPromoAdminRender(){
+  var list = document.getElementById('pa-list'); if(!list) return;
+  var codes = Object.keys(NK_PROMOS || {}).sort();
+  if(!codes.length){ list.innerHTML = '<div class="pa-empty">No promo codes yet. Create your first one above.</div>'; return; }
+  list.innerHTML = codes.map(function(c){
+    var p = NK_PROMOS[c], st = nkPromoStatus(p);
+    var exp = p.expiresAt ? ' \u00b7 expires ' + new Date(p.expiresAt).toLocaleDateString() : '';
+    return '<div class="pa-row"><div class="pa-main"><div class="pa-code">' + nkEsc(c) + '</div><div class="pa-desc">' + nkEsc(nkPromoDesc(p)) + nkEsc(exp) + '</div></div>' +
+      '<span class="pa-chip' + (st === 'expired' ? ' expired' : '') + '">' + (st === 'expired' ? 'Expired' : 'Active') + '</span>' +
+      '<button type="button" class="pa-del" data-promo-del="' + nkEsc(c) + '" aria-label="Delete promo code ' + nkEsc(c) + '">' + NK_ICONS.trash + '</button></div>';
+  }).join('');
+}
+function nkPromoAdminCreate(){
+  if(!nkIsAdmin()) return;
+  var raw = document.getElementById('pa-code').value.trim();
+  var code = nkPromoKey(raw), type = document.getElementById('pa-type').value === 'fixed' ? 'fixed' : 'percent';
+  var value = Number(document.getElementById('pa-value').value), dv = document.getElementById('pa-expires').value;
+  if(code.length < 2 || code.length > 20){ nkPromoAdminMsg('Code name must be 2\u201320 letters or numbers (e.g. NIKORA15).'); return; }
+  if(!(value > 0)){ nkPromoAdminMsg('Enter a discount value greater than 0.'); return; }
+  if(type === 'percent' && value > 100){ nkPromoAdminMsg('A percentage discount can\u2019t be more than 100%.'); return; }
+  var obj = { code: code, type: type, value: Math.round(value * 100) / 100, active: true, createdAt: Date.now() };
+  if(dv){ var d = new Date(dv + 'T23:59:59'); if(!isNaN(d)) obj.expiresAt = d.getTime(); }
+  var done = function(){
+    ['pa-code','pa-value','pa-expires'].forEach(function(i){ document.getElementById(i).value = ''; });
+    nkPromoAdminMsg('Promo code ' + code + ' saved.', true);
+  };
+  if(NK_PROMO_REF){
+    NK_PROMO_REF.child(code).set(obj).then(done).catch(function(e){ console.warn(e); nkPromoAdminMsg('Could not save \u2014 check your Firebase database rules for /promocodes.'); });
+  } else {                                              /* offline: session-only */
+    NK_PROMOS = NK_PROMOS || {}; NK_PROMOS[code] = nkPromoMap({ x: obj })[code]; done(); nkPromoAdminRender(); renderCart();
+  }
+}
+function nkPromoAdminDelete(code){
+  if(!nkIsAdmin()) return;
+  code = nkPromoKey(code);
+  if(NK_PROMO_REF){
+    NK_PROMO_REF.child(code).remove().then(function(){ nkPromoAdminMsg('Promo code ' + code + ' deleted.', true); })
+      .catch(function(e){ console.warn(e); nkPromoAdminMsg('Could not delete \u2014 check your Firebase database rules.'); });
+  } else { if(NK_PROMOS) delete NK_PROMOS[code]; nkPromoAdminRender(); renderCart(); }
+}
+
+/* ---- photo lightbox + image compression (shared) ---- */
+function nkLightboxOpen(src){
+  var box = document.getElementById('nk-lightbox');
+  if(!box){
+    box = document.createElement('div'); box.id = 'nk-lightbox';
+    box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', 'Review photo');
+    box.innerHTML = '<button type="button" class="nk-lightbox-close" aria-label="Close photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><img alt="Review photo">';
+    document.body.appendChild(box);
+  }
+  box.querySelector('img').src = src;
+  box.classList.add('active');
+}
+function nkLightboxClose(){ var b = document.getElementById('nk-lightbox'); if(b) b.classList.remove('active'); }
+/* Resizes to max 900px JPEG so Base64 review photos stay small enough for Realtime Database. */
+function nkCompressImage(file, done, fail, maxDim, quality){
+  if(!file || !/^image\//.test(file.type)){ fail('Please choose an image file.'); return; }
+  if(file.size > 12 * 1024 * 1024){ fail('That image is too large (12 MB max).'); return; }
+  var reader = new FileReader();
+  reader.onerror = function(){ fail('Could not read that image.'); };
+  reader.onload = function(){
+    var img = new Image();
+    img.onerror = function(){ fail('That image format isn\u2019t supported.'); };
+    img.onload = function(){
+      var s = Math.min(1, (maxDim || 900) / Math.max(img.width, img.height));
+      var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s));
+      var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+      done(c.toDataURL('image/jpeg', quality || 0.8));
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function nkSafePhoto(s){ return (typeof s === 'string' && /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(s)) ? s : ''; }
+
+function nkBindPromoAndTools(){
+  document.addEventListener('click', function(e){
+    var t = e.target; if(!t || !t.closest) return;
+    if(t.closest('#admin-promo-btn')){ nkPromoModalOpen(); return; }
+    var nkc = t.closest('[data-nk-close]'); if(nkc){ var ov = nkc.closest('.nk-modal-overlay'); if(ov) nkModalClose(ov.id); return; }
+    if(t.classList && t.classList.contains('nk-modal-overlay')){ nkModalClose(t.id); return; }
+    if(t.closest('#promo-toggle')){ NK_PROMO_OPEN = !NK_PROMO_OPEN; var b = document.getElementById('promo-box'); b.classList.toggle('open', NK_PROMO_OPEN); document.getElementById('promo-toggle').setAttribute('aria-expanded', String(NK_PROMO_OPEN)); if(NK_PROMO_OPEN){ var i = document.getElementById('promo-input'); if(i) setTimeout(function(){ i.focus(); }, 30); } return; }
+    if(t.closest('#promo-apply')){ nkPromoApply(); return; }
+    if(t.closest('#promo-remove')){ nkPromoRemove(); return; }
+    if(t.closest('#pa-create')){ nkPromoAdminCreate(); return; }
+    var del = t.closest('[data-promo-del]'); if(del){ nkPromoAdminDelete(del.getAttribute('data-promo-del')); return; }
+    var ph = t.closest('.rphoto img, .review-photo img'); if(ph && ph.src){ nkLightboxOpen(ph.src); return; }
+    if(t.id === 'nk-lightbox' || t.closest('.nk-lightbox-close')){ nkLightboxClose(); }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Enter') return;
+    if(e.target && e.target.id === 'promo-input'){ e.preventDefault(); nkPromoApply(); }
+    else if(e.target && /^pa-(code|value|expires)$/.test(e.target.id)){ e.preventDefault(); nkPromoAdminCreate(); }
+  });
+}
+
+
+/* ================= TRUST BADGES ================= */
+function trustBadgesHtml(){
+  return (
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>30-Day Risk-Free Trial</span>' +
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Free Shipping over $50</span>' +
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>2-Year Warranty</span>'
+  );
+}
+function renderTrustBadges(){
+  var el = document.getElementById('cart-trust-badges');
+  if(el) el.innerHTML = trustBadgesHtml();
+}
+
+
+
+
+/* ======================================================================
+   NIKORA — reviews.html page logic
+   (cart, promo codes, Firebase sync and trust badges come from the shared
+   modules above; this block adds the page-specific behaviour)
+   ====================================================================== */
+
+/* ---------------- Toast ---------------- */
+var toastTimer;
+function showToast(msg){
+  var toast = document.getElementById('toast');
+  if(!toast) return;
+  document.getElementById('toast-text').textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2600);
+}
+
+/* ---------------- Theme (called by nav.js theme buttons; nav.js keeps its own buttons in sync) ---------------- */
+function setTheme(mode){
+  mode = (mode === 'dark') ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', mode);
+  try{ localStorage.setItem('theme', mode); }catch(e){}
+  safeStorage.setItem('nikora_theme', mode);
+}
+
+/* ================= ADMIN (Merchant Mode) =================
+   Own key 'nikora_admin_reviews_auth' (each page keeps its own admin key). Unlocking here only
+   reveals the red Merchant Mode bar so promo codes can be managed from this page. */
+function isAdmin(){ return safeStorage.getItem('nikora_admin_reviews_auth') === 'true'; }
+
+window.openAdminModal = function(){
+  var modal = document.getElementById('admin-modal');
+  if(!modal) return;
+  modal.style.display = 'flex';
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  var lockBtn = document.getElementById('admin-lock-btn');
+  var pinForm = document.getElementById('admin-form');
+  if(isAdmin()){
+    if(lockBtn) lockBtn.style.display = 'inline-block';
+    if(pinForm) pinForm.style.display = 'none';
+  } else {
+    if(lockBtn) lockBtn.style.display = 'none';
+    if(pinForm) pinForm.style.display = '';
+  }
+};
+window.closeAdminModal = function(){
+  var modal = document.getElementById('admin-modal');
+  if(!modal) return;
+  modal.classList.remove('active');
+  modal.style.display = 'none';
+  document.body.style.overflow = '';
+};
+window.unlockAdmin = function(){
+  var pinInput = document.getElementById('admin-pin');
+  if(!pinInput) return;
+  if(pinInput.value.trim() === ADMIN_PIN){
+    safeStorage.setItem('nikora_admin_reviews_auth', 'true');
+    pinInput.value = '';
+    closeAdminModal();
+    updateAdminFooterLink();
+    showToast('Merchant Mode is now active.');
+  } else {
+    alert('Invalid PIN');
+  }
+};
+window.lockAdmin = function(){
+  safeStorage.setItem('nikora_admin_reviews_auth', 'false');
+  nkModalCloseAll();
+  closeAdminModal();
+  updateAdminFooterLink();
+  showToast('Merchant Mode locked.');
+};
+function updateAdminFooterLink(){
+  document.body.classList.toggle('admin-mode', isAdmin());      /* shows / hides the red admin bar */
+  if(typeof rvRender === 'function') rvRender();                 /* show / hide the moderation buttons on review cards */
+  var link = document.getElementById('merchant-access-link');
+  if(!link) return;
+  if(isAdmin()){
+    link.textContent = 'Exit Merchant Access';
+    link.setAttribute('onclick', 'lockAdmin()');
+    link.style.opacity = '0.6';
+    link.style.color = '#d9534f';
+  } else {
+    link.textContent = 'Merchant Access';
+    link.setAttribute('onclick', 'openAdminModal()');
+    link.style.opacity = '0.3';
+    link.style.color = '';
+  }
+}
+
+/* ================= REVIEWS PAGE (powered by reviews-data.js) ================= */
+var RV_REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+var RV_PAGE_SIZE = 9;
+var RV_FILTER = 'all', RV_SORT = 'recent';
+var RV_RATE_TEXT = ['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'];
+var RV_STAR_PATH = 'M12 2l2.9 6.6L22 9.3l-5 5 1.2 7.1L12 18l-6.2 3.4L7 14.3l-5-5 7.1-.7z';
+var RV_FORM = { rating: 0, avatar: '', busy: 0, lastFocus: null };
+
+function rvHasStore(){ return !!(window.NikoraReviews && typeof NikoraReviews.renderAllReviews === 'function'); }
+function rvStarSvg(on){
+  return '<svg viewBox="0 0 24 24" style="fill:' + (on ? 'var(--gold)' : 'none') + ';stroke:' + (on ? 'none' : 'var(--text-faint)') + ';stroke-width:1.5;"><path d="' + RV_STAR_PATH + '"/></svg>';
+}
+function rvStars(n){
+  var out = '<div class="stars" role="img" aria-label="Rated ' + n + ' out of 5">';
+  for(var i = 1; i <= 5; i++) out += rvStarSvg(i <= n);
+  return out + '</div>';
+}
+
+/* ---------------- list + summary (reviews-data.js does the card rendering, filtering and pagination) ---------------- */
+function rvSummary(){
+  var box = document.getElementById('rv-sum'); if(!box || !rvHasStore()) return;
+  var st = NikoraReviews.getStats();
+  if(!st.count){ box.classList.remove('show'); return; }          /* real data only: nothing is shown until reviews exist */
+  document.getElementById('rv-sum-score').innerHTML = st.average.toFixed(1) + '<span>/5</span>';
+  document.getElementById('rv-sum-stars').innerHTML = rvStars(Math.round(st.average));
+  document.getElementById('rv-sum-meta').innerHTML = 'Based on <strong>' + st.count + '</strong> customer review' + (st.count === 1 ? '' : 's') +
+    (st.verified ? '<span class="rv-sum-ver"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg>' + st.verified + ' verified buyer' + (st.verified === 1 ? '' : 's') + '</span>' : '');
+  box.classList.add('show');
+}
+
+function rvAdminFooter(r){
+  var id = escapeHtml(String(r.id));
+  return '<div class="rv-admin">' +
+    '<button type="button" class="admin-verify-review-btn" data-rv-verify="' + id + '" aria-pressed="' + (r.verified === true) + '">' + (r.verified ? 'Remove verified' : 'Mark verified') + '</button>' +
+    '<button type="button" class="admin-delete-review-btn" data-rv-del="' + id + '">Delete</button></div>';
+}
+
+function rvRender(){
+  var wrap = document.getElementById('reviews-container'); if(!wrap) return;
+  if(!rvHasStore()){
+    wrap.innerHTML = '<div class="rv-loading">Reviews are temporarily unavailable. Please refresh the page, or contact <a href="mailto:nikora.support@gmail.com" style="border-bottom:1px solid var(--gold);">nikora.support@gmail.com</a>.</div>';
+    return;
+  }
+  NikoraReviews.renderAllReviews('reviews-container', {
+    filter: RV_FILTER, sort: RV_SORT, pageSize: RV_PAGE_SIZE,
+    cardFooter: isAdmin() ? rvAdminFooter : undefined
+  });
+  rvSummary();
+}
+
+/* ---------------- Firebase <-> reviews-data.js ----------------
+   Firebase '/reviews' stays the shared source of truth (everyone sees every customer's review).
+   Each snapshot is mirrored into the 'nikora_reviews' store. A review that couldn't reach Firebase yet
+   (flagged _local) is kept until the cloud copy arrives, so nothing a customer wrote is lost. */
+function rvStartSync(){
+  if(!rvHasStore()) return;
+  if(!(typeof firebaseReady !== 'undefined' && firebaseReady)) return;
+  db.ref('reviews').on('value', function(snap){
+    var data = snap.val() || {}, cloud = [];
+    Object.keys(data).forEach(function(g){
+      var grp = data[g]; if(!grp || typeof grp !== 'object') return;
+      Object.keys(grp).forEach(function(id){
+        var r = grp[id];
+        if(!r || typeof r !== 'object' || (r.text == null && r.name == null)) return;
+        r.id = id; r._group = g; r._path = 'reviews/' + g;
+        cloud.push(r);
+      });
+    });
+    var pending = NikoraReviews.getReviews().filter(function(l){
+      if(l._local !== true) return false;
+      return !cloud.some(function(c){ return Number(c.createdAt) === Number(l.createdAt) && c.name === l.name; });
+    });
+    NikoraReviews.setReviews(cloud.concat(pending));
+  }, function(err){ console.warn('Firebase reviews sync error - showing cached reviews only.', err); });
+}
+
+/* ---------------- filters, sort, admin moderation ---------------- */
+function rvFind(id){
+  var all = NikoraReviews.getReviews();
+  for(var i = 0; i < all.length; i++){ if(String(all[i].id) === String(id)) return all[i]; }
+  return null;
+}
+function rvDelete(id){
+  if(!isAdmin() || !rvHasStore()) return;
+  var r = rvFind(id); if(!r) return;
+  if(typeof firebaseReady !== 'undefined' && firebaseReady && r._path && r._local !== true){
+    db.ref(r._path + '/' + id).remove()
+      .then(function(){ showToast('Review deleted.'); })
+      .catch(function(err){ console.warn('Firebase review delete failed', err); showToast('Could not delete - check your database rules.'); });
+  } else {
+    NikoraReviews.setReviews(NikoraReviews.getReviews().filter(function(x){ return String(x.id) !== String(id); }));
+    showToast('Review deleted.');
+  }
+}
+function rvToggleVerified(id){
+  if(!isAdmin() || !rvHasStore()) return;
+  var r = rvFind(id); if(!r) return;
+  var next = r.verified !== true;
+  if(typeof firebaseReady !== 'undefined' && firebaseReady && r._path && r._local !== true){
+    var ref = db.ref(r._path + '/' + id + '/verified');
+    (next ? ref.set(true) : ref.remove())
+      .then(function(){ showToast(next ? 'Marked as verified buyer.' : 'Verified badge removed.'); })
+      .catch(function(err){ console.warn('Firebase verify failed', err); showToast('Could not update - check your database rules.'); });
+  } else {
+    NikoraReviews.setReviews(NikoraReviews.getReviews().map(function(x){ if(String(x.id) === String(id)) x.verified = next; return x; }));
+  }
+}
+
+function rvInitControls(){
+  Array.prototype.forEach.call(document.querySelectorAll('.rv-chip'), function(chip){
+    chip.addEventListener('click', function(){
+      RV_FILTER = chip.getAttribute('data-filter');
+      Array.prototype.forEach.call(document.querySelectorAll('.rv-chip'), function(c){ c.setAttribute('aria-pressed', c === chip ? 'true' : 'false'); });
+      rvRender();
+    });
+  });
+  document.getElementById('rv-sort').addEventListener('change', function(){ RV_SORT = this.value; rvRender(); });
+
+  document.addEventListener('click', function(e){
+    var t = e.target; if(!t || !t.closest) return;
+    var w = t.closest('a[href="#write"]'); if(w){ e.preventDefault(); rvOpenModal(); return; }
+    var d = t.closest('[data-rv-del]'); if(d){ rvDelete(d.getAttribute('data-rv-del')); return; }
+    var v = t.closest('[data-rv-verify]'); if(v){ rvToggleVerified(v.getAttribute('data-rv-verify')); }
+  });
+  document.addEventListener('reviewsUpdated', rvSummary);            /* new / synced reviews refresh the header summary */
+}
+
+/* ================= WRITE-A-REVIEW MODAL ================= */
+function rvCompressSquare(file, size, done, fail){
+  if(!file || !/^image\//.test(file.type)){ fail('Please choose an image file.'); return; }
+  if(file.size > 12 * 1024 * 1024){ fail('That image is too large (12 MB max).'); return; }
+  var reader = new FileReader();
+  reader.onerror = function(){ fail('Could not read that image.'); };
+  reader.onload = function(){
+    var img = new Image();
+    img.onerror = function(){ fail('That image format isn\u2019t supported.'); };
+    img.onload = function(){
+      var side = Math.min(img.width, img.height), sx = (img.width - side) / 2, sy = (img.height - side) / 2;
+      var c = document.createElement('canvas'); c.width = size; c.height = size;
+      var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, size, size);
+      x.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+      done(c.toDataURL('image/jpeg', 0.82));
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function rvFormError(msg){
+  var e = document.getElementById('rf-error');
+  e.textContent = msg || ''; e.classList.toggle('show', !!msg);
+}
+function rvBuildStars(){
+  var html = '';
+  for(var i = 1; i <= 5; i++){
+    html += '<button type="button" class="rf-star" role="radio" aria-checked="false" aria-label="' + i + ' star' + (i === 1 ? '' : 's') + ' - ' + RV_RATE_TEXT[i] + '" data-v="' + i + '" tabindex="' + (i === 1 ? '0' : '-1') + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + RV_STAR_PATH + '"/></svg></button>';
+  }
+  html += '<span class="rf-rate-label" id="rf-rate-label" aria-live="polite"></span>';
+  document.getElementById('rf-stars').innerHTML = html;
+}
+function rvPaintStars(hover){
+  var v = hover || RV_FORM.rating;
+  Array.prototype.forEach.call(document.querySelectorAll('.rf-star'), function(b){
+    var n = Number(b.getAttribute('data-v'));
+    b.classList.toggle('on', n <= v);
+    b.setAttribute('aria-checked', n === RV_FORM.rating ? 'true' : 'false');
+    b.tabIndex = (RV_FORM.rating ? n === RV_FORM.rating : n === 1) ? 0 : -1;
+  });
+  document.getElementById('rf-rate-label').textContent = v ? RV_RATE_TEXT[v] : '';
+}
+function rvSetRating(v){ RV_FORM.rating = v; rvPaintStars(0); }
+function rvSetAvatar(src){
+  RV_FORM.avatar = src || '';
+  var box = document.getElementById('rf-avatar-box'), img = document.getElementById('rf-avatar-img');
+  if(src){ img.src = src; box.classList.add('has'); } else { img.removeAttribute('src'); box.classList.remove('has'); }
+  document.getElementById('rf-avatar-remove').classList.toggle('show', !!src);
+}
+function rvResetForm(){
+  document.getElementById('rev-form').reset();
+  RV_FORM.rating = 0; RV_FORM.busy = 0;
+  rvSetAvatar(''); rvPaintStars(0); rvFormError('');
+  document.getElementById('rf-avatar-file').value = '';
+}
+function rvOpenModal(){
+  var m = document.getElementById('review-modal');
+  RV_FORM.lastFocus = document.activeElement;
+  rvFormError('');
+  m.classList.add('active'); m.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ var f = document.getElementById('rf-name'); if(f) f.focus(); }, 60);
+}
+function rvCloseModal(){
+  var m = document.getElementById('review-modal');
+  m.classList.remove('active'); m.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  if(RV_FORM.lastFocus && RV_FORM.lastFocus.focus){ try{ RV_FORM.lastFocus.focus(); }catch(e){} }
+}
+
+function rvInitForm(){
+  rvBuildStars(); rvPaintStars(0);
+  document.getElementById('rv-open').addEventListener('click', rvOpenModal);
+  document.getElementById('rf-close').addEventListener('click', rvCloseModal);
+  var modal = document.getElementById('review-modal');
+  modal.addEventListener('click', function(e){ if(e.target === modal) rvCloseModal(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && modal.classList.contains('active')) rvCloseModal(); });
+
+  var stars = document.getElementById('rf-stars');
+  stars.addEventListener('click', function(e){ var b = e.target.closest('.rf-star'); if(b){ rvSetRating(Number(b.getAttribute('data-v'))); rvFormError(''); } });
+  stars.addEventListener('mouseover', function(e){ var b = e.target.closest('.rf-star'); if(b) rvPaintStars(Number(b.getAttribute('data-v'))); });
+  stars.addEventListener('mouseleave', function(){ rvPaintStars(0); });
+  stars.addEventListener('keydown', function(e){
+    var cur = RV_FORM.rating || 0, n = 0;
+    if(e.key === 'ArrowRight' || e.key === 'ArrowUp') n = Math.min(5, cur + 1);
+    else if(e.key === 'ArrowLeft' || e.key === 'ArrowDown') n = Math.max(1, cur - 1);
+    else if(e.key === 'Home') n = 1; else if(e.key === 'End') n = 5;
+    else return;
+    e.preventDefault(); rvSetRating(n);
+    var b = stars.querySelector('.rf-star[data-v="' + n + '"]'); if(b) b.focus();
+  });
+
+  document.getElementById('rf-avatar-file').addEventListener('change', function(){
+    var f = this.files && this.files[0]; if(!f) return;
+    RV_FORM.busy++;
+    rvCompressSquare(f, 160, function(d){ RV_FORM.busy--; rvSetAvatar(d); }, function(msg){ RV_FORM.busy--; rvFormError(msg); });
+    this.value = '';
+  });
+  document.getElementById('rf-avatar-remove').addEventListener('click', function(){ rvSetAvatar(''); });
+
+  document.getElementById('rev-form').addEventListener('submit', rvSubmit);
+  document.getElementById('rev-form').addEventListener('input', function(){ rvFormError(''); });
+  if(location.hash === '#write') setTimeout(rvOpenModal, 400);
+}
+
+function rvSubmit(e){
+  if(e) e.preventDefault();
+  var name = document.getElementById('rf-name').value.trim();
+  var text = document.getElementById('rf-text').value.trim();
+
+  if(document.getElementById('rf-website').value){ rvResetForm(); rvCloseModal(); showToast('Thank you! Your review has been posted.'); return; }   /* honeypot */
+  if(!rvHasStore()){ rvFormError('Reviews are temporarily unavailable. Please refresh the page and try again.'); return; }
+  if(name.length < 2){ rvFormError('Please enter your name.'); document.getElementById('rf-name').focus(); return; }
+  if(!(RV_FORM.rating >= 1 && RV_FORM.rating <= 5)){ rvFormError('Please choose a star rating.'); var s1 = document.querySelector('.rf-star'); if(s1) s1.focus(); return; }
+  if(text.length < 10){ rvFormError('Please write a few words about your experience (at least 10 characters).'); document.getElementById('rf-text').focus(); return; }
+  if(RV_FORM.busy > 0){ rvFormError('Your photo is still processing. One moment.'); return; }
+  var last = 0; try{ last = Number(localStorage.getItem('nk_rv_last') || 0); }catch(err){}
+  if(Date.now() - last < 30000){ rvFormError('Please wait a moment before posting another review.'); return; }
+
+  var createdAt = Date.now();
+  var payload = { name: name, rating: RV_FORM.rating, text: text, createdAt: createdAt, date: new Date(createdAt).toLocaleDateString('en-US') };
+  if(RV_FORM.avatar) payload.avatar = RV_FORM.avatar;
+
+  /* 1) reviews-data.js: instant local update (fires 'reviewsUpdated', the list re-renders itself).
+        `verified` can never be self-claimed: the store forces it to false. */
+  var stored;
+  try{
+    var local = {}; Object.keys(payload).forEach(function(k){ local[k] = payload[k]; });
+    local._local = true;                                              /* until the cloud copy arrives */
+    stored = NikoraReviews.addReview(local);
+  }catch(err){ rvFormError(err && err.message ? err.message.replace(/^addReview:\s*/, '') : 'Could not save your review.'); return; }
+  var localId = stored[0].id;
+  try{ localStorage.setItem('nk_rv_last', String(createdAt)); }catch(err){}
+
+  var cloud = typeof firebaseReady !== 'undefined' && firebaseReady;
+  rvResetForm(); rvCloseModal();
+  RV_FILTER = 'all'; RV_SORT = 'recent'; document.getElementById('rv-sort').value = 'recent';
+  Array.prototype.forEach.call(document.querySelectorAll('.rv-chip'), function(c){ c.setAttribute('aria-pressed', c.getAttribute('data-filter') === 'all' ? 'true' : 'false'); });
+  rvRender();
+  showToast(cloud ? 'Thank you! Your review has been posted.' : 'Thank you! Your review was saved on this device.');
+  var list = document.getElementById('reviews');
+  if(list) list.scrollIntoView({ behavior: RV_REDUCED ? 'auto' : 'smooth', block: 'start' });
+
+  /* 2) Firebase: share it with every visitor (best effort), then drop the local-only copy */
+  if(cloud){
+    db.ref('reviews/general').push().set(payload).then(function(){
+      NikoraReviews.setReviews(NikoraReviews.getReviews().filter(function(x){ return x.id !== localId; }));
+    }).catch(function(err){
+      console.warn('Firebase review write failed - kept on this device only.', err);
+      showToast('Saved on this device. We couldn\u2019t reach the server.');
+    });
+  }
+}
+
+/* ---- scroll reveal (staggered inside grids); falls back to showing everything ---- */
+function rvInitReveal(){
+  var els = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+  if(!els.length) return;
+
+  function reveal(el, delay){
+    el.style.transitionDelay = delay + 'ms';
+    el.classList.add('in');
+    setTimeout(function(){                          /* hand the element back to its own hover transitions */
+      el.classList.remove('reveal', 'in');
+      el.style.transitionDelay = '';
+    }, delay + 900);
+  }
+  if(!('IntersectionObserver' in window)){ els.forEach(function(el){ reveal(el, 0); }); return; }
+
+  els.forEach(function(el){
+    var sib = el.parentElement ? Array.prototype.indexOf.call(el.parentElement.children, el) : 0;
+    el.setAttribute('data-rd', String(Math.min(sib, 4) * 80));
+  });
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(!en.isIntersecting) return;
+      io.unobserve(en.target);
+      reveal(en.target, Number(en.target.getAttribute('data-rd')) || 0);
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(function(el){ io.observe(el); });
+  setTimeout(function(){ els.forEach(function(el){ if(el.classList.contains('reveal') && !el.classList.contains('in')){ io.unobserve(el); reveal(el, 0); } }); }, 5000);
+}
+
+/* ---------------- Init ---------------- */
+function init(){
+  var saved = safeStorage.getItem('theme') || safeStorage.getItem('nikora_theme');
+  setTheme(saved === 'dark' ? 'dark' : 'light');
+  updateAdminFooterLink();
+
+  renderCart();
+  renderTrustBadges();
+  initCartSync();
+
+  var pin = document.getElementById('admin-pin');
+  if(pin) pin.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); unlockAdmin(); } });
+  var adminModal = document.getElementById('admin-modal');
+  if(adminModal) adminModal.addEventListener('click', function(e){ if(e.target === adminModal) closeAdminModal(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeAdminModal(); });
+
+  rvInitControls();
+  rvInitForm();
+  rvRender();          /* renderAllReviews('reviews-container') */
+  rvStartSync();
+  rvInitReveal();
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+<script src="reviews-data.js"></script>
+</body>
+</html>
