@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<script>
+/* Anti-flicker: apply the saved theme before first paint ('theme' key, legacy 'nikora_theme' fallback). */
+(function(){
+  try{
+    var saved = localStorage.getItem('theme') || localStorage.getItem('nikora_theme');
+    if(saved === 'light' || saved === 'dark'){ document.documentElement.setAttribute('data-theme', saved); }
+  }catch(e){}
+  /* scroll-reveal is only armed when JS runs, so content is never hidden without it */
+  document.documentElement.classList.add('js-on');
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Science — NIKORA | Red Light &amp; EMS Technology</title>
+<meta name="description" content="How NIKORA's 630nm Red Light Therapy, EMS Microcurrents and therapeutic warmth revitalize skin in 5-minute daily routines.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Firebase (compat build — plain <script> globals, no bundler/import needed) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<style>
+:root{
+  --canvas:#FAF8F5;
+  --canvas-rgb:250,248,245;
+  --card-bg: rgba(255,255,255,0.65);
+  --card-border: rgba(230,220,210,0.6);
+  --text:#1A1615;
+  --text-soft: rgba(26,22,21,0.62);
+  --text-faint: rgba(26,22,21,0.4);
+  --gold:#C59B56;
+  --gold-rgb:197,155,86;
+  --rose:#D81E5B;
+  --rose-rgb:216,30,91;
+  --line: rgba(26,22,21,0.1);
+  --surface-raised: rgba(255,255,255,0.85);
+  --shadow-ambient: 0 20px 60px -20px rgba(60,45,30,0.18);
+  --success:#2E6B4F;
+  color-scheme: light;
+}
+[data-theme="dark"]{
+  --canvas:#0D0B12;
+  --canvas-rgb:13,11,18;
+  --card-bg: rgba(25,20,32,0.55);
+  --card-border: rgba(255,255,255,0.08);
+  --text:#F7F4F0;
+  --text-soft: rgba(247,244,240,0.64);
+  --text-faint: rgba(247,244,240,0.38);
+  --gold:#E5BA73;
+  --gold-rgb:229,186,115;
+  --rose:#FF527B;
+  --rose-rgb:255,82,123;
+  --line: rgba(255,255,255,0.09);
+  --surface-raised: rgba(30,25,38,0.9);
+  --shadow-ambient: 0 20px 70px -20px rgba(0,0,0,0.6);
+  color-scheme: dark;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+
+/* ================= 1. LIVE ANIMATED GRADIENT BACKGROUND ================= */
+body {
+  background: linear-gradient(-45deg, #FAF7F2, #F8F4F0, #F5EFE6, #FAF7F2);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+  margin:0;
+  color:var(--text);
+  font-family:'Montserrat',sans-serif;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  transition:color .4s ease;
+}
+[data-theme="dark"] body {
+  background: linear-gradient(-45deg, #0D0B12, #170E1B, #2A0F1D, #0D0B12);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@media (prefers-reduced-motion: reduce){
+  body{animation:none;}
+  *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+}
+
+img{max-width:100%;display:block;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+.container{
+  width:100%;
+  max-width:1240px;
+  margin:0 auto;
+  padding:0 clamp(20px,4vw,48px);
+}
+:focus-visible{outline:2px solid var(--rose); outline-offset:3px; border-radius:4px;}
+
+
+
+
+
+
+
+
+/* ---------------- LOGO (footer) ----------------
+   The header, "More" dropdown and mobile drawer are rendered and styled entirely by nav.js. */
+.logo{
+  font-family:'Playfair Display',serif;
+  font-size:26px; letter-spacing:.06em; font-weight:600;
+}
+.logo em{font-style:italic; color:var(--gold);}
+
+.btn-primary{
+  background:var(--text); color:var(--canvas);
+  padding:16px 30px; border-radius:100px; border:none;
+  font-size:13.5px; font-weight:600; letter-spacing:.03em;
+  display:inline-flex; align-items:center; gap:10px;
+  transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s ease;
+  box-shadow:0 12px 30px -12px rgba(26,22,21,0.4);
+}
+.btn-primary:hover{transform:translateY(-2px); box-shadow:0 16px 36px -12px rgba(26,22,21,0.5);}
+.btn-primary svg{width:14px;height:14px;stroke:currentColor;fill:none;transition:transform .25s ease;}
+.btn-primary:hover svg{transform:translateX(3px);}
+.btn-ghost{font-size:13.5px; font-weight:600; color:var(--text); padding:16px 8px; border-bottom:1px solid var(--text); display:inline-flex; align-items:center; gap:8px;}
+
+/* ---------------- SECTION HEADERS ---------------- */
+.section{padding:clamp(60px,8vw,100px) 0;}
+.section-head{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:44px; flex-wrap:wrap;}
+.section-head h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(28px,3.4vw,40px); margin:0; letter-spacing:-.01em;}
+.section-head h2 em{font-style:italic;color:var(--gold);}
+.section-head p{margin:8px 0 0; color:var(--text-soft); font-size:14.5px; max-width:440px;}
+.section-link{font-size:13px; font-weight:600; border-bottom:1px solid var(--text); padding-bottom:2px; white-space:nowrap; background:none; border-left:none; border-right:none; border-top:none;}
+
+/* ================= TACTILE 3D CARD SPOTLIGHT ================= */
+.glass-card{
+  --mouse-x:50%; --mouse-y:50%;
+  position:relative;
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  border-radius:22px;
+  backdrop-filter:blur(20px) saturate(180%);
+  transition:transform .12s ease-out, box-shadow .25s ease;
+  box-shadow:var(--shadow-ambient);
+  transform-style:preserve-3d;
+  will-change:transform;
+}
+.glass-card::after{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:radial-gradient(350px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.45), transparent 70%);
+  opacity:0; transition:opacity .3s ease;
+}
+[data-theme="dark"] .glass-card::after{
+  background:radial-gradient(350px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.14), transparent 70%);
+}
+.glass-card:hover::after{opacity:1;}
+
+/* ---------------- FOOTER ---------------- */
+footer.site{border-top:1px solid var(--line); padding:60px 0 30px; margin-top:20px;}
+.footer-grid{display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; margin-bottom:44px;}
+@media (max-width:760px){ .footer-grid{grid-template-columns:1fr 1fr;} }
+.footer-col h5{font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); font-weight:600; margin:0 0 16px;}
+.footer-col a, .footer-col p{display:block; font-size:13.5px; color:var(--text-soft); margin-bottom:11px; line-height:1.5;}
+.footer-col a:hover{color:var(--text);}
+.footer-bottom{display:flex; justify-content:space-between; align-items:center; padding-top:26px; border-top:1px solid var(--line); font-size:12px; color:var(--text-faint); flex-wrap:wrap; gap:12px;}
+
+/* ================= 3. CLICK-LOCK & OVERLAY CSS FIX ================= */
+.modal-overlay, .cart-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 9998;
+  display: flex; align-items: center; justify-content: center;
+  padding:20px;
+}
+.modal-overlay.active, .cart-overlay.active {
+  opacity: 1; visibility: visible; pointer-events: auto;
+}
+.modal-card, .cart-drawer, .modal-box { z-index: 9999; position: relative; }
+#cart-drawer { z-index: 9999; }
+
+.modal-box, .modal-card{
+  background:var(--surface-raised); border:1px solid var(--card-border); border-radius:22px;
+  width:100%; max-width:440px; padding:36px; max-height:88vh; overflow-y:auto;
+  box-shadow:0 40px 90px -20px rgba(0,0,0,0.5);
+}
+.modal-box.wide{max-width:640px;}
+.modal-close, .close-btn{position:absolute; top:18px; right:18px; background:none; border:none; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background .2s ease; font-size:16px; color:var(--text); cursor:pointer;}
+.modal-close:hover, .close-btn:hover{background:var(--line);}
+.modal-close svg{width:16px;height:16px;stroke:var(--text);}
+.modal-box h3, .modal-card h3{font-family:'Playfair Display',serif; font-size:22px; font-weight:500; margin:0 0 20px;}
+.modal-box .modal-sub{font-size:13px; color:var(--text-soft); margin:0 0 24px;}
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:11.5px; font-weight:600; letter-spacing:.03em; text-transform:uppercase; color:var(--text-faint); margin-bottom:7px;}
+.field input, .field select, .field textarea,
+.modal-card input[type="password"]{
+  width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line);
+  background:rgba(var(--canvas-rgb),0.5); color:var(--text); font-family:inherit; font-size:13.5px;
+  margin-bottom:16px;
+}
+.field textarea{resize:vertical; min-height:70px;}
+.field input:focus, .field select:focus, .field textarea:focus,
+.modal-card input:focus{border-color:var(--gold); outline:none;}
+.field-row{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.form-error{font-size:12.5px; color:var(--rose); margin:-4px 0 14px; display:none;}
+.form-error.show{display:block;}
+.modal-submit, .submit-btn, .primary-btn{
+  width:100%; padding:15px; border-radius:100px; border:none; background:var(--text); color:var(--canvas);
+  font-size:13px; font-weight:600; letter-spacing:.03em; margin-top:8px; cursor:pointer;
+}
+
+/* ---------------- CART DRAWER layout (slide-in panel, not centered) ---------------- */
+#cart-drawer{
+  position:fixed; top:0; right:0; bottom:0; left:auto; margin:0; width:min(420px,100%); background:var(--surface-raised);
+  transform:translateX(100%); transition:transform .35s ease;
+  display:flex; flex-direction:column; border-left:1px solid var(--card-border);
+  max-width:none; padding:0; border-radius:0; box-shadow:none;
+  opacity:1; visibility:visible; pointer-events:none;
+}
+#cart-drawer.active{
+  transform:translateX(0) !important;
+  pointer-events:auto;
+  visibility:visible;
+  display:flex;
+}
+.cart-head{padding:24px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); flex-shrink:0;}
+.cart-head h3{font-family:'Playfair Display',serif; font-size:20px; margin:0; font-weight:500;}
+.cart-close-btn{
+  width:38px; height:38px; border-radius:50%; border:1px solid var(--line); background:var(--card-bg);
+  display:flex; align-items:center; justify-content:center; color:var(--text); cursor:pointer;
+  transition:background .2s ease, border-color .2s ease, transform .15s ease;
+}
+.cart-close-btn:hover{background:var(--line); border-color:var(--gold); transform:rotate(90deg);}
+#cart-drawer svg{fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
+.cart-close-btn svg{width:16px; height:16px; stroke-width:2.2;}
+#cart-drawer{overflow:hidden;}
+.ship-progress-wrap{padding:16px 24px; border-bottom:1px solid var(--line); flex-shrink:0;}
+.ship-progress-text{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-soft); margin-bottom:8px; line-height:1.4;}
+.ship-progress-text svg{width:14px; height:14px; stroke:var(--gold);}
+.ship-progress-text.unlocked{color:var(--success); font-weight:600;}
+.ship-progress-text.unlocked svg{stroke:var(--success);}
+.ship-progress-bar{height:6px; border-radius:100px; background:var(--line); overflow:hidden;}
+.ship-progress-fill{height:100%; background:linear-gradient(90deg,var(--gold),var(--rose)); width:0%; transition:width .4s ease;}
+.ship-progress-fill.unlocked{background:linear-gradient(90deg,var(--success),var(--gold));}
+.cart-items{flex:0 1 auto; overflow-y:auto; padding:6px 24px; min-height:0;}
+.cart-item{display:flex; gap:14px; padding:16px 0; border-bottom:1px solid var(--line);}
+.ci-thumb{width:62px; height:62px; border-radius:12px; overflow:hidden; flex-shrink:0; background:var(--surface-tint,var(--card-bg)); border:1px solid var(--line); display:flex; align-items:center; justify-content:center;}
+.ci-thumb img{width:100%; height:100%; object-fit:cover;}
+.ci-thumb svg{width:22px; height:22px; color:var(--text-faint); stroke-width:1.6;}
+.ci-info{flex:1; min-width:0;}
+.ci-top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+.ci-title{font-size:13px; font-weight:600; line-height:1.35;}
+.ci-price{font-size:12px; color:var(--text-soft); margin-top:3px;}
+.ci-bottom{display:flex; align-items:center; justify-content:space-between; margin-top:10px;}
+.qty-ctrl{display:inline-flex; align-items:center; gap:2px; border:1px solid var(--line); border-radius:100px; padding:2px;}
+.qty-ctrl button{width:26px; height:26px; border-radius:50%; border:none; background:none; color:var(--text); display:flex; align-items:center; justify-content:center; transition:background .2s ease;}
+.qty-ctrl button:hover{background:var(--line);}
+.qty-ctrl button svg{width:12px; height:12px; stroke-width:2.4;}
+.qty-ctrl span{font-size:12.5px; font-weight:600; min-width:22px; text-align:center;}
+.ci-line-total{font-size:13px; font-weight:700; color:var(--gold);}
+.ci-remove{width:30px; height:30px; flex-shrink:0; border-radius:50%; border:1px solid var(--line); background:none; color:var(--text-faint); display:flex; align-items:center; justify-content:center; transition:color .2s ease, border-color .2s ease, background .2s ease;}
+.ci-remove svg{width:14px; height:14px;}
+.ci-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5); background:rgba(225,29,72,.08);}
+.cart-empty{padding:28px 24px 22px; text-align:center; color:var(--text-soft); font-size:13.5px; line-height:1.55;}
+.cart-foot{padding:18px 24px 22px; border-top:1px solid var(--line); flex-shrink:0;}
+
+/* ---------------- IN-CART RECOMMENDATIONS: auto-scrolling horizontal carousel ---------------- */
+.cart-recs-section{border-top:1px solid var(--line); padding:16px 24px 4px; flex-shrink:0;}
+.cart-recs-head{display:flex; align-items:center; gap:7px; font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin-bottom:12px;}
+.cart-recs-head svg{width:14px; height:14px; stroke:var(--gold);}
+.cart-recs-grid{
+  display:flex; gap:12px; overflow-x:auto; overflow-y:hidden; padding-bottom:14px;
+  -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;
+  scrollbar-width:thin; scrollbar-color:var(--line) transparent;
+}
+.cart-recs-grid::-webkit-scrollbar{height:5px;}
+.cart-recs-grid::-webkit-scrollbar-track{background:transparent;}
+.cart-recs-grid::-webkit-scrollbar-thumb{background:var(--line); border-radius:100px;}
+.cart-rec-card{
+  flex:0 0 130px; background:var(--card-bg); border:1px solid var(--card-border);
+  border-radius:14px; padding:10px; display:flex; flex-direction:column; gap:7px;
+}
+.cart-rec-thumb{width:100%; aspect-ratio:4/3; border-radius:10px; overflow:hidden; background:var(--surface-tint,var(--card-bg)); display:flex; align-items:center; justify-content:center;}
+.cart-rec-thumb img{width:100%; height:100%; object-fit:cover; pointer-events:none; -webkit-user-drag:none;}
+.cart-rec-thumb svg{width:24px; height:24px; color:var(--text-faint); stroke-width:1.6;}
+.cart-rec-title{
+  font-size:11.5px; font-weight:600; line-height:1.35; color:var(--text); min-height:2.7em;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.cart-rec-price{font-size:12.5px; font-weight:700; color:var(--gold); font-family:'Playfair Display',serif;}
+.cart-rec-add{
+  display:flex; align-items:center; justify-content:center; gap:4px; margin-top:auto;
+  padding:7px 8px; border-radius:100px; border:1px solid var(--gold); background:transparent; color:var(--gold);
+  font-size:10.5px; font-weight:700; letter-spacing:.02em; cursor:pointer; transition:background .2s ease, color .2s ease;
+}
+.cart-rec-add svg{width:11px; height:11px; stroke-width:2.6;}
+.cart-rec-add:hover{background:var(--gold); color:#241c0f;}
+.cart-sub-row{display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:10px; color:var(--text-soft);}
+.cart-sub-row strong{color:var(--text); font-size:17px;}
+.cart-checkout{
+  width:100%; padding:16px; border-radius:100px; border:none; background:var(--gold); color:#241c0f;
+  font-weight:700; font-size:13.5px; margin-bottom:14px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
+}
+.cart-checkout svg{width:15px; height:15px;}
+.cart-recs-done{font-size:12.5px; color:var(--text-soft); line-height:1.5; padding:4px 0 16px;}
+
+/* ---------------- PROMO CODE (cart footer) ---------------- */
+.cart-sub-row[hidden], .promo-active[hidden]{display:none;}
+.promo-box{margin-bottom:12px;}
+.promo-toggle{
+  width:100%; display:flex; align-items:center; gap:8px; background:none; border:none; padding:2px 0 10px;
+  color:var(--text-soft); font-size:12.5px; font-weight:600; cursor:pointer; text-align:left;
+}
+.promo-toggle:hover{color:var(--text);}
+.promo-toggle svg{width:15px; height:15px; stroke:var(--gold);}
+.promo-toggle .promo-chev{margin-left:auto; width:14px; height:14px; stroke:var(--text-faint); transition:transform .25s ease;}
+.promo-box.open .promo-chev{transform:rotate(180deg);}
+.promo-body{display:none; padding-bottom:6px;}
+.promo-box.open .promo-body{display:block;}
+.promo-form{display:flex; gap:8px;}
+.promo-form input{
+  flex:1; min-width:0; padding:11px 16px; border-radius:100px; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); font:inherit; font-size:13px; letter-spacing:.06em; text-transform:uppercase;
+  outline:none; transition:border-color .2s ease;
+}
+.promo-form input::placeholder{text-transform:none; letter-spacing:0; color:var(--text-faint);}
+.promo-form input:focus{border-color:var(--gold);}
+.promo-apply{
+  display:inline-flex; align-items:center; gap:6px; padding:0 18px; border-radius:100px; border:1px solid var(--gold);
+  background:transparent; color:var(--gold); font-size:12.5px; font-weight:700; cursor:pointer; transition:background .2s ease, color .2s ease;
+}
+.promo-apply svg{width:14px; height:14px; stroke-width:2.4;}
+.promo-apply:hover{background:var(--gold); color:#241c0f;}
+.promo-msg{font-size:11.5px; line-height:1.4; min-height:0; margin-top:6px;}
+.promo-msg:empty{display:none;}
+.promo-msg.err{color:#e11d48;}
+.promo-msg.ok{color:var(--success);}
+.promo-active{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 8px 8px 12px; border-radius:100px; border:1px solid var(--success); background:rgba(46,107,79,.08);}
+.promo-chip{display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--text); min-width:0;}
+.promo-chip svg{width:15px; height:15px; stroke:var(--success);}
+.promo-chip b{letter-spacing:.06em;}
+.promo-chip em{font-style:normal; color:var(--success); font-weight:700;}
+.promo-remove{display:inline-flex; align-items:center; gap:4px; padding:5px 10px; border-radius:100px; border:1px solid var(--line); background:var(--card-bg); color:var(--text-soft); font-size:11px; font-weight:700; cursor:pointer; flex-shrink:0;}
+.promo-remove svg{width:11px; height:11px; stroke-width:2.6;}
+.promo-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5);}
+.cart-discount-row span:last-child{color:var(--success); font-weight:700;}
+.cart-total-row{margin-top:-2px; padding-top:8px; border-top:1px dashed var(--line);}
+.cart-total-row span{color:var(--text); font-weight:600;}
+.cart-total-row strong{color:var(--gold);}
+@media (max-height:900px){ #cart-drawer .trust-badges{display:none;} }
+@media (hover:none){ .promo-form input{font-size:16px;} }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ---------------- PHOTO LIGHTBOX ---------------- */
+#nk-lightbox{
+  position:fixed; inset:0; z-index:10050; display:flex; align-items:center; justify-content:center; padding:24px;
+  background:rgba(10,8,12,.88); opacity:0; visibility:hidden; transition:opacity .25s ease, visibility 0s linear .25s;
+}
+#nk-lightbox.active{opacity:1; visibility:visible;}
+#nk-lightbox img{max-width:min(92vw,900px); max-height:86vh; border-radius:14px; box-shadow:0 30px 80px rgba(0,0,0,.6); object-fit:contain; background:#111;}
+#nk-lightbox .nk-lightbox-close{
+  position:absolute; top:18px; right:18px; width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.1); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+#nk-lightbox .nk-lightbox-close svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round;}
+.review-photo img, .rphoto img{cursor:zoom-in;}
+
+/* ---------------- shared modal / form kit (promo manager, hero image) ---------------- */
+[hidden]{display:none !important;}
+.nk-modal-overlay{
+  position:fixed; inset:0; z-index:10020; display:flex; align-items:center; justify-content:center; padding:20px;
+  background:rgba(10,8,12,.6); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+  opacity:0; visibility:hidden; transition:opacity .25s ease, visibility 0s linear .25s;
+}
+.nk-modal-overlay.active{opacity:1; visibility:visible;}
+.nk-modal-card{
+  position:relative; width:100%; max-width:480px; max-height:90vh; overflow-y:auto;
+  background:var(--surface-raised); color:var(--text); border:1px solid var(--card-border);
+  border-radius:24px; padding:30px 26px 26px; box-shadow:0 30px 80px rgba(0,0,0,.35);
+  transform:translateY(12px); transition:transform .25s ease;
+}
+.nk-modal-overlay.active .nk-modal-card{transform:none;}
+.nk-modal-card h3{font-family:'Playfair Display',serif; font-size:22px; font-weight:500; margin:0 0 6px; padding-right:34px;}
+.nk-modal-sub{font-size:12.5px; color:var(--text-soft); margin:0 0 18px; line-height:1.5;}
+.nk-modal-close{
+  position:absolute; top:14px; right:14px; width:36px; height:36px; border-radius:50%; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+.nk-modal-close svg{width:15px; height:15px; stroke:currentColor; fill:none;}
+.nk-modal-close:hover{border-color:var(--gold);}
+.nk-primary, .nk-ghost{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 20px; border-radius:100px;
+  font-weight:700; font-size:13px; cursor:pointer; transition:background .2s ease, color .2s ease, border-color .2s ease;
+}
+.nk-primary{border:none; background:var(--gold); color:#241c0f;}
+.nk-primary:hover{filter:brightness(1.06);}
+.nk-ghost{border:1px solid var(--line); background:transparent; color:var(--text-soft);}
+.nk-ghost:hover{border-color:var(--gold); color:var(--text);}
+.nk-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;}
+.nk-actions .nk-primary{flex:1;}
+.nk-field{margin-bottom:14px;}
+.nk-lbl{display:block; font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin-bottom:6px;}
+.nk-error{font-size:12px; color:#e11d48; margin:0 0 10px; min-height:0;}
+.nk-error:empty{display:none;}
+/* image field: upload a photo (Base64) or paste a URL, with preview + Remove */
+.nk-img-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.nk-img-btn{
+  display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:100px; border:1px dashed var(--line);
+  color:var(--text-soft); font-size:12.5px; font-weight:600; cursor:pointer; margin:0; text-transform:none; letter-spacing:0;
+  transition:border-color .2s ease, color .2s ease;
+}
+.nk-img-btn:hover{border-color:var(--gold); color:var(--gold);}
+.nk-img-btn svg{width:16px; height:16px; stroke:currentColor; fill:none;}
+.nk-img-or{font-size:11px; color:var(--text-faint);}
+.nk-img-row input[type=text]{
+  flex:1; min-width:150px; box-sizing:border-box; padding:10px 14px; border-radius:100px; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); font:inherit; font-size:13px; outline:none;
+}
+.nk-img-row input[type=text]:focus{border-color:var(--gold);}
+.nk-img-preview{display:none; align-items:center; gap:12px; margin-top:10px;}
+.nk-img-preview.show{display:flex;}
+.nk-img-preview img{width:84px; height:84px; object-fit:cover; border-radius:12px; border:1px solid var(--card-border); background:var(--surface-tint);}
+.nk-img-remove{display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:100px; border:1px solid var(--line); background:var(--card-bg); color:var(--text-soft); font-size:11.5px; font-weight:700; cursor:pointer;}
+.nk-img-remove svg{width:12px; height:12px; stroke:currentColor; fill:none;}
+.nk-img-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5);}
+
+
+
+
+.nk-modal-overlay.active, #nk-lightbox.active{transition:opacity .25s ease, visibility 0s;}
+.trust-badges{display:flex; flex-wrap:wrap; gap:8px; justify-content:center;}
+.trust-badge{display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:600; color:var(--text-soft); border:1px solid var(--line); border-radius:100px; padding:6px 10px;}
+.trust-badge svg{width:13px; height:13px; stroke:var(--gold); fill:none; flex-shrink:0;}
+.icon-inline{display:inline-flex; align-items:center; gap:8px;}
+.icon-inline svg{width:14px; height:14px; stroke:currentColor; fill:none; flex-shrink:0;}
+.drawer-close-btn svg, .close-btn svg, .modal-close svg{width:16px; height:16px; stroke:currentColor; fill:none;}
+.pc-add{display:flex; align-items:center; justify-content:center; gap:8px;}
+.pc-add svg{width:15px; height:15px; stroke:currentColor; fill:none;}
+
+.toast{
+  position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--text); color:var(--canvas); padding:14px 24px; border-radius:100px; font-size:13px; font-weight:500;
+  z-index:3000; opacity:0; pointer-events:none; transition:all .3s ease; display:flex; align-items:center; gap:10px;
+  box-shadow:0 20px 40px -12px rgba(0,0,0,0.4);
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+.toast svg{width:15px;height:15px;stroke:var(--success);fill:none; flex-shrink:0;}
+.visually-hidden{position:absolute; width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
+
+/* ================= SCIENCE PAGE ================= */
+html.js-on .reveal{opacity:0; transform:translateY(22px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1);}
+html.js-on .reveal.in{opacity:1; transform:none;}
+.sci-eyebrow{
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:11.5px; letter-spacing:.08em; font-weight:600; text-transform:uppercase;
+  color:var(--gold); border:1px solid rgba(var(--gold-rgb),0.4); border-radius:100px;
+  padding:7px 14px; margin-bottom:22px;
+}
+.sci-eyebrow svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+
+/* ---------------- HERO ---------------- */
+.sci-hero{position:relative; padding:clamp(64px,9vw,110px) 0 clamp(50px,7vw,84px); overflow:hidden;}
+.sci-hero::before{
+  content:""; position:absolute; inset:-20% -10% auto -10%; height:620px; pointer-events:none;
+  background: radial-gradient(600px 400px at 25% 20%, rgba(var(--gold-rgb),0.2), transparent 70%),
+              radial-gradient(520px 360px at 85% 10%, rgba(var(--rose-rgb),0.12), transparent 70%);
+}
+.sci-hero-inner{display:grid; grid-template-columns:1.05fr .95fr; gap:clamp(36px,5vw,64px); align-items:center; position:relative; z-index:1;}
+@media (max-width:960px){ .sci-hero-inner{grid-template-columns:1fr;} }
+h1.sci-title{
+  font-family:'Playfair Display',serif; font-weight:500;
+  font-size:clamp(38px,5vw,64px); line-height:1.06; letter-spacing:-.01em; margin:0 0 22px;
+}
+h1.sci-title em{font-style:italic; color:var(--gold);}
+.sci-sub{font-size:clamp(15.5px,1.4vw,17.5px); line-height:1.65; color:var(--text-soft); max-width:520px; margin:0 0 34px;}
+.sci-ctas{display:flex; gap:18px; flex-wrap:wrap; align-items:center;}
+
+/* interactive visual card */
+.sci-visual{padding:clamp(18px,2.4vw,26px); border-radius:30px; overflow:hidden;}
+.sv-stage{
+  position:relative; border-radius:22px; overflow:hidden; aspect-ratio:4/3;
+  background:linear-gradient(160deg,#F2E9DC,#E2D2B8);
+  border:1px solid var(--card-border);
+}
+[data-theme="dark"] .sv-stage{background:linear-gradient(160deg,#241a2e,#150f1e);}
+.sv-stage svg{position:absolute; inset:0; width:100%; height:100%; display:block;}
+.sv-scene{opacity:0; transition:opacity .6s ease; pointer-events:none;}
+.sv-scene.on{opacity:1;}
+.sv-grid line{stroke:var(--line); stroke-width:1;}
+.sv-wave{fill:none; stroke:var(--rose); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round;}
+.sv-wave.soft{stroke:var(--gold); opacity:.55; stroke-width:1.6;}
+.sv-ring{fill:none; stroke:var(--rose); stroke-width:1.6; transform-box:fill-box; transform-origin:center; animation:svRing 3.6s ease-out infinite;}
+.sv-ring:nth-of-type(2){animation-delay:1.2s;}
+.sv-ring:nth-of-type(3){animation-delay:2.4s;}
+@keyframes svRing{0%{transform:scale(.25); opacity:.9;} 100%{transform:scale(1.55); opacity:0;}}
+.sv-orb-core{fill:var(--rose);}
+.sv-pulse{fill:none; stroke:var(--gold); stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round;}
+.sv-pulse-track{animation:svScroll 3.3s linear infinite;}
+@keyframes svScroll{from{transform:translateX(0);} to{transform:translateX(-120px);}}
+.sv-dot{fill:var(--rose);}
+.sv-shield{fill:rgba(var(--gold-rgb),.12); stroke:var(--gold); stroke-width:2.4; stroke-linejoin:round;}
+.sv-check{fill:none; stroke:var(--gold); stroke-width:4; stroke-linecap:round; stroke-linejoin:round;}
+.sv-halo{fill:none; stroke:var(--gold); stroke-width:1.4; transform-box:fill-box; transform-origin:center; animation:svRing 4s ease-out infinite;}
+.sv-text{font-family:'Montserrat',sans-serif; font-size:11px; font-weight:600; letter-spacing:.08em; fill:var(--text-soft); text-transform:uppercase;}
+.sv-readout{
+  position:absolute; left:14px; bottom:14px; right:14px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  background:var(--surface-raised); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+  border:1px solid var(--card-border); border-radius:16px; padding:10px 16px;
+  box-shadow:var(--shadow-ambient);
+}
+.sv-big{font-family:'Playfair Display',serif; font-weight:600; font-size:clamp(22px,2.4vw,28px); color:var(--gold); line-height:1;}
+.sv-cap{font-size:11.5px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--text-soft);}
+.sv-desc{margin:16px 4px 14px; font-size:13.5px; line-height:1.55; color:var(--text-soft); min-height:42px;}
+.sv-chips{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+.sv-chip{
+  text-align:left; padding:12px 14px; border-radius:16px; cursor:pointer; color:var(--text);
+  background:var(--card-bg); border:1px solid var(--line); font-family:inherit;
+  transition:border-color .25s ease, background .25s ease, transform .2s ease;
+}
+.sv-chip:hover{border-color:rgba(var(--gold-rgb),.6); transform:translateY(-1px);}
+.sv-chip[aria-selected="true"]{border-color:var(--gold); background:rgba(var(--gold-rgb),.14);}
+.sv-chip b{display:block; font-family:'Playfair Display',serif; font-size:clamp(17px,1.8vw,21px); font-weight:600; color:var(--gold); line-height:1.1;}
+.sv-chip span{display:block; margin-top:4px; font-size:10.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--text-soft); line-height:1.3;}
+@media (max-width:420px){ .sv-chips{grid-template-columns:1fr;} .sv-chip{display:flex; align-items:baseline; gap:10px;} .sv-chip span{margin:0;} }
+
+/* ---------------- PILLARS ---------------- */
+.pillar-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-bottom:22px;}
+@media (max-width:860px){ .pillar-grid{grid-template-columns:1fr;} }
+.pillar-tab{
+  text-align:left; width:100%; cursor:pointer; padding:26px 24px 24px; border-radius:22px; color:var(--text); font-family:inherit;
+  display:flex; flex-direction:column; gap:14px; align-items:flex-start;
+  outline-offset:3px;
+}
+.pillar-tab:hover{border-color:rgba(var(--gold-rgb),.55);}
+.pillar-tab[aria-selected="true"]{border-color:var(--gold); box-shadow:0 0 0 1px var(--gold), var(--shadow-ambient);}
+.pillar-ico{
+  width:54px; height:54px; border-radius:16px; display:grid; place-items:center;
+  background:rgba(var(--gold-rgb),.14); color:var(--gold); transition:background .25s ease, color .25s ease;
+}
+.pillar-tab[aria-selected="true"] .pillar-ico{background:var(--gold); color:#241c0f;}
+.pillar-ico svg{width:28px; height:28px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;}
+.pillar-num{font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-faint);}
+.pillar-name{font-family:'Playfair Display',serif; font-size:clamp(19px,1.9vw,22px); font-weight:500; line-height:1.2; margin:0;}
+.pillar-tag{font-size:13px; line-height:1.5; color:var(--text-soft); margin:0;}
+.pillar-panel{padding:clamp(26px,4vw,48px); border-radius:28px;}
+.pillar-panel[hidden]{display:none !important;}
+.pp-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:clamp(28px,4vw,56px); align-items:center;}
+@media (max-width:860px){ .pp-grid{grid-template-columns:1fr;} }
+.pp-kicker{font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint); font-weight:600; margin-bottom:10px;}
+.pp-title{font-family:'Playfair Display',serif; font-size:clamp(26px,3vw,36px); font-weight:500; margin:0 0 14px; line-height:1.15;}
+.pp-title em{font-style:italic; color:var(--gold);}
+.pp-text{font-size:15px; line-height:1.7; color:var(--text-soft); margin:0 0 22px; max-width:540px;}
+.pp-list{list-style:none; margin:0 0 24px; padding:0; display:grid; gap:12px;}
+.pp-list li{display:flex; gap:12px; align-items:flex-start; font-size:14.5px; line-height:1.5;}
+.pp-list svg{flex:none; width:20px; height:20px; margin-top:1px; stroke:var(--gold); fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+.pp-specs{display:flex; flex-wrap:wrap; gap:8px;}
+.pp-spec{
+  font-size:11.5px; font-weight:600; letter-spacing:.04em; color:var(--text-soft);
+  border:1px solid var(--line); border-radius:100px; padding:7px 14px; background:var(--card-bg);
+}
+.pp-art{
+  position:relative; aspect-ratio:1/1; max-width:380px; width:100%; margin:0 auto; border-radius:26px; overflow:hidden;
+  background:linear-gradient(160deg,#F2E9DC,#E2D2B8); border:1px solid var(--card-border);
+  display:grid; place-items:center;
+}
+[data-theme="dark"] .pp-art{background:linear-gradient(160deg,#241a2e,#150f1e);}
+.pp-art svg{width:100%; height:100%; display:block;}
+.art-s{fill:none; stroke:var(--gold); stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+.art-r{fill:none; stroke:var(--rose); stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+.art-fill{fill:rgba(var(--gold-rgb),.16); stroke:var(--gold); stroke-width:2;}
+.art-fill-r{fill:rgba(var(--rose-rgb),.16); stroke:var(--rose); stroke-width:2;}
+.art-anim-a{animation:svRing 3.6s ease-out infinite; transform-box:fill-box; transform-origin:center;}
+.art-anim-b{animation:svRing 3.6s ease-out 1.2s infinite; transform-box:fill-box; transform-origin:center;}
+.art-flow{stroke-dasharray:6 10; animation:artFlow 2.4s linear infinite;}
+@keyframes artFlow{to{stroke-dashoffset:-64;}}
+
+/* ---------------- METRICS ---------------- */
+.metric-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-bottom:34px;}
+@media (max-width:860px){ .metric-grid{grid-template-columns:1fr;} }
+.metric{padding:30px 26px 26px; text-align:left;}
+.metric-top{display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px;}
+.metric-num{
+  font-family:'Playfair Display',serif; font-weight:600; line-height:1; letter-spacing:-.02em;
+  font-size:clamp(46px,5.4vw,64px); color:var(--gold); font-variant-numeric:tabular-nums;
+}
+.metric-ring{width:64px; height:64px; flex:none;}
+.metric-ring circle{fill:none; stroke-width:5; stroke-linecap:round;}
+.metric-ring .trk{stroke:var(--line);}
+.metric-ring .val{stroke:var(--gold); stroke-dasharray:150.8; stroke-dashoffset:150.8; transform:rotate(-90deg); transform-origin:center; transition:stroke-dashoffset 1.6s cubic-bezier(.2,.8,.2,1);}
+.metric-label{font-size:14.5px; line-height:1.5; color:var(--text-soft); margin:0;}
+.metric-label strong{color:var(--text); font-weight:600;}
+.sci-note{font-size:12px; color:var(--text-faint); text-align:center; margin:0 0 44px;}
+
+/* comparison */
+.compare{border-radius:28px; overflow:hidden;}
+.compare-head{
+  display:grid; grid-template-columns:1.1fr 1fr 1fr; gap:0; align-items:stretch;
+  border-bottom:1px solid var(--line);
+}
+.compare-title{padding:24px 26px; font-family:'Playfair Display',serif; font-size:clamp(20px,2.2vw,26px); font-weight:500; line-height:1.2; display:flex; align-items:center;}
+.compare-title em{font-style:italic; color:var(--gold);}
+.col-h{padding:24px 22px; display:flex; flex-direction:column; justify-content:center; gap:4px; font-size:11.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint);}
+.col-h strong{font-size:clamp(14px,1.5vw,16px); letter-spacing:.02em; text-transform:none; color:var(--text); font-weight:700;}
+.col-h.nk{background:rgba(var(--gold-rgb),.12); color:var(--gold);}
+.cmp-row{display:grid; grid-template-columns:1.1fr 1fr 1fr; border-bottom:1px solid var(--line); transition:background .2s ease;}
+.cmp-row:last-child{border-bottom:none;}
+.cmp-row:hover{background:rgba(var(--gold-rgb),.05);}
+.cmp-feature{padding:18px 26px; font-size:14px; font-weight:600; display:flex; align-items:center;}
+.cmp-cell{padding:18px 22px; font-size:13.5px; line-height:1.45; display:flex; align-items:center; gap:10px; color:var(--text-soft);}
+.cmp-cell.nk{background:rgba(var(--gold-rgb),.07); color:var(--text); font-weight:500;}
+.cmp-cell svg{flex:none; width:18px; height:18px; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
+.cmp-cell.std svg{stroke:var(--text-faint);}
+.cmp-cell.nk svg{stroke:var(--gold);}
+@media (max-width:760px){
+  .compare-head{grid-template-columns:1fr 1fr;}
+  .compare-title{grid-column:1 / -1; border-bottom:1px solid var(--line);}
+  .cmp-row{grid-template-columns:1fr 1fr;}
+  .cmp-feature{grid-column:1 / -1; padding:16px 20px 4px;}
+  .cmp-cell{padding:8px 20px 16px;}
+  .col-h{padding:16px 20px;}
+}
+
+/* ---------------- EXPERT QUOTE ---------------- */
+.expert{display:grid; grid-template-columns:1.25fr .75fr; overflow:hidden; border-radius:28px;}
+@media (max-width:900px){ .expert{grid-template-columns:1fr;} }
+.expert-quote{padding:clamp(28px,4.4vw,56px); position:relative;}
+.q-mark{width:44px; height:44px; stroke:none; fill:rgba(var(--gold-rgb),.45); margin-bottom:18px;}
+.expert-quote blockquote{
+  margin:0 0 26px; font-family:'Playfair Display',serif; font-weight:500; font-style:italic;
+  font-size:clamp(20px,2.3vw,28px); line-height:1.45; letter-spacing:-.005em;
+}
+.expert-by{display:flex; align-items:center; gap:14px;}
+.expert-avatar{width:52px; height:52px; border-radius:50%; display:grid; place-items:center; background:rgba(var(--gold-rgb),.16); color:var(--gold); flex:none;}
+.expert-avatar svg{width:26px; height:26px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;}
+.expert-name{font-weight:700; font-size:14.5px; margin:0 0 2px;}
+.expert-role{font-size:12.5px; color:var(--text-soft); margin:0;}
+.expert-side{
+  padding:clamp(28px,4vw,48px); display:flex; flex-direction:column; justify-content:center; gap:18px;
+  background:rgba(var(--gold-rgb),.08); border-left:1px solid var(--line);
+}
+@media (max-width:900px){ .expert-side{border-left:none; border-top:1px solid var(--line);} }
+.expert-side h3{margin:0; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint); font-weight:700;}
+.expert-point{display:flex; gap:12px; align-items:flex-start; font-size:14px; line-height:1.5;}
+.expert-point svg{flex:none; width:20px; height:20px; margin-top:1px; stroke:var(--gold); fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+
+/* ---------------- CERTIFICATIONS ---------------- */
+.cert-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:18px;}
+@media (max-width:980px){ .cert-grid{grid-template-columns:repeat(2,1fr);} }
+@media (max-width:480px){ .cert-grid{grid-template-columns:1fr;} }
+.cert{padding:28px 22px 24px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:12px;}
+.cert-ico{
+  width:62px; height:62px; border-radius:50%; display:grid; place-items:center;
+  border:1px solid rgba(var(--gold-rgb),.5); background:rgba(var(--gold-rgb),.1); color:var(--gold);
+}
+.cert-ico svg{width:30px; height:30px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;}
+.cert h3{margin:0; font-size:15px; font-weight:700; letter-spacing:.01em;}
+.cert p{margin:0; font-size:12.5px; line-height:1.5; color:var(--text-soft);}
+
+/* ---------------- CLOSING CTA ---------------- */
+.cta-banner{
+  position:relative; overflow:hidden; text-align:center; border-radius:32px;
+  padding:clamp(44px,7vw,84px) clamp(22px,5vw,60px);
+}
+.cta-banner::before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background: radial-gradient(520px 300px at 20% 0%, rgba(var(--gold-rgb),.28), transparent 70%),
+              radial-gradient(480px 300px at 90% 100%, rgba(var(--rose-rgb),.16), transparent 70%);
+}
+.cta-banner > *{position:relative;}
+.cta-banner h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(30px,4.2vw,50px); line-height:1.1; margin:0 0 14px; letter-spacing:-.01em;}
+.cta-banner h2 em{font-style:italic; color:var(--gold);}
+.cta-banner p{margin:0 auto 30px; max-width:480px; font-size:15.5px; line-height:1.6; color:var(--text-soft);}
+.cta-fine{display:block; margin-top:18px; font-size:12px; color:var(--text-faint);}
+.cta-banner .btn-primary{padding:18px 36px;}
+
+@media (prefers-reduced-motion: reduce){
+  .sv-ring,.sv-halo,.sv-pulse-track,.art-anim-a,.art-anim-b,.art-flow{animation:none !important;}
+  html.js-on .reveal{opacity:1; transform:none; transition:none;}
+}
+</style>
+</head>
+<body>
+<script src="nav.js"></script>
+
+
+<main id="top">
+
+  <!-- ================= 1. HERO ================= -->
+  <section class="sci-hero" aria-labelledby="sci-h1">
+    <div class="container sci-hero-inner">
+
+      <div class="sci-copy">
+        <span class="sci-eyebrow reveal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6.2L4.6 18.4A2 2 0 006.3 21.5h11.4a2 2 0 001.7-3.1L14 9.2V3"/><path d="M7.5 14h9"/></svg>The NIKORA Science</span>
+        <h1 class="sci-title reveal" id="sci-h1">Engineered for <em>Visible Glow.</em> Backed by Clinical Science.</h1>
+        <p class="sci-sub reveal">Discover how 630nm Red Light Therapy and EMS Microcurrents revitalize cellular regeneration in 5-minute daily routines.</p>
+        <div class="sci-ctas reveal">
+          <a class="btn-primary" href="catalog.html">Explore Devices <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn-ghost" href="#technologies">How it works</a>
+        </div>
+      </div>
+
+      <!-- Interactive visual card -->
+      <div class="sci-visual glass-card reveal" id="sci-visual">
+        <div class="sv-stage" aria-hidden="true">
+          <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" focusable="false">
+            <defs>
+              <radialGradient id="svOrb" cx="50%" cy="50%" r="50%">
+                <stop offset="0" style="stop-color:var(--rose);stop-opacity:.85"/>
+                <stop offset="1" style="stop-color:var(--rose);stop-opacity:0"/>
+              </radialGradient>
+            </defs>
+
+            <!-- scene 1: 630nm red light -->
+            <g class="sv-scene on" data-scene="0">
+              <circle cx="200" cy="112" r="96" fill="url(#svOrb)"/>
+              <circle class="sv-ring" cx="200" cy="112" r="74"/>
+              <circle class="sv-ring" cx="200" cy="112" r="74"/>
+              <circle class="sv-ring" cx="200" cy="112" r="74"/>
+              <circle class="sv-orb-core" cx="200" cy="112" r="9"/>
+              <path class="sv-wave soft" d="M-40 214 Q-2.5 164 35 214 T110 214 T185 214 T260 214 T335 214 T410 214 T485 214"/>
+              <path class="sv-wave" d="M0 222 Q37.5 172 75 222 T150 222 T225 222 T300 222 T375 222 T450 222"/>
+              <text class="sv-text" x="18" y="30">Deep red light</text>
+            </g>
+
+            <!-- scene 2: EMS microcurrent pulse train -->
+            <g class="sv-scene" data-scene="1">
+              <g class="sv-grid">
+                <line x1="0" y1="90" x2="400" y2="90"/><line x1="0" y1="150" x2="400" y2="150"/><line x1="0" y1="210" x2="400" y2="210"/>
+                <line x1="100" y1="0" x2="100" y2="300"/><line x1="200" y1="0" x2="200" y2="300"/><line x1="300" y1="0" x2="300" y2="300"/>
+              </g>
+              <g class="sv-pulse-track">
+                <path class="sv-pulse" d="M-120 150 H-90 V90 H-70 V150 H-40 V210 H-20 V150 H0 H30 V90 H50 V150 H80 V210 H100 V150 H120 H150 V90 H170 V150 H200 V210 H220 V150 H240 H270 V90 H290 V150 H320 V210 H340 V150 H360 H390 V90 H410 V150 H440 V210 H460 V150 H480 H510"/>
+              </g>
+              <text class="sv-text" x="18" y="30">EMS microcurrent</text>
+            </g>
+
+            <!-- scene 3: non-invasive & UV-free -->
+            <g class="sv-scene" data-scene="2">
+              <circle class="sv-halo" cx="200" cy="150" r="88"/>
+              <circle class="sv-halo" cx="200" cy="150" r="88" style="animation-delay:2s"/>
+              <path class="sv-shield" d="M200 58 L272 88 V150 C272 196 238 226 200 244 C162 226 128 196 128 150 V88 Z"/>
+              <path class="sv-check" d="M168 152 L192 176 L236 126"/>
+              <text class="sv-text" x="18" y="30">Gentle by design</text>
+            </g>
+          </svg>
+          <div class="sv-readout">
+            <span class="sv-big" id="sv-big">630nm</span>
+            <span class="sv-cap" id="sv-cap">Wave Range</span>
+          </div>
+        </div>
+
+        <p class="sv-desc" id="sv-desc">Deep-red 630nm light energizes the cells that build collagen and elastin.</p>
+
+        <div class="sv-chips" role="tablist" aria-label="Key technology stats">
+          <button type="button" class="sv-chip" role="tab" data-i="0" aria-selected="true"><b>630nm</b><span>Wave Range</span></button>
+          <button type="button" class="sv-chip" role="tab" data-i="1" aria-selected="false"><b>3.3Hz</b><span>EMS Pulse</span></button>
+          <button type="button" class="sv-chip" role="tab" data-i="2" aria-selected="false"><b>100%</b><span>Non-Invasive</span></button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= 2. CORE TECHNOLOGIES ================= -->
+  <section class="section" id="technologies" aria-labelledby="tech-h2" style="padding-top:clamp(30px,4vw,50px);">
+    <div class="container">
+      <div class="section-head reveal">
+        <div>
+          <h2 id="tech-h2">Three technologies. <em>One ritual.</em></h2>
+          <p>Each NIKORA device layers proven technologies so a five-minute routine does the work of an appointment. Select a pillar to explore it.</p>
+        </div>
+      </div>
+
+      <div class="pillar-grid" role="tablist" aria-label="Core technologies">
+        <button type="button" class="glass-card pillar-tab reveal" role="tab" id="tab-light" aria-controls="panel-light" aria-selected="true" data-pillar="light">
+          <span class="pillar-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></span>
+          <span class="pillar-num">Pillar 01</span>
+          <span class="pillar-name">Red Light Phototherapy</span>
+          <span class="pillar-tag">Collagen stimulation and visible wrinkle reduction.</span>
+        </button>
+        <button type="button" class="glass-card pillar-tab reveal" role="tab" id="tab-ems" aria-controls="panel-ems" aria-selected="false" data-pillar="ems" tabindex="-1">
+          <span class="pillar-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h4l2.5-7 4 14 3-9 1.5 2H22"/></svg></span>
+          <span class="pillar-num">Pillar 02</span>
+          <span class="pillar-name">EMS Microcurrents</span>
+          <span class="pillar-tag">Facial muscle toning and a more lifted look.</span>
+        </button>
+        <button type="button" class="glass-card pillar-tab reveal" role="tab" id="tab-warmth" aria-controls="panel-warmth" aria-selected="false" data-pillar="warmth" tabindex="-1">
+          <span class="pillar-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s6 6.2 6 10.5A6 6 0 016 13.5C6 9.2 12 3 12 3z"/><path d="M9.5 14.5a2.5 2.5 0 002.5 2.5"/></svg></span>
+          <span class="pillar-num">Pillar 03</span>
+          <span class="pillar-name">Therapeutic Warmth &amp; Sonic Massage</span>
+          <span class="pillar-tag">Lymphatic drainage and deeper serum absorption.</span>
+        </button>
+      </div>
+
+      <!-- panel 1 -->
+      <div class="glass-card pillar-panel reveal" role="tabpanel" id="panel-light" aria-labelledby="tab-light">
+        <div class="pp-grid">
+          <div>
+            <div class="pp-kicker">Red Light Phototherapy &middot; 630nm</div>
+            <h3 class="pp-title">Wake up the cells that <em>build collagen.</em></h3>
+            <p class="pp-text">Low-level red light at 630nm reaches the upper layers of skin and energizes fibroblasts, the cells responsible for collagen and elastin. With consistent use, skin looks firmer, smoother and more even.</p>
+            <ul class="pp-list">
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Stimulates collagen and elastin production</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Visibly softens fine lines and wrinkles</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Restores a more radiant, even-looking complexion</li>
+            </ul>
+            <div class="pp-specs"><span class="pp-spec">630nm wavelength</span><span class="pp-spec">5 min / day</span><span class="pp-spec">UV-free</span></div>
+          </div>
+          <div class="pp-art" aria-hidden="true">
+            <svg viewBox="0 0 240 240" focusable="false">
+              <rect class="art-fill-r" x="34" y="14" width="172" height="14" rx="7"/>
+              <path class="art-r art-flow" d="M70 36 V112 M120 36 V112 M170 36 V112"/>
+              <path class="art-fill" d="M0 118 Q60 102 120 118 T240 118 V162 Q180 176 120 162 T0 162 Z"/>
+              <path class="art-s" d="M0 204 Q60 220 120 204 T240 204"/>
+              <circle class="art-fill-r" cx="64" cy="140" r="9"/>
+              <circle class="art-fill-r" cx="120" cy="146" r="9"/>
+              <circle class="art-fill-r" cx="176" cy="140" r="9"/>
+              <circle class="art-r art-anim-a" cx="120" cy="146" r="30"/>
+              <circle class="art-r art-anim-b" cx="120" cy="146" r="30"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- panel 2 -->
+      <div class="glass-card pillar-panel" role="tabpanel" id="panel-ems" aria-labelledby="tab-ems" hidden>
+        <div class="pp-grid">
+          <div>
+            <div class="pp-kicker">EMS Microcurrents &middot; 3.3Hz</div>
+            <h3 class="pp-title">A workout for your face, <em>without effort.</em></h3>
+            <p class="pp-text">Gentle microcurrents echo the body&rsquo;s own bioelectric signals, helping facial muscles contract and release. The result is better tone and a lifted, defined contour with no needles and no downtime.</p>
+            <ul class="pp-list">
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tones and lifts facial muscles</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Defines the jawline and cheek contours</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Comfortable, non-invasive sensation</li>
+            </ul>
+            <div class="pp-specs"><span class="pp-spec">3.3Hz pulse</span><span class="pp-spec">Non-invasive</span><span class="pp-spec">No downtime</span></div>
+          </div>
+          <div class="pp-art" aria-hidden="true">
+            <svg viewBox="0 0 240 240" focusable="false">
+              <path class="art-fill" d="M62 62 C62 142 92 190 120 196 C148 190 178 142 178 62 C178 34 150 22 120 22 C90 22 62 34 62 62 Z"/>
+              <path class="art-r art-flow" d="M88 166 Q104 132 104 96"/>
+              <path class="art-r art-flow" d="M152 166 Q136 132 136 96"/>
+              <circle class="art-r art-anim-a" cx="88" cy="112" r="22"/>
+              <circle class="art-r art-anim-b" cx="152" cy="112" r="22"/>
+              <circle class="art-fill-r" cx="88" cy="112" r="5"/>
+              <circle class="art-fill-r" cx="152" cy="112" r="5"/>
+              <path class="art-s" d="M20 224 H64 L72 208 L84 238 L94 214 L102 224 H220"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- panel 3 -->
+      <div class="glass-card pillar-panel" role="tabpanel" id="panel-warmth" aria-labelledby="tab-warmth" hidden>
+        <div class="pp-grid">
+          <div>
+            <div class="pp-kicker">Therapeutic Warmth &amp; Sonic Massage</div>
+            <h3 class="pp-title">Release, drain and <em>absorb.</em></h3>
+            <p class="pp-text">Soothing warmth relaxes the skin while sonic vibrations encourage lymphatic flow, easing the look of puffiness and helping your serums absorb more effectively into the skin.</p>
+            <ul class="pp-list">
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Encourages lymphatic drainage</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Helps serums absorb deeper</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Relaxes facial tension and reduces the look of puffiness</li>
+            </ul>
+            <div class="pp-specs"><span class="pp-spec">Gentle warmth</span><span class="pp-spec">Sonic vibration</span><span class="pp-spec">Serum-ready</span></div>
+          </div>
+          <div class="pp-art" aria-hidden="true">
+            <svg viewBox="0 0 240 240" focusable="false">
+              <path class="art-fill" d="M120 36 C120 36 176 98 176 134 A56 56 0 0 1 64 134 C64 98 120 36 120 36 Z"/>
+              <path class="art-s" d="M92 138 A28 28 0 0 0 120 166"/>
+              <path class="art-r art-flow" d="M34 108 Q16 136 34 164"/>
+              <path class="art-r art-flow" d="M16 92 Q-6 136 16 180"/>
+              <path class="art-r art-flow" d="M206 108 Q224 136 206 164"/>
+              <path class="art-r art-flow" d="M224 92 Q246 136 224 180"/>
+              <circle class="art-s art-anim-a" cx="120" cy="134" r="40"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 3. CLINICAL RESULTS & METRICS ================= -->
+  <section class="section" id="results" aria-labelledby="res-h2" style="padding-top:clamp(30px,4vw,50px);">
+    <div class="container">
+      <div class="section-head reveal">
+        <div>
+          <h2 id="res-h2">Results you can <em>see.</em> Numbers you can trust.</h2>
+          <p>What consistent five-minute routines with NIKORA technology deliver.</p>
+        </div>
+      </div>
+
+      <div class="metric-grid">
+        <div class="glass-card metric reveal">
+          <div class="metric-top">
+            <div class="metric-num" data-count="94" data-prefix="+" data-suffix="%">+94%</div>
+            <svg class="metric-ring" viewBox="0 0 60 60" aria-hidden="true"><circle class="trk" cx="30" cy="30" r="24"/><circle class="val" cx="30" cy="30" r="24" data-pct="94"/></svg>
+          </div>
+          <p class="metric-label"><strong>Improved Skin Firmness &amp; Elasticity</strong></p>
+        </div>
+        <div class="glass-card metric reveal">
+          <div class="metric-top">
+            <div class="metric-num" data-count="82" data-prefix="-" data-suffix="%">-82%</div>
+            <svg class="metric-ring" viewBox="0 0 60 60" aria-hidden="true"><circle class="trk" cx="30" cy="30" r="24"/><circle class="val" cx="30" cy="30" r="24" data-pct="82"/></svg>
+          </div>
+          <p class="metric-label"><strong>Reduction in Fine Lines</strong> within 4 Weeks</p>
+        </div>
+        <div class="glass-card metric reveal">
+          <div class="metric-top">
+            <div class="metric-num" data-count="98" data-prefix="" data-suffix="%">98%</div>
+            <svg class="metric-ring" viewBox="0 0 60 60" aria-hidden="true"><circle class="trk" cx="30" cy="30" r="24"/><circle class="val" cx="30" cy="30" r="24" data-pct="98"/></svg>
+          </div>
+          <p class="metric-label"><strong>Users Reported Instant Radiance</strong></p>
+        </div>
+      </div>
+      <p class="sci-note">Individual results vary with consistent daily use.</p>
+
+      <!-- comparison -->
+      <div class="glass-card compare reveal" role="table" aria-label="Standard skincare compared with NIKORA Deep-Cell Tech">
+        <div class="compare-head" role="row">
+          <div class="compare-title" role="columnheader">Standard Skincare vs. <em>&nbsp;NIKORA Deep-Cell Tech</em></div>
+          <div class="col-h" role="columnheader"><span>Routine</span><strong>Standard Skincare</strong></div>
+          <div class="col-h nk" role="columnheader"><span>Technology</span><strong>NIKORA Deep-Cell Tech</strong></div>
+        </div>
+
+        <div class="cmp-row" role="row">
+          <div class="cmp-feature" role="rowheader">Depth of action</div>
+          <div class="cmp-cell std" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Works on the skin&rsquo;s surface</div>
+          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Energy reaches deep cell layers</div>
+        </div>
+        <div class="cmp-row" role="row">
+          <div class="cmp-feature" role="rowheader">Collagen support</div>
+          <div class="cmp-cell std" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Topical ingredients only</div>
+          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>630nm light stimulates collagen at the source</div>
+        </div>
+        <div class="cmp-row" role="row">
+          <div class="cmp-feature" role="rowheader">Facial muscle tone</div>
+          <div class="cmp-cell std" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Not addressed</div>
+          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>EMS microcurrents tone and lift</div>
+        </div>
+        <div class="cmp-row" role="row">
+          <div class="cmp-feature" role="rowheader">Lymphatic drainage</div>
+          <div class="cmp-cell std" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Manual massage, if any</div>
+          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Warmth and sonic massage</div>
+        </div>
+        <div class="cmp-row" role="row">
+          <div class="cmp-feature" role="rowheader">Serum absorption</div>
+          <div class="cmp-cell std" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Limited by the skin barrier</div>
+          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Boosted by warmth and sonic vibration</div>
+        </div>
+        <div class="cmp-row" role="row">
+          <div class="cmp-feature" role="rowheader">Daily time</div>
+          <div class="cmp-cell std" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Multi-step routine</div>
+          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>5-minute daily routine</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 4. DERMATOLOGIST ENDORSEMENT ================= -->
+  <section class="section" id="expert" aria-labelledby="exp-h2" style="padding-top:clamp(30px,4vw,50px);">
+    <div class="container">
+      <div class="section-head reveal">
+        <div>
+          <h2 id="exp-h2">Trusted by <em>skin experts.</em></h2>
+          <p>Safety and efficacy, in a dermatologist&rsquo;s own words.</p>
+        </div>
+      </div>
+
+      <div class="glass-card expert reveal">
+        <figure class="expert-quote" style="margin:0;">
+          <svg class="q-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 6C4.9 7.3 3.5 9.5 3.5 12.4V18h6.2v-6H6.6c.1-1.6.9-2.8 2.4-3.6L7.2 6zm9.5 0c-2.3 1.3-3.7 3.5-3.7 6.4V18h6.2v-6h-3.1c.1-1.6.9-2.8 2.4-3.6L16.7 6z"/></svg>
+          <blockquote>Used as directed, at-home red light and EMS devices are a safe, gentle and genuinely effective way to support collagen and a firmer-looking complexion. They are non-invasive, UV-free, and easy enough to use every day.</blockquote>
+          <figcaption class="expert-by">
+            <span class="expert-avatar"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
+            <span>
+              <p class="expert-name">Licensed Dermatologist</p>
+              <p class="expert-role">On home-use LED &amp; EMS devices</p>
+            </span>
+          </figcaption>
+        </figure>
+        <div class="expert-side">
+          <h3>What dermatologists look for</h3>
+          <div class="expert-point"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Non-invasive, needle-free treatment</div>
+          <div class="expert-point"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Zero UV exposure</div>
+          <div class="expert-point"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Gentle enough for consistent daily use</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 5. SAFETY & CERTIFICATION ================= -->
+  <section class="section" id="safety" aria-labelledby="safe-h2" style="padding-top:clamp(30px,4vw,50px);">
+    <div class="container">
+      <div class="section-head reveal">
+        <div>
+          <h2 id="safe-h2">Safety is <em>built in.</em></h2>
+          <p>Every NIKORA device is designed around recognized safety standards.</p>
+        </div>
+      </div>
+
+      <div class="cert-grid">
+        <div class="glass-card cert reveal">
+          <span class="cert-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg></span>
+          <h3>FDA-Cleared Technology</h3>
+          <p>Built on FDA-cleared light therapy standards.</p>
+        </div>
+        <div class="glass-card cert reveal">
+          <span class="cert-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="M8.5 14.5L7 22l5-3 5 3-1.5-7.5"/></svg></span>
+          <h3>CE Certified</h3>
+          <p>Meets European safety and conformity requirements.</p>
+        </div>
+        <div class="glass-card cert reveal">
+          <span class="cert-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/><path d="M3 3l18 18"/></svg></span>
+          <h3>100% UV-Free</h3>
+          <p>Zero ultraviolet exposure, ever.</p>
+        </div>
+        <div class="glass-card cert reveal">
+          <span class="cert-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 11c0 5.6-7 10-7 10z"/><path d="M9 11.5l2 2 3.5-4"/></svg></span>
+          <h3>Dermatologist Approved</h3>
+          <p>Reviewed for safe, effective home use.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 6. CLOSING CTA ================= -->
+  <section class="section" style="padding-top:clamp(30px,4vw,50px);" aria-labelledby="cta-h2">
+    <div class="container">
+      <div class="glass-card cta-banner reveal">
+        <h2 id="cta-h2">Ready to Transform Your <em>Skin Routine?</em></h2>
+        <p>Five minutes a day. Clinically informed technology. Visible glow.</p>
+        <a class="btn-primary" href="catalog.html">Shop the Collection <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <span class="cta-fine">Free Express Shipping on orders over $50</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="site">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <a href="index.html" class="logo" style="font-size:22px;">NIK<em>ora</em></a>
+        <p style="margin-top:14px;">Smart care. Instant glow. Beauty tech designed around the routine you actually have time for.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Shop</h5>
+        <a href="catalog.html">Full Catalog</a>
+        <a href="index.html">Home</a>
+        <a href="index.html#reviews">Verified Reviews</a>
+      </div>
+      <div class="footer-col">
+        <h5>Support</h5>
+        <a href="index.html#track">Track Order</a>
+        <a href="index.html#guarantee">Guarantee</a>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <a href="science.html">Science</a>
+        <a href="mailto:hello@nikora.com">Contact Support</a>
+        <p>hello@nikora.com</p>
+        <p>Mon&ndash;Sun, 8am&ndash;10pm EST</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 NIKORA. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ================= CART DRAWER ================= -->
+<div class="cart-overlay" id="cart-overlay"></div>
+<div id="cart-drawer" aria-label="Shopping cart">
+  <div class="cart-head">
+    <h3>Your Bag</h3>
+    <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="ship-progress-wrap">
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Add $50.00 more to unlock FREE Express Shipping</div>
+    <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
+  </div>
+  <div class="cart-items" id="cart-items-list"></div>
+  <div class="cart-recs-section" id="cart-recs-section">
+    <div class="cart-recs-head">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-9M14 17H5M17 3l3 4-3 4M7 21l-3-4 3-4"/></svg>
+      Frequently Bought Together
+    </div>
+    <div class="cart-recs-grid" id="cart-recs-grid"></div>
+  </div>
+  <div class="cart-foot">
+    <div class="promo-box" id="promo-box">
+      <button type="button" class="promo-toggle" id="promo-toggle" aria-expanded="false" aria-controls="promo-body"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.4"/></svg><span>Have a promo code?</span><svg class="promo-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="promo-body" id="promo-body">
+        <div class="promo-form">
+          <input type="text" id="promo-input" placeholder="Enter code" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" aria-label="Promo code">
+          <button type="button" class="promo-apply" id="promo-apply"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Apply</button>
+        </div>
+      </div>
+      <div class="promo-msg" id="promo-msg" role="status" aria-live="polite"></div>
+      <div class="promo-active" id="promo-active" hidden></div>
+    </div>
+    <div class="cart-sub-row"><span>Subtotal</span><strong id="cart-subtotal">$0.00</strong></div>
+    <div class="cart-sub-row cart-discount-row" id="cart-discount-row" hidden><span id="cart-discount-label"></span><span id="cart-discount-amount"></span></div>
+    <div class="cart-sub-row cart-total-row" id="cart-total-row" hidden><span>Total</span><strong id="cart-total">$0.00</strong></div>
+    <button type="button" class="cart-checkout" id="checkout-btn" onclick="window.location.href='checkout.html'">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+      Secure Checkout
+    </button>
+    <div class="trust-badges" id="cart-trust-badges"></div>
+  </div>
+</div>
+
+
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span id="toast-text"></span></div>
+
+<script>
+/* ---------------- Safe storage (falls back to memory if blocked) ---------------- */
+/* ================= 1. SAFE STORAGE WRAPPER (iframe-safe) =================
+   Every localStorage/sessionStorage call is wrapped in try/catch so a
+   SecurityError thrown inside a sandboxed preview iframe never halts
+   script execution — it falls back to an in-memory object instead. */
+var safeStorage = {
+  getItem: function(key){
+    try { return localStorage.getItem(key); }
+    catch(e) { return window['_mem_' + key] || null; }
+  },
+  setItem: function(key, val){
+    try { localStorage.setItem(key, val); }
+    catch(e) { window['_mem_' + key] = val; }
+  },
+  removeItem: function(key){
+    try { localStorage.removeItem(key); }
+    catch(e) { delete window['_mem_' + key]; }
+  }
+};
+var safeSession = {
+  getItem: function(key){
+    try { return sessionStorage.getItem(key); }
+    catch(e) { return window['_smem_' + key] || null; }
+  },
+  setItem: function(key, val){
+    try { sessionStorage.setItem(key, val); }
+    catch(e) { window['_smem_' + key] = val; }
+  },
+  removeItem: function(key){
+    try { sessionStorage.removeItem(key); }
+    catch(e) { delete window['_smem_' + key]; }
+  }
+};
+
+/* ================= FIREBASE REALTIME SYNC =================
+   '/products' is shared with catalog.html / product.html. This page's
+   card overrides are keyed by their static slug (e.g. "wand"), which
+   never collides with the numeric ids ("1".."11") those two pages use
+   in the same object. '/reviews/home' holds this page's general
+   testimonials — they aren't tied to one product id, so "home" is used
+   as a stand-in productId for this shared path. Firebase is the source
+   of truth when reachable; 'nikora_products' / 'nikora_reviews' remain
+   local caches so the page still works fully offline or if Firebase
+   fails to load. */
+var firebaseConfig = {
+  apiKey: "AIzaSyCCHdCGRQCiKdeHRkC4e6bnvrMwUIq80TY",
+  authDomain: "nikora-store.firebaseapp.com",
+  databaseURL: "https://nikora-store-default-rtdb.firebaseio.com",
+  projectId: "nikora-store",
+  storageBucket: "nikora-store.firebasestorage.app",
+  messagingSenderId: "840991674151",
+  appId: "1:840991674151:web:f656f83210d412684ee302",
+  measurementId: "G-EDM84G1JPG"
+};
+var firebaseReady = false;
+var db = null;
+try{
+  if(typeof firebase !== 'undefined'){
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    firebaseReady = true;
+  }
+}catch(e){
+  console.warn('Firebase unavailable — continuing on local data only.', e);
+  firebaseReady = false;
+}
+
+
+var FREE_SHIP_THRESHOLD = 50;
+var SHIP_COST = 4.99;
+
+function escapeHtml(str){
+  var div = document.createElement('div');
+  div.textContent = str == null ? '' : str;
+  return div.innerHTML;
+}
+
+/* ================= UNIFIED CART MODULE (identical on index / catalog / product) =================
+   - Cart lives in localStorage 'nikora_cart' as [{id,title,price,qty}] and is mirrored to
+     Firebase '/carts/<cartId>' (last-write-wins by timestamp) so every page and tab stays in sync.
+   - Thumbnails + "Frequently Bought Together" come live from Firebase '/products'.
+   - Drawer close (X button, overlay, Escape) uses delegated listeners so it can never be lost
+     when the drawer's contents are re-rendered. */
+var NK_FREE_SHIP = 50;
+var NK_MAX_RECS = 8;
+var NK_SCROLL_SPEED = 28;   /* carousel auto-scroll, px per second */
+var NK_ICONS = {
+  minus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>',
+  plus:  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>',
+  image: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg>',
+  truck: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>'
+};
+
+/* Fallback pool so the recommendations strip is NEVER empty (used until Firebase '/products' answers, or if it fails/is empty). */
+var NK_FALLBACK = [
+  { id:'1',  name:'NIKORA RED Light & EMS Facial Wand 4-in-1', price:34.99, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
+  { id:'2',  name:'3D EMS Gua Sha Sculptor', price:24.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400' },
+  { id:'3',  name:'Hydro-Vacuum Pore Cleaner', price:29.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
+  { id:'4',  name:'LED Therapy Mask 7-in-1 Pro', price:49.99, category:'LED Therapy', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
+  { id:'5',  name:'EMS Body Sculptor RF', price:59.99, category:'Body Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'6',  name:'Sonic Eye Massager', price:19.99, category:'Eye Care', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
+  { id:'7',  name:'Ultrasonic Skin Scrubber', price:24.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
+  { id:'8',  name:'Thermal Neck & Face Massager', price:39.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' }
+];
+
+function nkEsc(str){
+  var d = document.createElement('div');
+  d.textContent = str == null ? '' : str;
+  return d.innerHTML;
+}
+
+/* ---- product data (normalises catalog {name,img}, index overrides {title,imgUrl}, product {images[]}) ---- */
+function nkNormalize(p, key){
+  if(!p || typeof p !== 'object' || p._deleted) return null;
+  var name = p.name || p.title;
+  var price = Number(p.price);
+  if(!name || !(price > 0)) return null;
+  var img = (Array.isArray(p.images) && p.images[0]) || p.img || p.imgUrl || '';
+  return { id: String(p.id != null ? p.id : key), name: String(name), price: price, img: String(img || ''), category: p.category || '' };
+}
+function nkListFromObject(obj){
+  var out = [];
+  Object.keys(obj || {}).forEach(function(k){ var n = nkNormalize(obj[k], k); if(n) out.push(n); });
+  return out;
+}
+var NK_PRODUCTS = (typeof ALL_PRODUCTS !== 'undefined' && ALL_PRODUCTS)
+  ? ALL_PRODUCTS.map(function(p){ return nkNormalize(p, p && p.id); }).filter(Boolean)
+  : [];
+function nkFind(id){
+  for(var i=0;i<NK_PRODUCTS.length;i++){ if(NK_PRODUCTS[i].id === String(id)) return NK_PRODUCTS[i]; }
+  if(typeof resolveProduct === 'function'){ try{ var rp = nkNormalize(resolveProduct(id), id); if(rp) return rp; }catch(e){} }
+  for(var j=0;j<NK_FALLBACK.length;j++){ if(NK_FALLBACK[j].id === String(id)) return NK_FALLBACK[j]; }
+  return null;
+}
+function nkThumb(img, alt){
+  return img ? '<img src="' + nkEsc(img) + '" alt="' + nkEsc(alt) + '" loading="lazy" draggable="false">' : NK_ICONS.image;
+}
+
+/* ---- cart storage + Firebase mirror ---- */
+var NK_CART_REF = null;
+function nkCartId(){
+  var id = safeStorage.getItem('nikora_cart_id');
+  if(!id){
+    id = 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    safeStorage.setItem('nikora_cart_id', id);
+  }
+  return id;
+}
+function getCart(){
+  try{ var c = JSON.parse(safeStorage.getItem('nikora_cart')); return Array.isArray(c) ? c : []; }
+  catch(e){ return []; }
+}
+function nkPushCart(cart, ts){
+  if(!NK_CART_REF) return;
+  try{
+    NK_CART_REF.set({ items: cart, updatedAt: ts }).catch(function(err){ console.warn('Firebase cart write failed', err); });
+  }catch(e){ console.warn('Firebase cart write failed', e); }
+}
+function saveCart(cart){
+  var ts = Date.now();
+  safeStorage.setItem('nikora_cart', JSON.stringify(cart));
+  safeStorage.setItem('nikora_cart_ts', String(ts));
+  nkPushCart(cart, ts);
+}
+function nkCleanItems(raw){
+  var arr = Array.isArray(raw) ? raw : (raw && typeof raw === 'object' ? Object.keys(raw).map(function(k){ return raw[k]; }) : []);
+  return arr.filter(function(i){ return i && i.id != null && i.title && Number(i.price) >= 0 && Number(i.qty) > 0; })
+            .map(function(i){ return { id: String(i.id), title: String(i.title), price: Number(i.price), qty: Math.floor(Number(i.qty)) }; });
+}
+function nkSyncCartFromFirebase(){
+  if(typeof firebaseReady === 'undefined' || !firebaseReady) return;
+  try{
+    NK_CART_REF = db.ref('carts/' + nkCartId());
+    NK_CART_REF.on('value', function(snap){
+      var v = snap.val();
+      var localTs = Number(safeStorage.getItem('nikora_cart_ts')) || 0;
+      if(!v){                                   /* nothing in the cloud yet: publish what we have */
+        var lc = getCart();
+        if(lc.length) nkPushCart(lc, localTs || Date.now());
+        return;
+      }
+      var remoteTs = Number(v.updatedAt) || 0;
+      if(remoteTs > localTs){                   /* newer cloud copy (other tab / page): adopt it */
+        safeStorage.setItem('nikora_cart', JSON.stringify(nkCleanItems(v.items)));
+        safeStorage.setItem('nikora_cart_ts', String(remoteTs));
+        renderCart();
+      } else if(localTs > remoteTs){            /* local copy is newer: publish it */
+        nkPushCart(getCart(), localTs);
+      }
+    }, function(err){ console.warn('Firebase cart sync error — using local cart.', err); });
+  }catch(e){ console.warn('Firebase cart sync unavailable', e); }
+}
+
+/* ---- cart actions ---- */
+function bumpCartBadge(){
+  var badge = document.getElementById('cart-count');
+  if(!badge) return;
+  badge.classList.remove('bump');
+  void badge.offsetWidth;
+  badge.classList.add('bump');
+}
+/* Silent add: no drawer, no toast. */
+function cartAdd(id, title, price, qty){
+  id = String(id);
+  var cart = getCart(), found = null;
+  for(var i=0;i<cart.length;i++){ if(String(cart[i].id) === id){ found = cart[i]; break; } }
+  if(found){ found.qty += (qty || 1); } else { cart.push({ id: id, title: title, price: Number(price), qty: qty || 1 }); }
+  saveCart(cart);
+  renderCart();
+}
+/* Card / CTA add: adds, confirms, and opens the drawer. */
+window.addToCart = function(id, title, price){
+  cartAdd(id, title, price, 1);
+  bumpCartBadge();
+  showToast(title + ' added to your bag.');
+  openCart();
+};
+/* Recommendation add: adds WITHOUT closing or re-opening the drawer. */
+function addRecommended(id){
+  var p = nkFind(id);
+  if(!p) return;
+  cartAdd(p.id, p.name, p.price, 1);
+  bumpCartBadge();
+  showToast(p.name + ' added to your bag.');
+}
+function changeQty(id, delta){
+  var cart = getCart(), item = null;
+  for(var i=0;i<cart.length;i++){ if(String(cart[i].id) === String(id)){ item = cart[i]; break; } }
+  if(!item) return;
+  item.qty += delta;
+  if(item.qty <= 0){ cart = cart.filter(function(c){ return String(c.id) !== String(id); }); }
+  saveCart(cart);
+  renderCart();
+}
+function removeFromCart(id){
+  saveCart(getCart().filter(function(c){ return String(c.id) !== String(id); }));
+  renderCart();
+}
+
+/* ---- recommendations carousel ---- */
+var NK_CAR = { raf: 0, pos: 0, last: 0, hover: false, touching: false, resumeAt: 0, bound: false };
+var NK_REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+function nkCarouselPeriod(g){
+  if(g.getAttribute('data-loop') !== '1') return 0;
+  var gap = parseFloat(getComputedStyle(g).columnGap) || 12;
+  return (g.scrollWidth + gap) / 2;      /* the card set is rendered twice; one set = one loop */
+}
+function nkCarouselStep(ts){
+  var drawer = document.getElementById('cart-drawer');
+  var g = document.getElementById('cart-recs-grid');
+  if(!drawer || !g || !drawer.classList.contains('active') || NK_REDUCED){ NK_CAR.raf = 0; return; }
+  var dt = NK_CAR.last ? Math.min(64, ts - NK_CAR.last) : 16;
+  NK_CAR.last = ts;
+  var period = nkCarouselPeriod(g);
+  if(period > 0){
+    var busy = NK_CAR.hover || NK_CAR.touching || Date.now() < NK_CAR.resumeAt || g.contains(document.activeElement);
+    if(busy){ NK_CAR.pos = g.scrollLeft; }                        /* user is in control: just track */
+    else{
+      NK_CAR.pos += NK_SCROLL_SPEED * dt / 1000;
+      if(NK_CAR.pos >= period) NK_CAR.pos -= period;              /* seamless wrap */
+      g.scrollLeft = NK_CAR.pos;
+    }
+  }
+  NK_CAR.raf = requestAnimationFrame(nkCarouselStep);
+}
+function nkCarouselStart(){
+  if(NK_CAR.raf || NK_REDUCED) return;
+  NK_CAR.last = 0;
+  NK_CAR.raf = requestAnimationFrame(nkCarouselStep);
+}
+function nkCarouselBind(){
+  var g = document.getElementById('cart-recs-grid');
+  if(!g || NK_CAR.bound) return;
+  NK_CAR.bound = true;
+  function hold(ms){ NK_CAR.resumeAt = Date.now() + ms; }
+  g.addEventListener('mouseenter', function(){ NK_CAR.hover = true; });
+  g.addEventListener('mouseleave', function(){ NK_CAR.hover = false; hold(400); });
+  g.addEventListener('touchstart', function(){ NK_CAR.touching = true; }, { passive: true });
+  g.addEventListener('touchend', function(){ NK_CAR.touching = false; hold(2500); }, { passive: true });
+  g.addEventListener('touchcancel', function(){ NK_CAR.touching = false; hold(2500); }, { passive: true });
+  g.addEventListener('wheel', function(){ hold(2500); }, { passive: true });
+  g.addEventListener('pointerdown', function(){ hold(2500); });
+  g.addEventListener('scroll', function(){                        /* manual swipes also loop seamlessly */
+    var period = nkCarouselPeriod(g);
+    if(period > 0 && g.scrollLeft >= period){ g.scrollLeft -= period; }
+  }, { passive: true });
+}
+
+function renderCartRecs(cart){
+  var section = document.getElementById('cart-recs-section');
+  var grid = document.getElementById('cart-recs-grid');
+  if(!section || !grid) return;
+
+  var excluded = {};
+  cart.forEach(function(c){ excluded[String(c.id)] = true; });
+  var current = (typeof CURRENT_PRODUCT !== 'undefined' && CURRENT_PRODUCT) ? CURRENT_PRODUCT : null;
+  if(current) excluded[String(current.id)] = true;               /* product page: skip the item being viewed */
+
+  var pool = NK_PRODUCTS.length ? NK_PRODUCTS : NK_FALLBACK;
+  var candidates = pool.filter(function(p){ return !excluded[p.id]; });
+  if(current && current.category){
+    candidates = candidates.filter(function(p){ return p.category === current.category; })
+      .concat(candidates.filter(function(p){ return p.category !== current.category; }));
+  }
+  var picks = candidates.slice(0, NK_MAX_RECS);
+
+  section.style.display = 'block';                               /* the recommendations section is NEVER hidden */
+  if(!picks.length){
+    grid.removeAttribute('data-loop');
+    grid.scrollLeft = 0;
+    grid.innerHTML = '<div class="cart-recs-done">You\u2019ve added everything in the collection \u2014 a complete routine.</div>';
+    return;
+  }
+
+  function card(p, clone){
+    return '<div class="cart-rec-card"' + (clone ? ' aria-hidden="true"' : '') + '>' +
+      '<div class="cart-rec-thumb">' + nkThumb(p.img, p.name) + '</div>' +
+      '<div class="cart-rec-title">' + nkEsc(p.name) + '</div>' +
+      '<div class="cart-rec-price">$' + p.price.toFixed(2) + '</div>' +
+      '<button type="button" class="cart-rec-add" data-action="add-rec" data-id="' + nkEsc(p.id) + '"' + (clone ? ' tabindex="-1"' : '') + ' aria-label="Add ' + nkEsc(p.name) + ' to bag">' + NK_ICONS.plus + 'Add</button>' +
+    '</div>';
+  }
+  var first = picks.map(function(p){ return card(p, false); }).join('');
+  var viewW = grid.clientWidth || 372;
+  var loops = !NK_REDUCED && picks.length * 142 > viewW;         /* only loop when the strip actually overflows */
+  var prev = grid.scrollLeft;
+  grid.innerHTML = loops ? first + picks.map(function(p){ return card(p, true); }).join('') : first;
+  if(loops) grid.setAttribute('data-loop', '1'); else grid.removeAttribute('data-loop');
+  grid.scrollLeft = loops ? prev : 0;                            /* adding an item must not snap the strip back */
+  NK_CAR.pos = grid.scrollLeft;
+  nkCarouselStart();
+}
+
+function renderCart(){
+  var cart = getCart();
+  var wrap = document.getElementById('cart-items-list');
+  var subtotal = 0, count = 0;
+
+  if(!cart.length){
+    wrap.innerHTML = '<div class="cart-empty">Your bag is empty. Add a favorite below to start your routine:</div>';
+  } else {
+    wrap.innerHTML = cart.map(function(item){
+      var price = Number(item.price) || 0;
+      subtotal += price * item.qty;
+      count += item.qty;
+      var prod = nkFind(item.id);
+      var id = nkEsc(item.id);
+      return '<div class="cart-item">' +
+        '<div class="ci-thumb">' + nkThumb(prod && prod.img, item.title) + '</div>' +
+        '<div class="ci-info">' +
+          '<div class="ci-top">' +
+            '<div><div class="ci-title">' + nkEsc(item.title) + '</div><div class="ci-price">$' + price.toFixed(2) + ' each</div></div>' +
+            '<button type="button" class="ci-remove" data-action="remove-item" data-id="' + id + '" aria-label="Remove ' + nkEsc(item.title) + '">' + NK_ICONS.trash + '</button>' +
+          '</div>' +
+          '<div class="ci-bottom">' +
+            '<div class="qty-ctrl">' +
+              '<button type="button" data-action="qty-dec" data-id="' + id + '" aria-label="Decrease quantity">' + NK_ICONS.minus + '</button>' +
+              '<span>' + item.qty + '</span>' +
+              '<button type="button" data-action="qty-inc" data-id="' + id + '" aria-label="Increase quantity">' + NK_ICONS.plus + '</button>' +
+            '</div>' +
+            '<div class="ci-line-total">$' + (price * item.qty).toFixed(2) + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  document.getElementById('cart-subtotal').textContent = '$' + subtotal.toFixed(2);
+  var promo = nkPromoCalc(subtotal);
+  var discount = promo ? promo.discount : 0;
+  var payable = Math.max(0, subtotal - discount);
+  nkPromoRender(promo, payable);
+  var badge = document.getElementById('cart-count');
+  if(badge) badge.textContent = count;
+
+  var text = document.getElementById('ship-progress-text');
+  var fill = document.getElementById('ship-progress-fill');
+  var unlocked = payable >= NK_FREE_SHIP;
+  fill.style.width = Math.min(100, (payable / NK_FREE_SHIP) * 100) + '%';
+  text.classList.toggle('unlocked', unlocked);
+  fill.classList.toggle('unlocked', unlocked);
+  text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
+    ? 'You\u2019ve unlocked FREE Express Shipping!'
+    : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
+
+  renderCartRecs(cart);
+}
+
+/* ---- open / close (single source of truth for every page) ---- */
+window.openCart = function(){
+  document.getElementById('cart-drawer').classList.add('active');
+  document.getElementById('cart-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  var g = document.getElementById('cart-recs-grid');
+  if(g){ NK_CAR.pos = g.scrollLeft; }
+  nkCarouselStart();
+};
+window.closeCart = function(){
+  var drawer = document.getElementById('cart-drawer');
+  var overlay = document.getElementById('cart-overlay');
+  if(drawer){ drawer.classList.remove('active'); drawer.classList.remove('open'); }
+  if(overlay){ overlay.classList.remove('active'); overlay.classList.remove('open'); }
+  document.body.style.overflow = '';
+};
+
+/* Called once on page load. Everything is delegated, so re-rendering the drawer never breaks it. */
+var NK_CART_READY = false;
+function initCartSync(){
+  if(NK_CART_READY) return;
+  NK_CART_READY = true;
+
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    if(t.closest('.cart-close-btn')){ closeCart(); return; }                              /* X button */
+    if(t.classList && t.classList.contains('cart-overlay')){ closeCart(); return; }       /* dark background */
+    var a = t.closest('#cart-drawer [data-action]');
+    if(!a) return;
+    var act = a.getAttribute('data-action'), id = a.getAttribute('data-id');
+    if(act === 'qty-inc') changeQty(id, 1);
+    else if(act === 'qty-dec') changeQty(id, -1);
+    else if(act === 'remove-item') removeFromCart(id);
+    else if(act === 'add-rec') addRecommended(id);
+  });
+  nkBindPromoAndTools();
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){ closeCart(); nkLightboxClose(); nkModalCloseAll(); }
+  });
+
+  nkCarouselBind();
+
+  if(!NK_PRODUCTS.length && typeof getAllProductsFallback === 'function'){
+    try{ NK_PRODUCTS = getAllProductsFallback().map(function(p){ return nkNormalize(p, p && p.id); }).filter(Boolean); }catch(e){}
+  }
+  if(typeof firebaseReady !== 'undefined' && firebaseReady){
+    db.ref('products').on('value', function(snap){
+      var list = nkListFromObject(snap.val());
+      if(list.length){ NK_PRODUCTS = list; }
+      renderCart();
+    }, function(err){ console.warn('Cart products sync error — using local data.', err); });
+    nkSyncCartFromFirebase();
+    nkPromoInit();
+  } else {
+    NK_PROMOS = nkClone(NK_PROMO_FALLBACK); NK_PROMOS_LOADED = true;
+  }
+  renderCart();
+}
+
+
+/* ================= PROMO CODES =================
+   Firebase '/promocodes/<CODE>' = { code, type:'percent'|'fixed', value, active, expiresAt? (ms) }.
+   The applied code (just the name) is kept in localStorage 'nikora_promo' and is re-validated
+   against live data on every render. NOTE: this discount is a client-side display; the checkout
+   step must re-validate the code before charging. */
+var NK_PROMO_FALLBACK = { GLOW10: { code:'GLOW10', type:'percent', value:10, active:true } };
+var NK_PROMOS = null, NK_PROMOS_LOADED = false, NK_PROMO_REF = null, NK_PROMO_OPEN = false, NK_PROMO_NOTE = '';
+function nkClone(o){ return JSON.parse(JSON.stringify(o)); }
+function nkPromoKey(s){ return String(s == null ? '' : s).toUpperCase().replace(/[^A-Z0-9_-]/g, ''); }
+function nkPromoMap(obj){
+  var out = {};
+  Object.keys(obj || {}).forEach(function(k){
+    var p = obj[k]; if(!p || typeof p !== 'object') return;
+    var code = nkPromoKey(p.code || k); if(!code) return;
+    out[code] = { code: code, type: p.type === 'fixed' ? 'fixed' : 'percent', value: Number(p.value) || 0,
+                  active: p.active !== false, expiresAt: p.expiresAt ? Number(p.expiresAt) : 0 };
+  });
+  return out;
+}
+function nkPromoStatus(p){
+  if(!p || p.active === false || !(p.value > 0)) return 'invalid';
+  if(p.expiresAt && Date.now() > p.expiresAt) return 'expired';
+  return 'ok';
+}
+function nkPromoDesc(p){ return p.type === 'percent' ? (p.value + '% OFF') : ('$' + Number(p.value).toFixed(2) + ' OFF'); }
+function nkMoney(n){ return '$' + (Math.round(n * 100) / 100).toFixed(2); }
+function nkPromoApplied(){ return nkPromoKey(safeStorage.getItem('nikora_promo')); }
+
+function nkPromoCalc(subtotal){
+  var code = nkPromoApplied();
+  if(!code || !NK_PROMOS_LOADED) return null;
+  var p = NK_PROMOS && NK_PROMOS[code], st = nkPromoStatus(p);
+  if(st !== 'ok'){                                    /* deleted / expired since it was applied */
+    safeStorage.setItem('nikora_promo', '');
+    NK_PROMO_NOTE = 'Code ' + code + (st === 'expired' ? ' has expired' : ' is no longer valid') + ' and was removed.';
+    return null;
+  }
+  var d = p.type === 'percent' ? subtotal * Math.min(100, p.value) / 100 : p.value;
+  d = Math.min(Math.round(d * 100) / 100, subtotal);
+  return { code: code, promo: p, discount: d };
+}
+function nkPromoMsg(text, kind){
+  var m = document.getElementById('promo-msg'); if(!m) return;
+  m.textContent = text || ''; m.className = 'promo-msg' + (kind ? ' ' + kind : '');
+}
+function nkPromoRender(promo, payable){
+  var box = document.getElementById('promo-box'); if(!box) return;
+  var active = document.getElementById('promo-active'), toggle = document.getElementById('promo-toggle');
+  var applied = !!promo;
+  box.classList.toggle('open', NK_PROMO_OPEN && !applied);
+  toggle.setAttribute('aria-expanded', String(NK_PROMO_OPEN && !applied));
+  toggle.style.display = applied ? 'none' : '';
+  active.hidden = !applied;
+  if(applied){
+    active.innerHTML = '<span class="promo-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.4"/></svg><b>' + nkEsc(promo.code) + '</b><em>' + nkEsc(nkPromoDesc(promo.promo)) + '</em></span>' +
+      '<button type="button" class="promo-remove" id="promo-remove" aria-label="Remove promo code ' + nkEsc(promo.code) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Remove</button>';
+  } else { active.innerHTML = ''; }
+  if(NK_PROMO_NOTE){ nkPromoMsg(NK_PROMO_NOTE, 'err'); NK_PROMO_NOTE = ''; }
+  var row = document.getElementById('cart-discount-row'), tot = document.getElementById('cart-total-row');
+  var show = applied && promo.discount > 0;
+  row.hidden = !show; tot.hidden = !show;
+  if(show){
+    document.getElementById('cart-discount-label').textContent = 'Discount (' + promo.code + ')';
+    document.getElementById('cart-discount-amount').textContent = '-' + nkMoney(promo.discount);
+    document.getElementById('cart-total').textContent = nkMoney(payable);
+  }
+}
+function nkPromoApply(){
+  var input = document.getElementById('promo-input'); if(!input) return;
+  var code = nkPromoKey(input.value);
+  if(!code){ nkPromoMsg('Please enter a promo code.', 'err'); return; }
+  function finish(){
+    var p = NK_PROMOS && NK_PROMOS[code], st = nkPromoStatus(p);
+    if(st === 'expired'){ nkPromoMsg('Sorry, code ' + code + ' has expired.', 'err'); return; }
+    if(st !== 'ok'){ nkPromoMsg('That code isn\u2019t valid. Please check it and try again.', 'err'); return; }
+    safeStorage.setItem('nikora_promo', code);
+    input.value = ''; nkPromoMsg('', '');
+    renderCart();
+    showToast('Promo code ' + code + ' applied (' + nkPromoDesc(p) + ').');
+  }
+  if(NK_PROMOS === null && NK_PROMO_REF){                /* codes still loading: fetch once, then validate */
+    NK_PROMO_REF.once('value').then(function(s){ NK_PROMOS = nkPromoMap(s.val()); NK_PROMOS_LOADED = true; finish(); })
+      .catch(function(){ nkPromoMsg('Could not check the code right now. Please try again.', 'err'); });
+  } else { finish(); }
+}
+function nkPromoRemove(){
+  safeStorage.setItem('nikora_promo', ''); nkPromoMsg('', ''); renderCart();
+}
+function nkPromoInit(){
+  try{
+    NK_PROMO_REF = db.ref('promocodes');
+    NK_PROMO_REF.on('value', function(snap){
+      NK_PROMOS = nkPromoMap(snap.val()); NK_PROMOS_LOADED = true;
+      renderCart();
+    }, function(err){
+      console.warn('Promo codes sync error \u2014 using built-in list.', err);
+      if(NK_PROMOS === null){ NK_PROMOS = nkClone(NK_PROMO_FALLBACK); NK_PROMOS_LOADED = true; renderCart(); }
+    });
+    /* Seed GLOW10 once, only if the list has never been seeded and is empty. */
+    db.ref('promoMeta/seeded').once('value').then(function(s){
+      if(s.val() === true) return;
+      return NK_PROMO_REF.once('value').then(function(ps){
+        if(ps.val()){ return db.ref('promoMeta/seeded').set(true); }
+        return NK_PROMO_REF.child('GLOW10').set({ code:'GLOW10', type:'percent', value:10, active:true, createdAt:Date.now() })
+          .then(function(){ return db.ref('promoMeta/seeded').set(true); });
+      });
+    }).catch(function(e){ console.warn('Promo seed skipped', e); });
+  }catch(e){ NK_PROMOS = nkClone(NK_PROMO_FALLBACK); NK_PROMOS_LOADED = true; }
+}
+
+/* ---- shared modal helpers ---- */
+function nkModalOpen(id){
+  var m = document.getElementById(id); if(!m) return;
+  m.classList.add('active'); m.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
+}
+function nkModalClose(id){
+  var m = document.getElementById(id); if(!m) return;
+  m.classList.remove('active'); m.setAttribute('aria-hidden', 'true');
+  if(!document.querySelector('.nk-modal-overlay.active')) document.body.style.overflow = '';
+}
+function nkModalCloseAll(){
+  Array.prototype.forEach.call(document.querySelectorAll('.nk-modal-overlay.active'), function(m){ nkModalClose(m.id); });
+}
+
+
+/* ---- photo lightbox + image compression (shared) ---- */
+function nkLightboxOpen(src){
+  var box = document.getElementById('nk-lightbox');
+  if(!box){
+    box = document.createElement('div'); box.id = 'nk-lightbox';
+    box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', 'Review photo');
+    box.innerHTML = '<button type="button" class="nk-lightbox-close" aria-label="Close photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><img alt="Review photo">';
+    document.body.appendChild(box);
+  }
+  box.querySelector('img').src = src;
+  box.classList.add('active');
+}
+function nkLightboxClose(){ var b = document.getElementById('nk-lightbox'); if(b) b.classList.remove('active'); }
+/* Resizes to max 900px JPEG so Base64 review photos stay small enough for Realtime Database. */
+function nkCompressImage(file, done, fail, maxDim, quality){
+  if(!file || !/^image\//.test(file.type)){ fail('Please choose an image file.'); return; }
+  if(file.size > 12 * 1024 * 1024){ fail('That image is too large (12 MB max).'); return; }
+  var reader = new FileReader();
+  reader.onerror = function(){ fail('Could not read that image.'); };
+  reader.onload = function(){
+    var img = new Image();
+    img.onerror = function(){ fail('That image format isn\u2019t supported.'); };
+    img.onload = function(){
+      var s = Math.min(1, (maxDim || 900) / Math.max(img.width, img.height));
+      var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s));
+      var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+      done(c.toDataURL('image/jpeg', quality || 0.8));
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function nkSafePhoto(s){ return (typeof s === 'string' && /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(s)) ? s : ''; }
+
+function nkBindPromoAndTools(){
+  document.addEventListener('click', function(e){
+    var t = e.target; if(!t || !t.closest) return;
+    var nkc = t.closest('[data-nk-close]'); if(nkc){ var ov = nkc.closest('.nk-modal-overlay'); if(ov) nkModalClose(ov.id); return; }
+    if(t.classList && t.classList.contains('nk-modal-overlay')){ nkModalClose(t.id); return; }
+    if(t.closest('#promo-toggle')){ NK_PROMO_OPEN = !NK_PROMO_OPEN; var b = document.getElementById('promo-box'); b.classList.toggle('open', NK_PROMO_OPEN); document.getElementById('promo-toggle').setAttribute('aria-expanded', String(NK_PROMO_OPEN)); if(NK_PROMO_OPEN){ var i = document.getElementById('promo-input'); if(i) setTimeout(function(){ i.focus(); }, 30); } return; }
+    if(t.closest('#promo-apply')){ nkPromoApply(); return; }
+    if(t.closest('#promo-remove')){ nkPromoRemove(); return; }
+    var ph = t.closest('.rphoto img, .review-photo img'); if(ph && ph.src){ nkLightboxOpen(ph.src); return; }
+    if(t.id === 'nk-lightbox' || t.closest('.nk-lightbox-close')){ nkLightboxClose(); }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Enter') return;
+    if(e.target && e.target.id === 'promo-input'){ e.preventDefault(); nkPromoApply(); }
+  });
+}
+
+
+/* ================= TRUST BADGES ================= */
+function trustBadgesHtml(){
+  return (
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>30-Day Risk-Free Trial</span>' +
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Free Shipping over $50</span>' +
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>2-Year Warranty</span>'
+  );
+}
+function renderTrustBadges(){
+  var el = document.getElementById('cart-trust-badges');
+  if(el) el.innerHTML = trustBadgesHtml();
+}
+
+
+
+
+/* ======================================================================
+   NIKORA — science.html page logic
+   (cart, promo codes, Firebase sync and trust badges come from the shared
+   modules above; this block adds the page-specific behaviour)
+   ====================================================================== */
+
+/* ---------------- Toast ---------------- */
+var toastTimer;
+function showToast(msg){
+  var toast = document.getElementById('toast');
+  if(!toast) return;
+  document.getElementById('toast-text').textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2600);
+}
+
+/* ---------------- Theme (called by nav.js theme buttons; nav.js keeps its own buttons in sync) ---------------- */
+function setTheme(mode){
+  mode = (mode === 'dark') ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', mode);
+  try{ localStorage.setItem('theme', mode); }catch(e){}
+  safeStorage.setItem('nikora_theme', mode);
+}
+
+
+
+/* ================= SCIENCE PAGE INTERACTIONS ================= */
+var SCI_REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+var SCI_CIRC = 150.8;                                            /* circumference of the r=24 metric rings */
+
+/* ---- hero visual card: three stat callouts drive the animated scene ---- */
+function sciInitVisual(){
+  var root = document.getElementById('sci-visual');
+  if(!root) return;
+  var chips = Array.prototype.slice.call(root.querySelectorAll('.sv-chip'));
+  var scenes = Array.prototype.slice.call(root.querySelectorAll('.sv-scene'));
+  var big = document.getElementById('sv-big'), cap = document.getElementById('sv-cap'), desc = document.getElementById('sv-desc');
+  var DATA = [
+    { big:'630nm', cap:'Wave Range',   desc:'Deep-red 630nm light energizes the cells that build collagen and elastin.' },
+    { big:'3.3Hz', cap:'EMS Pulse',    desc:'A gentle 3.3Hz microcurrent pulse tones and lifts facial muscles.' },
+    { big:'100%',  cap:'Non-Invasive', desc:'No needles, no downtime and no UV \u2014 comfortable enough for every day.' }
+  ];
+  var cur = 0, timer = 0, userPicked = false;
+
+  function show(i){
+    cur = i;
+    chips.forEach(function(c, k){
+      c.setAttribute('aria-selected', k === i ? 'true' : 'false');
+      c.tabIndex = k === i ? 0 : -1;
+    });
+    scenes.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    big.textContent = DATA[i].big;
+    cap.textContent = DATA[i].cap;
+    desc.textContent = DATA[i].desc;
+  }
+  function stop(){ clearInterval(timer); timer = 0; }
+  function start(){
+    if(SCI_REDUCED || userPicked) return;
+    stop();
+    timer = setInterval(function(){ show((cur + 1) % chips.length); }, 4200);
+  }
+  chips.forEach(function(chip, i){
+    chip.addEventListener('click', function(){ userPicked = true; stop(); show(i); });
+    chip.addEventListener('keydown', function(e){
+      var n = -1;
+      if(e.key === 'ArrowRight') n = (i + 1) % chips.length;
+      else if(e.key === 'ArrowLeft') n = (i - 1 + chips.length) % chips.length;
+      else if(e.key === 'Home') n = 0;
+      else if(e.key === 'End') n = chips.length - 1;
+      if(n < 0) return;
+      e.preventDefault(); userPicked = true; stop(); show(n); chips[n].focus();
+    });
+  });
+  root.addEventListener('mouseenter', stop);
+  root.addEventListener('mouseleave', start);
+  root.addEventListener('focusin', stop);
+  document.addEventListener('visibilitychange', function(){ if(document.hidden) stop(); else start(); });
+  show(0);
+  start();
+}
+
+/* ---- core technology pillars (tabs) ---- */
+function sciInitPillars(){
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.pillar-tab'));
+  if(!tabs.length) return;
+  var panels = {};
+  tabs.forEach(function(t){ panels[t.getAttribute('data-pillar')] = document.getElementById(t.getAttribute('aria-controls')); });
+
+  function select(key, byUser){
+    tabs.forEach(function(t){
+      var on = t.getAttribute('data-pillar') === key;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+      var p = panels[t.getAttribute('data-pillar')];
+      if(p) p.hidden = !on;
+    });
+    var shown = panels[key];
+    if(byUser && shown && window.innerWidth <= 860 && shown.scrollIntoView){
+      shown.scrollIntoView({ behavior: SCI_REDUCED ? 'auto' : 'smooth', block: 'nearest' });
+    }
+  }
+  tabs.forEach(function(t, i){
+    t.addEventListener('click', function(){ select(t.getAttribute('data-pillar'), true); });
+    t.addEventListener('keydown', function(e){
+      var n = -1;
+      if(e.key === 'ArrowRight' || e.key === 'ArrowDown') n = (i + 1) % tabs.length;
+      else if(e.key === 'ArrowLeft' || e.key === 'ArrowUp') n = (i - 1 + tabs.length) % tabs.length;
+      else if(e.key === 'Home') n = 0;
+      else if(e.key === 'End') n = tabs.length - 1;
+      if(n < 0) return;
+      e.preventDefault();
+      select(tabs[n].getAttribute('data-pillar'), false);
+      tabs[n].focus();
+    });
+  });
+  select('light', false);
+}
+
+/* ---- animated metric counters + progress rings ---- */
+function sciInitCounters(){
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.metric'));
+  if(!cards.length) return;
+
+  function parts(card){
+    var num = card.querySelector('.metric-num'), ring = card.querySelector('.metric-ring .val');
+    return { num: num, ring: ring,
+      target: Number(num.getAttribute('data-count')) || 0,
+      pre: num.getAttribute('data-prefix') || '', suf: num.getAttribute('data-suffix') || '',
+      pct: ring ? Number(ring.getAttribute('data-pct')) || 0 : 0 };
+  }
+  function setRing(p, pct){ if(p.ring) p.ring.style.strokeDashoffset = (SCI_CIRC * (1 - pct / 100)).toFixed(2); }
+  function finish(p){ p.num.textContent = p.pre + p.target + p.suf; setRing(p, p.pct); }
+  function run(card){
+    var p = parts(card);
+    if(SCI_REDUCED){ finish(p); return; }
+    var t0 = null, dur = 1600;
+    setRing(p, p.pct);
+    function step(ts){
+      if(t0 === null) t0 = ts;
+      var k = Math.min(1, (ts - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      p.num.textContent = p.pre + Math.round(p.target * e) + p.suf;
+      if(k < 1) requestAnimationFrame(step); else finish(p);
+    }
+    requestAnimationFrame(step);
+  }
+
+  if(!('IntersectionObserver' in window)){ cards.forEach(function(c){ finish(parts(c)); }); return; }
+  cards.forEach(function(c){ var p = parts(c); p.num.textContent = p.pre + '0' + p.suf; });   /* count up from zero */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(!en.isIntersecting) return;
+      io.unobserve(en.target);
+      run(en.target);
+    });
+  }, { threshold: 0.35 });
+  cards.forEach(function(c){ io.observe(c); });
+  setTimeout(function(){ cards.forEach(function(c){ var p = parts(c); if(p.num.textContent === p.pre + '0' + p.suf){ io.unobserve(c); run(c); } }); }, 6000);
+}
+
+/* ---- scroll reveal (staggered inside grids); falls back to showing everything ---- */
+function sciInitReveal(){
+  var els = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+  if(!els.length) return;
+
+  function reveal(el, delay){
+    el.style.transitionDelay = delay + 'ms';
+    el.classList.add('in');
+    setTimeout(function(){                          /* hand the element back to its own hover transitions */
+      el.classList.remove('reveal', 'in');
+      el.style.transitionDelay = '';
+    }, delay + 900);
+  }
+  if(!('IntersectionObserver' in window)){ els.forEach(function(el){ reveal(el, 0); }); return; }
+
+  els.forEach(function(el){
+    var sib = el.parentElement ? Array.prototype.indexOf.call(el.parentElement.children, el) : 0;
+    el.setAttribute('data-rd', String(Math.min(sib, 4) * 80));
+  });
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(!en.isIntersecting) return;
+      io.unobserve(en.target);
+      reveal(en.target, Number(en.target.getAttribute('data-rd')) || 0);
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(function(el){ io.observe(el); });
+  setTimeout(function(){ els.forEach(function(el){ if(el.classList.contains('reveal') && !el.classList.contains('in')){ io.unobserve(el); reveal(el, 0); } }); }, 5000);
+}
+
+/* ---- tactile 3D spotlight on the grid cards (same behaviour as index.html) ---- */
+function sciInitTilt(){
+  if(SCI_REDUCED || !(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches)) return;
+  Array.prototype.forEach.call(document.querySelectorAll('.pillar-tab, .metric, .cert'), function(card){
+    if(card.dataset.tactileBound) return;
+    card.dataset.tactileBound = '1';
+    card.addEventListener('mousemove', function(e){
+      var rect = card.getBoundingClientRect();
+      var x = e.clientX - rect.left, y = e.clientY - rect.top;
+      card.style.setProperty('--mouse-x', (x / rect.width * 100) + '%');
+      card.style.setProperty('--mouse-y', (y / rect.height * 100) + '%');
+      card.style.transform = 'perspective(1000px) rotateX(' + (((y / rect.height) - 0.5) * -8) + 'deg) rotateY(' + (((x / rect.width) - 0.5) * 8) + 'deg) scale(0.985)';
+    });
+    card.addEventListener('mouseleave', function(){ card.style.transform = ''; });
+  });
+}
+
+/* ---------------- Init ---------------- */
+function init(){
+  var saved = safeStorage.getItem('theme') || safeStorage.getItem('nikora_theme');
+  setTheme(saved === 'dark' ? 'dark' : 'light');
+
+  renderCart();
+  renderTrustBadges();
+  initCartSync();
+
+
+  sciInitVisual();
+  sciInitPillars();
+  sciInitCounters();
+  sciInitReveal();
+  sciInitTilt();
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+</script>
+</body>
+</html>
