@@ -1,0 +1,2335 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<script>
+/* Anti-flicker: apply the saved theme before first paint ('theme' key, legacy 'nikora_theme' fallback). */
+(function(){
+  try{
+    var saved = localStorage.getItem('theme') || localStorage.getItem('nikora_theme');
+    if(saved === 'light' || saved === 'dark'){ document.documentElement.setAttribute('data-theme', saved); }
+  }catch(e){}
+  /* scroll-reveal is only armed when JS runs, so content is never hidden without it */
+  document.documentElement.classList.add('js-on');
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secure Checkout — NIKORA</title>
+<meta name="description" content="Complete your NIKORA order with free Express insured shipping and our 100-day risk-free guarantee.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Firebase (compat build — plain <script> globals, no bundler/import needed) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<style>
+:root{
+  --canvas:#FAF8F5;
+  --canvas-rgb:250,248,245;
+  --card-bg: rgba(255,255,255,0.65);
+  --card-border: rgba(230,220,210,0.6);
+  --text:#1A1615;
+  --text-soft: rgba(26,22,21,0.62);
+  --text-faint: rgba(26,22,21,0.4);
+  --gold:#C59B56;
+  --gold-rgb:197,155,86;
+  --rose:#D81E5B;
+  --rose-rgb:216,30,91;
+  --line: rgba(26,22,21,0.1);
+  --surface-raised: rgba(255,255,255,0.85);
+  --shadow-ambient: 0 20px 60px -20px rgba(60,45,30,0.18);
+  --success:#2E6B4F;
+  color-scheme: light;
+}
+[data-theme="dark"]{
+  --canvas:#0D0B12;
+  --canvas-rgb:13,11,18;
+  --card-bg: rgba(25,20,32,0.55);
+  --card-border: rgba(255,255,255,0.08);
+  --text:#F7F4F0;
+  --text-soft: rgba(247,244,240,0.64);
+  --text-faint: rgba(247,244,240,0.38);
+  --gold:#E5BA73;
+  --gold-rgb:229,186,115;
+  --rose:#FF527B;
+  --rose-rgb:255,82,123;
+  --line: rgba(255,255,255,0.09);
+  --surface-raised: rgba(30,25,38,0.9);
+  --shadow-ambient: 0 20px 70px -20px rgba(0,0,0,0.6);
+  color-scheme: dark;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+
+/* ================= 1. LIVE ANIMATED GRADIENT BACKGROUND ================= */
+body {
+  background: linear-gradient(-45deg, #FAF7F2, #F8F4F0, #F5EFE6, #FAF7F2);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+  margin:0;
+  color:var(--text);
+  font-family:'Montserrat',sans-serif;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  transition:color .4s ease;
+}
+[data-theme="dark"] body {
+  background: linear-gradient(-45deg, #0D0B12, #170E1B, #2A0F1D, #0D0B12);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@media (prefers-reduced-motion: reduce){
+  body{animation:none;}
+  *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+}
+
+img{max-width:100%;display:block;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+.container{
+  width:100%;
+  max-width:1240px;
+  margin:0 auto;
+  padding:0 clamp(20px,4vw,48px);
+}
+:focus-visible{outline:2px solid var(--rose); outline-offset:3px; border-radius:4px;}
+
+
+
+
+
+
+
+
+/* ---------------- LOGO (footer) ----------------
+   The header, "More" dropdown and mobile drawer are rendered and styled entirely by nav.js. */
+.logo{
+  font-family:'Playfair Display',serif;
+  font-size:26px; letter-spacing:.06em; font-weight:600;
+}
+.logo em{font-style:italic; color:var(--gold);}
+
+.btn-primary{
+  background:var(--text); color:var(--canvas);
+  padding:16px 30px; border-radius:100px; border:none;
+  font-size:13.5px; font-weight:600; letter-spacing:.03em;
+  display:inline-flex; align-items:center; gap:10px;
+  transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s ease;
+  box-shadow:0 12px 30px -12px rgba(26,22,21,0.4);
+}
+.btn-primary:hover{transform:translateY(-2px); box-shadow:0 16px 36px -12px rgba(26,22,21,0.5);}
+.btn-primary svg{width:14px;height:14px;stroke:currentColor;fill:none;transition:transform .25s ease;}
+.btn-primary:hover svg{transform:translateX(3px);}
+.btn-ghost{font-size:13.5px; font-weight:600; color:var(--text); padding:16px 8px; border-bottom:1px solid var(--text); display:inline-flex; align-items:center; gap:8px;}
+
+/* ---------------- SECTION HEADERS ---------------- */
+.section{padding:clamp(60px,8vw,100px) 0;}
+.section-head{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:44px; flex-wrap:wrap;}
+.section-head h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(28px,3.4vw,40px); margin:0; letter-spacing:-.01em;}
+.section-head h2 em{font-style:italic;color:var(--gold);}
+.section-head p{margin:8px 0 0; color:var(--text-soft); font-size:14.5px; max-width:440px;}
+.section-link{font-size:13px; font-weight:600; border-bottom:1px solid var(--text); padding-bottom:2px; white-space:nowrap; background:none; border-left:none; border-right:none; border-top:none;}
+
+/* ================= TACTILE 3D CARD SPOTLIGHT ================= */
+.glass-card{
+  --mouse-x:50%; --mouse-y:50%;
+  position:relative;
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  border-radius:22px;
+  backdrop-filter:blur(20px) saturate(180%);
+  transition:transform .12s ease-out, box-shadow .25s ease;
+  box-shadow:var(--shadow-ambient);
+  transform-style:preserve-3d;
+  will-change:transform;
+}
+.glass-card::after{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:radial-gradient(350px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.45), transparent 70%);
+  opacity:0; transition:opacity .3s ease;
+}
+[data-theme="dark"] .glass-card::after{
+  background:radial-gradient(350px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.14), transparent 70%);
+}
+.glass-card:hover::after{opacity:1;}
+
+/* ---------------- FOOTER ---------------- */
+footer.site{border-top:1px solid var(--line); padding:60px 0 30px; margin-top:20px;}
+.footer-grid{display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; margin-bottom:44px;}
+@media (max-width:760px){ .footer-grid{grid-template-columns:1fr 1fr;} }
+.footer-col h5{font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); font-weight:600; margin:0 0 16px;}
+.footer-col a, .footer-col p{display:block; font-size:13.5px; color:var(--text-soft); margin-bottom:11px; line-height:1.5;}
+.footer-col a:hover{color:var(--text);}
+.footer-bottom{display:flex; justify-content:space-between; align-items:center; padding-top:26px; border-top:1px solid var(--line); font-size:12px; color:var(--text-faint); flex-wrap:wrap; gap:12px;}
+
+/* ================= 3. CLICK-LOCK & OVERLAY CSS FIX ================= */
+.modal-overlay, .cart-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 9998;
+  display: flex; align-items: center; justify-content: center;
+  padding:20px;
+}
+.modal-overlay.active, .cart-overlay.active {
+  opacity: 1; visibility: visible; pointer-events: auto;
+}
+.modal-card, .cart-drawer, .modal-box { z-index: 9999; position: relative; }
+#cart-drawer { z-index: 9999; }
+
+.modal-box, .modal-card{
+  background:var(--surface-raised); border:1px solid var(--card-border); border-radius:22px;
+  width:100%; max-width:440px; padding:36px; max-height:88vh; overflow-y:auto;
+  box-shadow:0 40px 90px -20px rgba(0,0,0,0.5);
+}
+.modal-box.wide{max-width:640px;}
+.modal-close, .close-btn{position:absolute; top:18px; right:18px; background:none; border:none; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background .2s ease; font-size:16px; color:var(--text); cursor:pointer;}
+.modal-close:hover, .close-btn:hover{background:var(--line);}
+.modal-close svg{width:16px;height:16px;stroke:var(--text);}
+.modal-box h3, .modal-card h3{font-family:'Playfair Display',serif; font-size:22px; font-weight:500; margin:0 0 20px;}
+.modal-box .modal-sub{font-size:13px; color:var(--text-soft); margin:0 0 24px;}
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:11.5px; font-weight:600; letter-spacing:.03em; text-transform:uppercase; color:var(--text-faint); margin-bottom:7px;}
+.field input, .field select, .field textarea,
+.modal-card input[type="password"]{
+  width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line);
+  background:rgba(var(--canvas-rgb),0.5); color:var(--text); font-family:inherit; font-size:13.5px;
+  margin-bottom:16px;
+}
+.field textarea{resize:vertical; min-height:70px;}
+.field input:focus, .field select:focus, .field textarea:focus,
+.modal-card input:focus{border-color:var(--gold); outline:none;}
+.field-row{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.form-error{font-size:12.5px; color:var(--rose); margin:-4px 0 14px; display:none;}
+.form-error.show{display:block;}
+.modal-submit, .submit-btn, .primary-btn{
+  width:100%; padding:15px; border-radius:100px; border:none; background:var(--text); color:var(--canvas);
+  font-size:13px; font-weight:600; letter-spacing:.03em; margin-top:8px; cursor:pointer;
+}
+
+/* ---------------- CART DRAWER layout (slide-in panel, not centered) ---------------- */
+#cart-drawer{
+  position:fixed; top:0; right:0; bottom:0; left:auto; margin:0; width:min(420px,100%); background:var(--surface-raised);
+  transform:translateX(100%); transition:transform .35s ease;
+  display:flex; flex-direction:column; border-left:1px solid var(--card-border);
+  max-width:none; padding:0; border-radius:0; box-shadow:none;
+  opacity:1; visibility:visible; pointer-events:none;
+}
+#cart-drawer.active{
+  transform:translateX(0) !important;
+  pointer-events:auto;
+  visibility:visible;
+  display:flex;
+}
+.cart-head{padding:24px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); flex-shrink:0;}
+.cart-head h3{font-family:'Playfair Display',serif; font-size:20px; margin:0; font-weight:500;}
+.cart-close-btn{
+  width:38px; height:38px; border-radius:50%; border:1px solid var(--line); background:var(--card-bg);
+  display:flex; align-items:center; justify-content:center; color:var(--text); cursor:pointer;
+  transition:background .2s ease, border-color .2s ease, transform .15s ease;
+}
+.cart-close-btn:hover{background:var(--line); border-color:var(--gold); transform:rotate(90deg);}
+#cart-drawer svg{fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
+.cart-close-btn svg{width:16px; height:16px; stroke-width:2.2;}
+#cart-drawer{overflow:hidden;}
+.ship-progress-wrap{padding:16px 24px; border-bottom:1px solid var(--line); flex-shrink:0;}
+.ship-progress-text{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-soft); margin-bottom:8px; line-height:1.4;}
+.ship-progress-text svg{width:14px; height:14px; stroke:var(--gold);}
+.ship-progress-text.unlocked{color:var(--success); font-weight:600;}
+.ship-progress-text.unlocked svg{stroke:var(--success);}
+.ship-progress-bar{height:6px; border-radius:100px; background:var(--line); overflow:hidden;}
+.ship-progress-fill{height:100%; background:linear-gradient(90deg,var(--gold),var(--rose)); width:0%; transition:width .4s ease;}
+.ship-progress-fill.unlocked{background:linear-gradient(90deg,var(--success),var(--gold));}
+.cart-items{flex:0 1 auto; overflow-y:auto; padding:6px 24px; min-height:0;}
+.cart-item{display:flex; gap:14px; padding:16px 0; border-bottom:1px solid var(--line);}
+.ci-thumb{width:62px; height:62px; border-radius:12px; overflow:hidden; flex-shrink:0; background:var(--surface-tint,var(--card-bg)); border:1px solid var(--line); display:flex; align-items:center; justify-content:center;}
+.ci-thumb img{width:100%; height:100%; object-fit:cover;}
+.ci-thumb svg{width:22px; height:22px; color:var(--text-faint); stroke-width:1.6;}
+.ci-info{flex:1; min-width:0;}
+.ci-top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+.ci-title{font-size:13px; font-weight:600; line-height:1.35;}
+.ci-price{font-size:12px; color:var(--text-soft); margin-top:3px;}
+.ci-bottom{display:flex; align-items:center; justify-content:space-between; margin-top:10px;}
+.qty-ctrl{display:inline-flex; align-items:center; gap:2px; border:1px solid var(--line); border-radius:100px; padding:2px;}
+.qty-ctrl button{width:26px; height:26px; border-radius:50%; border:none; background:none; color:var(--text); display:flex; align-items:center; justify-content:center; transition:background .2s ease;}
+.qty-ctrl button:hover{background:var(--line);}
+.qty-ctrl button svg{width:12px; height:12px; stroke-width:2.4;}
+.qty-ctrl span{font-size:12.5px; font-weight:600; min-width:22px; text-align:center;}
+.ci-line-total{font-size:13px; font-weight:700; color:var(--gold);}
+.ci-remove{width:30px; height:30px; flex-shrink:0; border-radius:50%; border:1px solid var(--line); background:none; color:var(--text-faint); display:flex; align-items:center; justify-content:center; transition:color .2s ease, border-color .2s ease, background .2s ease;}
+.ci-remove svg{width:14px; height:14px;}
+.ci-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5); background:rgba(225,29,72,.08);}
+.cart-empty{padding:28px 24px 22px; text-align:center; color:var(--text-soft); font-size:13.5px; line-height:1.55;}
+.cart-foot{padding:18px 24px 22px; border-top:1px solid var(--line); flex-shrink:0;}
+
+/* ---------------- IN-CART RECOMMENDATIONS: auto-scrolling horizontal carousel ---------------- */
+.cart-recs-section{border-top:1px solid var(--line); padding:16px 24px 4px; flex-shrink:0;}
+.cart-recs-head{display:flex; align-items:center; gap:7px; font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin-bottom:12px;}
+.cart-recs-head svg{width:14px; height:14px; stroke:var(--gold);}
+.cart-recs-grid{
+  display:flex; gap:12px; overflow-x:auto; overflow-y:hidden; padding-bottom:14px;
+  -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;
+  scrollbar-width:thin; scrollbar-color:var(--line) transparent;
+}
+.cart-recs-grid::-webkit-scrollbar{height:5px;}
+.cart-recs-grid::-webkit-scrollbar-track{background:transparent;}
+.cart-recs-grid::-webkit-scrollbar-thumb{background:var(--line); border-radius:100px;}
+.cart-rec-card{
+  flex:0 0 130px; background:var(--card-bg); border:1px solid var(--card-border);
+  border-radius:14px; padding:10px; display:flex; flex-direction:column; gap:7px;
+}
+.cart-rec-thumb{width:100%; aspect-ratio:4/3; border-radius:10px; overflow:hidden; background:var(--surface-tint,var(--card-bg)); display:flex; align-items:center; justify-content:center;}
+.cart-rec-thumb img{width:100%; height:100%; object-fit:cover; pointer-events:none; -webkit-user-drag:none;}
+.cart-rec-thumb svg{width:24px; height:24px; color:var(--text-faint); stroke-width:1.6;}
+.cart-rec-title{
+  font-size:11.5px; font-weight:600; line-height:1.35; color:var(--text); min-height:2.7em;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.cart-rec-price{font-size:12.5px; font-weight:700; color:var(--gold); font-family:'Playfair Display',serif;}
+.cart-rec-add{
+  display:flex; align-items:center; justify-content:center; gap:4px; margin-top:auto;
+  padding:7px 8px; border-radius:100px; border:1px solid var(--gold); background:transparent; color:var(--gold);
+  font-size:10.5px; font-weight:700; letter-spacing:.02em; cursor:pointer; transition:background .2s ease, color .2s ease;
+}
+.cart-rec-add svg{width:11px; height:11px; stroke-width:2.6;}
+.cart-rec-add:hover{background:var(--gold); color:#241c0f;}
+.cart-sub-row{display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:10px; color:var(--text-soft);}
+.cart-sub-row strong{color:var(--text); font-size:17px;}
+.cart-checkout{
+  width:100%; padding:16px; border-radius:100px; border:none; background:var(--gold); color:#241c0f;
+  font-weight:700; font-size:13.5px; margin-bottom:14px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
+}
+.cart-checkout svg{width:15px; height:15px;}
+.cart-recs-done{font-size:12.5px; color:var(--text-soft); line-height:1.5; padding:4px 0 16px;}
+
+/* ---------------- PROMO CODE (cart footer) ---------------- */
+.cart-sub-row[hidden], .promo-active[hidden]{display:none;}
+.promo-box{margin-bottom:12px;}
+.promo-toggle{
+  width:100%; display:flex; align-items:center; gap:8px; background:none; border:none; padding:2px 0 10px;
+  color:var(--text-soft); font-size:12.5px; font-weight:600; cursor:pointer; text-align:left;
+}
+.promo-toggle:hover{color:var(--text);}
+.promo-toggle svg{width:15px; height:15px; stroke:var(--gold);}
+.promo-toggle .promo-chev{margin-left:auto; width:14px; height:14px; stroke:var(--text-faint); transition:transform .25s ease;}
+.promo-box.open .promo-chev{transform:rotate(180deg);}
+.promo-body{display:none; padding-bottom:6px;}
+.promo-box.open .promo-body{display:block;}
+.promo-form{display:flex; gap:8px;}
+.promo-form input{
+  flex:1; min-width:0; padding:11px 16px; border-radius:100px; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); font:inherit; font-size:13px; letter-spacing:.06em; text-transform:uppercase;
+  outline:none; transition:border-color .2s ease;
+}
+.promo-form input::placeholder{text-transform:none; letter-spacing:0; color:var(--text-faint);}
+.promo-form input:focus{border-color:var(--gold);}
+.promo-apply{
+  display:inline-flex; align-items:center; gap:6px; padding:0 18px; border-radius:100px; border:1px solid var(--gold);
+  background:transparent; color:var(--gold); font-size:12.5px; font-weight:700; cursor:pointer; transition:background .2s ease, color .2s ease;
+}
+.promo-apply svg{width:14px; height:14px; stroke-width:2.4;}
+.promo-apply:hover{background:var(--gold); color:#241c0f;}
+.promo-msg{font-size:11.5px; line-height:1.4; min-height:0; margin-top:6px;}
+.promo-msg:empty{display:none;}
+.promo-msg.err{color:#e11d48;}
+.promo-msg.ok{color:var(--success);}
+.promo-active{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 8px 8px 12px; border-radius:100px; border:1px solid var(--success); background:rgba(46,107,79,.08);}
+.promo-chip{display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--text); min-width:0;}
+.promo-chip svg{width:15px; height:15px; stroke:var(--success);}
+.promo-chip b{letter-spacing:.06em;}
+.promo-chip em{font-style:normal; color:var(--success); font-weight:700;}
+.promo-remove{display:inline-flex; align-items:center; gap:4px; padding:5px 10px; border-radius:100px; border:1px solid var(--line); background:var(--card-bg); color:var(--text-soft); font-size:11px; font-weight:700; cursor:pointer; flex-shrink:0;}
+.promo-remove svg{width:11px; height:11px; stroke-width:2.6;}
+.promo-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5);}
+.cart-discount-row span:last-child{color:var(--success); font-weight:700;}
+.cart-total-row{margin-top:-2px; padding-top:8px; border-top:1px dashed var(--line);}
+.cart-total-row span{color:var(--text); font-weight:600;}
+.cart-total-row strong{color:var(--gold);}
+@media (max-height:900px){ #cart-drawer .trust-badges{display:none;} }
+@media (hover:none){ .promo-form input{font-size:16px;} }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ---------------- PHOTO LIGHTBOX ---------------- */
+#nk-lightbox{
+  position:fixed; inset:0; z-index:10050; display:flex; align-items:center; justify-content:center; padding:24px;
+  background:rgba(10,8,12,.88); opacity:0; visibility:hidden; transition:opacity .25s ease, visibility 0s linear .25s;
+}
+#nk-lightbox.active{opacity:1; visibility:visible;}
+#nk-lightbox img{max-width:min(92vw,900px); max-height:86vh; border-radius:14px; box-shadow:0 30px 80px rgba(0,0,0,.6); object-fit:contain; background:#111;}
+#nk-lightbox .nk-lightbox-close{
+  position:absolute; top:18px; right:18px; width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.1); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+#nk-lightbox .nk-lightbox-close svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round;}
+.review-photo img, .rphoto img{cursor:zoom-in;}
+
+/* ---------------- shared modal / form kit (promo manager, hero image) ---------------- */
+[hidden]{display:none !important;}
+.nk-modal-overlay{
+  position:fixed; inset:0; z-index:10020; display:flex; align-items:center; justify-content:center; padding:20px;
+  background:rgba(10,8,12,.6); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+  opacity:0; visibility:hidden; transition:opacity .25s ease, visibility 0s linear .25s;
+}
+.nk-modal-overlay.active{opacity:1; visibility:visible;}
+.nk-modal-card{
+  position:relative; width:100%; max-width:480px; max-height:90vh; overflow-y:auto;
+  background:var(--surface-raised); color:var(--text); border:1px solid var(--card-border);
+  border-radius:24px; padding:30px 26px 26px; box-shadow:0 30px 80px rgba(0,0,0,.35);
+  transform:translateY(12px); transition:transform .25s ease;
+}
+.nk-modal-overlay.active .nk-modal-card{transform:none;}
+.nk-modal-card h3{font-family:'Playfair Display',serif; font-size:22px; font-weight:500; margin:0 0 6px; padding-right:34px;}
+.nk-modal-sub{font-size:12.5px; color:var(--text-soft); margin:0 0 18px; line-height:1.5;}
+.nk-modal-close{
+  position:absolute; top:14px; right:14px; width:36px; height:36px; border-radius:50%; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+.nk-modal-close svg{width:15px; height:15px; stroke:currentColor; fill:none;}
+.nk-modal-close:hover{border-color:var(--gold);}
+.nk-primary, .nk-ghost{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 20px; border-radius:100px;
+  font-weight:700; font-size:13px; cursor:pointer; transition:background .2s ease, color .2s ease, border-color .2s ease;
+}
+.nk-primary{border:none; background:var(--gold); color:#241c0f;}
+.nk-primary:hover{filter:brightness(1.06);}
+.nk-ghost{border:1px solid var(--line); background:transparent; color:var(--text-soft);}
+.nk-ghost:hover{border-color:var(--gold); color:var(--text);}
+.nk-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;}
+.nk-actions .nk-primary{flex:1;}
+.nk-field{margin-bottom:14px;}
+.nk-lbl{display:block; font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin-bottom:6px;}
+.nk-error{font-size:12px; color:#e11d48; margin:0 0 10px; min-height:0;}
+.nk-error:empty{display:none;}
+/* image field: upload a photo (Base64) or paste a URL, with preview + Remove */
+.nk-img-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.nk-img-btn{
+  display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:100px; border:1px dashed var(--line);
+  color:var(--text-soft); font-size:12.5px; font-weight:600; cursor:pointer; margin:0; text-transform:none; letter-spacing:0;
+  transition:border-color .2s ease, color .2s ease;
+}
+.nk-img-btn:hover{border-color:var(--gold); color:var(--gold);}
+.nk-img-btn svg{width:16px; height:16px; stroke:currentColor; fill:none;}
+.nk-img-or{font-size:11px; color:var(--text-faint);}
+.nk-img-row input[type=text]{
+  flex:1; min-width:150px; box-sizing:border-box; padding:10px 14px; border-radius:100px; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); font:inherit; font-size:13px; outline:none;
+}
+.nk-img-row input[type=text]:focus{border-color:var(--gold);}
+.nk-img-preview{display:none; align-items:center; gap:12px; margin-top:10px;}
+.nk-img-preview.show{display:flex;}
+.nk-img-preview img{width:84px; height:84px; object-fit:cover; border-radius:12px; border:1px solid var(--card-border); background:var(--surface-tint);}
+.nk-img-remove{display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:100px; border:1px solid var(--line); background:var(--card-bg); color:var(--text-soft); font-size:11.5px; font-weight:700; cursor:pointer;}
+.nk-img-remove svg{width:12px; height:12px; stroke:currentColor; fill:none;}
+.nk-img-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5);}
+
+
+
+
+.nk-modal-overlay.active, #nk-lightbox.active{transition:opacity .25s ease, visibility 0s;}
+.trust-badges{display:flex; flex-wrap:wrap; gap:8px; justify-content:center;}
+.trust-badge{display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:600; color:var(--text-soft); border:1px solid var(--line); border-radius:100px; padding:6px 10px;}
+.trust-badge svg{width:13px; height:13px; stroke:var(--gold); fill:none; flex-shrink:0;}
+.icon-inline{display:inline-flex; align-items:center; gap:8px;}
+.icon-inline svg{width:14px; height:14px; stroke:currentColor; fill:none; flex-shrink:0;}
+.drawer-close-btn svg, .close-btn svg, .modal-close svg{width:16px; height:16px; stroke:currentColor; fill:none;}
+.pc-add{display:flex; align-items:center; justify-content:center; gap:8px;}
+.pc-add svg{width:15px; height:15px; stroke:currentColor; fill:none;}
+
+.toast{
+  position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--text); color:var(--canvas); padding:14px 24px; border-radius:100px; font-size:13px; font-weight:500;
+  z-index:3000; opacity:0; pointer-events:none; transition:all .3s ease; display:flex; align-items:center; gap:10px;
+  box-shadow:0 20px 40px -12px rgba(0,0,0,0.4);
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+.toast svg{width:15px;height:15px;stroke:var(--success);fill:none; flex-shrink:0;}
+.visually-hidden{position:absolute; width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
+
+
+html.js-on .reveal{opacity:0; transform:translateY(22px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1);}
+html.js-on .reveal.in{opacity:1; transform:none;}
+
+
+
+.f-hero{position:relative; padding:clamp(60px,8vw,100px) 0 clamp(18px,3vw,30px); overflow:hidden; text-align:center;}
+.f-hero::before{
+  content:""; position:absolute; inset:-20% -10% auto -10%; height:560px; pointer-events:none;
+  background: radial-gradient(600px 380px at 30% 15%, rgba(var(--gold-rgb),0.2), transparent 70%),
+              radial-gradient(520px 340px at 80% 10%, rgba(var(--rose-rgb),0.1), transparent 70%);
+}
+.f-hero .container{position:relative; z-index:1;}
+.f-eyebrow{
+  display:inline-flex; align-items:center; gap:8px; margin-bottom:22px;
+  font-size:11.5px; letter-spacing:.08em; font-weight:700; text-transform:uppercase;
+  color:var(--gold); border:1px solid rgba(var(--gold-rgb),.45); border-radius:100px; padding:7px 14px; background:rgba(var(--gold-rgb),.08);
+}
+.f-eyebrow svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+h1.f-title{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(34px,4.8vw,60px); line-height:1.08; letter-spacing:-.01em; margin:0 auto 20px; max-width:820px;}
+h1.f-title em{font-style:italic; color:var(--gold);}
+.f-sub{font-size:clamp(15.5px,1.4vw,17.5px); line-height:1.65; color:var(--text-soft); max-width:640px; margin:0 auto;}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ---------------- CHIPS + STATUS ---------------- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ---------------- SUPPORT CARD ---------------- */
+.support{max-width:900px; margin:0 auto; padding:clamp(28px,4.4vw,52px); border-radius:32px; display:grid; grid-template-columns:1.2fr .8fr; gap:clamp(24px,4vw,48px); align-items:center; position:relative; overflow:hidden;}
+.support::before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background: radial-gradient(420px 260px at 0% 0%, rgba(var(--gold-rgb),.2), transparent 70%);
+}
+.support > *{position:relative;}
+@media (max-width:760px){ .support{grid-template-columns:1fr; text-align:center;} .support .s-email{margin-left:auto; margin-right:auto;} .support .s-actions{align-items:center;} }
+.support .ico{width:58px; height:58px; border-radius:18px; display:grid; place-items:center; background:rgba(var(--gold-rgb),.14); color:var(--gold); margin-bottom:18px;}
+@media (max-width:760px){ .support .ico{margin-left:auto; margin-right:auto;} }
+.support .ico svg{width:30px; height:30px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;}
+.support h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(24px,3vw,34px); line-height:1.2; margin:0 0 12px;}
+.support h2 em{font-style:italic; color:var(--gold);}
+.support p{margin:0; font-size:14.5px; line-height:1.7; color:var(--text-soft); max-width:460px;}
+.s-email{
+  display:flex; flex-direction:column; gap:6px; margin-top:20px; padding:14px 18px; border-radius:18px; max-width:100%; width:fit-content;
+  background:rgba(var(--gold-rgb),.1); border:1px solid rgba(var(--gold-rgb),.35);
+}
+.s-email .k{font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint);}
+.s-email a{font-family:'Playfair Display',serif; font-size:clamp(17px,2vw,21px); font-weight:500; color:var(--text); word-break:break-all; border-bottom:1px solid rgba(var(--gold-rgb),.6); align-self:flex-start; padding-bottom:1px;}
+.s-email a:hover{color:var(--gold);}
+.s-actions{display:flex; flex-direction:column; gap:12px; align-items:stretch;}
+.s-actions .btn-primary{justify-content:center; padding:17px 26px; white-space:nowrap;}
+.s-actions .btn-primary svg{width:17px; height:17px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:none;}
+.s-actions .btn-primary:hover svg{transform:none;}
+
+.s-hours{font-size:12.5px; color:var(--text-faint); text-align:center; margin-top:2px;}
+
+/* ---------------- CLOSING CTA ---------------- */
+.cta-banner{position:relative; overflow:hidden; text-align:center; border-radius:32px; padding:clamp(44px,7vw,84px) clamp(22px,5vw,60px);}
+.cta-banner::before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background: radial-gradient(520px 300px at 20% 0%, rgba(var(--gold-rgb),.28), transparent 70%),
+              radial-gradient(480px 300px at 90% 100%, rgba(var(--rose-rgb),.16), transparent 70%);
+}
+.cta-banner > *{position:relative;}
+.cta-banner h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(30px,4.2vw,50px); line-height:1.1; margin:0 0 14px; letter-spacing:-.01em;}
+.cta-banner h2 em{font-style:italic; color:var(--gold);}
+.cta-banner p{margin:0 auto 30px; max-width:500px; font-size:15.5px; line-height:1.6; color:var(--text-soft);}
+.cta-fine{display:block; margin-top:18px; font-size:12px; color:var(--text-faint);}
+.cta-banner .btn-primary{padding:18px 36px;}
+
+@media (prefers-reduced-motion: reduce){
+  html.js-on .reveal{opacity:1; transform:none; transition:none;}
+  
+}
+
+/* ---------------- CHECKOUT ---------------- */
+.ck-head{padding:clamp(36px,5vw,64px) 0 clamp(8px,2vw,20px); text-align:center;}
+.ck-head .f-eyebrow{margin-bottom:14px;}
+.ck-head h1{margin:0; font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(34px,5vw,54px); letter-spacing:-.015em; line-height:1.1;}
+.ck-head p{margin:12px auto 0; max-width:520px; font-size:15.5px; line-height:1.65; color:var(--text-soft);}
+.ck-steps{display:flex; justify-content:center; align-items:center; gap:10px; list-style:none; margin:26px 0 0; padding:0; flex-wrap:wrap;}
+.ck-steps li{display:flex; align-items:center; gap:10px; font-size:12.5px; font-weight:600; letter-spacing:.04em; color:var(--text-faint);}
+.ck-steps li + li::before{content:""; width:28px; height:1px; background:var(--line);}
+.ck-steps .n{display:grid; place-items:center; width:24px; height:24px; border-radius:50%; font-size:11.5px; border:1px solid var(--line); background:var(--card-bg);}
+.ck-steps li.active{color:var(--text);}
+.ck-steps li.active .n{background:linear-gradient(135deg,#F3DDB1,var(--gold)); border-color:transparent; color:#241c0f;}
+.ck-steps li.done{color:var(--text-soft);}
+.ck-steps li.done .n{background:rgba(var(--gold-rgb),.18); border-color:rgba(var(--gold-rgb),.5); color:var(--gold);}
+
+.ck-layout{display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,.85fr); gap:clamp(24px,3.4vw,44px); align-items:start;}
+.ck-layout[hidden], .ck-empty[hidden], .ck-success[hidden], .ck-banner[hidden], .ck-err[hidden], [hidden].ck-hide{display:none !important;}
+.ck-main{display:flex; flex-direction:column; gap:20px; min-width:0;}
+.ck-card{padding:clamp(22px,3vw,32px); margin:0; border:0; min-width:0;}
+.ck-card-h{display:flex; align-items:center; gap:12px; margin:0 0 20px; padding:0; font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(19px,2.2vw,23px); letter-spacing:-.005em;}
+.ck-card-h .n{flex:none; display:grid; place-items:center; width:28px; height:28px; border-radius:50%; font-family:'Montserrat',sans-serif; font-size:12px; font-weight:700; color:#241c0f; background:linear-gradient(135deg,#F3DDB1,var(--gold));}
+legend.ck-card-h{float:left; width:100%;} legend.ck-card-h + *{clear:both;}
+
+/* express checkout */
+.ck-express-h{margin:0 0 14px; font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--text-faint); text-align:center;}
+.ck-wallets{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+.ck-wallet{display:flex; align-items:center; justify-content:center; gap:6px; min-height:50px; padding:0 10px; border:1px solid transparent; border-radius:14px; cursor:pointer; font-family:inherit; font-size:15px; font-weight:700; letter-spacing:-.01em; transition:transform .2s ease,box-shadow .2s ease,filter .2s ease;}
+.ck-wallet:hover{transform:translateY(-2px); box-shadow:0 10px 24px -12px rgba(0,0,0,.45); filter:brightness(1.04);}
+.ck-wallet:focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+.ck-wallet svg{width:17px; height:17px;}
+.ck-apple{background:#0d0d0f; color:#fff;}
+.ck-google{background:#fff; color:#3c4043; border-color:#dadce0;}
+.ck-google .g{color:#4285F4; font-weight:800;}
+.ck-paypal{background:#FFC439; color:#003087;}
+.ck-paypal i{font-style:italic; font-weight:800;} .ck-paypal i + i{color:#009cde;}
+.ck-or{display:flex; align-items:center; gap:14px; margin:20px 0 0; font-size:12px; color:var(--text-faint); letter-spacing:.08em; text-transform:uppercase;}
+.ck-or::before, .ck-or::after{content:""; flex:1; height:1px; background:var(--line);}
+
+/* fields */
+.ck-grid{display:grid; gap:16px;}
+.ck-grid.two{grid-template-columns:1fr 1fr;} .ck-grid.three{grid-template-columns:1.1fr 1fr 1fr;}
+.ck-field{display:flex; flex-direction:column; gap:7px; min-width:0;}
+.ck-label{font-size:12.5px; font-weight:600; letter-spacing:.02em; color:var(--text-soft);}
+.ck-label .opt{font-weight:500; color:var(--text-faint);}
+.ck-input, .ck-select, .ck-textarea{width:100%; height:52px; padding:0 16px; border-radius:14px; border:1px solid var(--line); background:var(--card-bg); color:var(--text); font-family:inherit; font-size:15px; transition:border-color .2s ease,box-shadow .2s ease,background .2s ease; -webkit-appearance:none; appearance:none;}
+.ck-textarea{height:auto; min-height:92px; padding:14px 16px; resize:vertical; line-height:1.55;}
+.ck-select{padding-right:42px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 16px center;}
+.ck-input::placeholder, .ck-textarea::placeholder{color:var(--text-faint);}
+.ck-input:hover, .ck-select:hover, .ck-textarea:hover{border-color:rgba(var(--gold-rgb),.5);}
+.ck-input:focus, .ck-select:focus, .ck-textarea:focus{outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(var(--gold-rgb),.2);}
+.ck-input.is-invalid, .ck-select.is-invalid, .ck-textarea.is-invalid{border-color:var(--rose); box-shadow:0 0 0 3px rgba(var(--rose-rgb),.14);}
+.ck-err{margin:0; font-size:12.5px; line-height:1.4; color:var(--rose);}
+.ck-hint{margin:0; font-size:12.5px; line-height:1.5; color:var(--text-faint); display:flex; gap:7px; align-items:flex-start;}
+.ck-hint svg{flex:none; width:14px; height:14px; margin-top:2px; color:var(--gold);}
+.ck-inwrap{position:relative;}
+.ck-brand{position:absolute; right:12px; top:50%; transform:translateY(-50%); padding:4px 9px; border-radius:100px; font-size:11px; font-weight:700; letter-spacing:.04em; color:#241c0f; background:linear-gradient(135deg,#F3DDB1,var(--gold)); pointer-events:none;}
+.ck-inwrap .ck-input.has-brand{padding-right:104px;}
+
+/* payment methods */
+.ck-methods{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:0 0 20px;}
+.ck-method{position:relative; display:block; cursor:pointer;}
+.ck-method input{position:absolute; inset:0; opacity:0; cursor:pointer; margin:0;}
+.ck-method-body{display:flex; align-items:center; gap:12px; padding:16px 18px; border-radius:16px; border:1.5px solid var(--line); background:var(--card-bg); transition:border-color .2s ease,background .2s ease,box-shadow .2s ease;}
+.ck-method:hover .ck-method-body{border-color:rgba(var(--gold-rgb),.55);}
+.ck-method input:focus-visible + .ck-method-body{outline:2px solid var(--gold); outline-offset:3px;}
+.ck-method.is-selected .ck-method-body{border-color:var(--gold); background:rgba(var(--gold-rgb),.1); box-shadow:0 0 0 3px rgba(var(--gold-rgb),.14);}
+.ck-method .ico{flex:none; display:grid; place-items:center; width:38px; height:38px; border-radius:11px; color:var(--gold); background:rgba(var(--gold-rgb),.12);}
+.ck-method .ico svg{width:20px; height:20px;}
+.ck-method .t{display:block; font-size:14px; font-weight:650; line-height:1.3;}
+.ck-method .s{display:block; margin-top:2px; font-size:12px; color:var(--text-faint);}
+.ck-method .dot{margin-left:auto; flex:none; width:18px; height:18px; border-radius:50%; border:1.5px solid var(--line); display:grid; place-items:center;}
+.ck-method.is-selected .dot{border-color:var(--gold);}
+.ck-method.is-selected .dot::after{content:""; width:8px; height:8px; border-radius:50%; background:var(--gold);}
+.ck-panel{padding:20px; border-radius:16px; background:rgba(var(--gold-rgb),.05); border:1px solid var(--line);}
+.ck-panel p{margin:0; font-size:14px; line-height:1.65; color:var(--text-soft);}
+.ck-secure-note{display:flex; align-items:center; gap:8px; margin:16px 0 0; font-size:12.5px; color:var(--text-faint);}
+.ck-secure-note svg{width:15px; height:15px; color:var(--gold); flex:none;}
+
+/* promo */
+.ck-promo-row{display:flex; gap:10px;}
+.ck-promo-row .ck-input{flex:1;}
+.ck-apply{flex:none; padding:0 24px; border-radius:14px; cursor:pointer; font-family:inherit; font-size:14px; font-weight:650; color:var(--text); background:rgba(var(--gold-rgb),.14); border:1px solid rgba(var(--gold-rgb),.45); transition:background .2s ease,border-color .2s ease;}
+.ck-apply:hover{background:rgba(var(--gold-rgb),.26); border-color:var(--gold);}
+.ck-apply:focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+.ck-promo-applied{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border-radius:14px; background:rgba(var(--gold-rgb),.12); border:1px solid rgba(var(--gold-rgb),.5);}
+.ck-promo-applied strong{display:block; font-size:14px; letter-spacing:.06em;}
+.ck-promo-applied span{display:block; margin-top:2px; font-size:12.5px; color:var(--text-soft);}
+.ck-linkbtn{background:none; border:0; padding:6px 4px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; color:var(--gold); text-decoration:underline; text-underline-offset:3px;}
+.ck-linkbtn:focus-visible{outline:2px solid var(--gold); outline-offset:2px; border-radius:4px;}
+.ck-promo-msg{min-height:18px; margin:8px 2px 0; font-size:12.5px;} .ck-promo-msg.err{color:var(--rose);}
+.ck-notes-count{align-self:flex-end; font-size:11.5px; color:var(--text-faint);}
+.ck-divider{height:1px; background:var(--line); margin:22px 0;}
+
+/* submit */
+.ck-banner{padding:14px 18px; border-radius:14px; font-size:14px; line-height:1.55; border:1px solid var(--line);}
+.ck-banner.err{color:var(--rose); background:rgba(var(--rose-rgb),.08); border-color:rgba(var(--rose-rgb),.4);}
+.ck-banner.warn{color:var(--text); background:rgba(var(--gold-rgb),.12); border-color:rgba(var(--gold-rgb),.5);}
+.ck-submit{position:relative; display:flex; align-items:center; justify-content:center; gap:12px; width:100%; min-height:60px; padding:0 28px; border:0; border-radius:100px; cursor:pointer; font-family:inherit; font-size:16px; font-weight:700; letter-spacing:.01em; color:#241c0f;
+  background:linear-gradient(135deg,#F6E7C4 0%,var(--gold) 100%); box-shadow:0 14px 34px -12px rgba(var(--gold-rgb),.85); transition:transform .2s ease,box-shadow .2s ease,opacity .2s ease;}
+.ck-submit:hover:not(:disabled){transform:translateY(-2px); box-shadow:0 20px 40px -12px rgba(var(--gold-rgb),.95);}
+.ck-submit:focus-visible{outline:2px solid var(--gold); outline-offset:4px;}
+.ck-submit:disabled{cursor:progress; opacity:.85;}
+.ck-submit svg{width:19px; height:19px;}
+.ck-submit .sep{opacity:.45;}
+.ck-submit.loading::after{content:""; width:18px; height:18px; border-radius:50%; border:2.5px solid rgba(36,28,15,.25); border-top-color:#241c0f; animation:ckSpin .8s linear infinite;}
+@keyframes ckSpin{to{transform:rotate(360deg);}}
+.ck-legal{margin:14px 0 0; text-align:center; font-size:12.5px; line-height:1.6; color:var(--text-faint);}
+.ck-legal a{color:var(--gold); font-weight:600; text-decoration:none; border-bottom:1px solid rgba(var(--gold-rgb),.4);}
+
+/* summary */
+.ck-summary{position:sticky; top:96px; padding:clamp(22px,2.6vw,30px);}
+.ck-sum-top{display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 16px;}
+.ck-sum-top h2{margin:0; font-family:'Playfair Display',serif; font-weight:500; font-size:22px;}
+.ck-sum-toggle{display:none; cursor:pointer; list-style:none; align-items:center; justify-content:space-between; gap:12px; padding:2px 0 14px; font-size:14px; font-weight:600;}
+.ck-sum-toggle::-webkit-details-marker{display:none;}
+.ck-sum-toggle .l{display:flex; align-items:center; gap:8px; color:var(--gold);}
+.ck-sum-toggle svg{width:16px; height:16px; transition:transform .25s ease;}
+details[open] > .ck-sum-toggle svg{transform:rotate(180deg);}
+.ck-sum-toggle .r{font-family:'Playfair Display',serif; font-size:19px; font-weight:600;}
+.ck-lines{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:16px; max-height:340px; overflow-y:auto; padding-right:4px; scrollbar-width:thin;}
+.ck-line{display:flex; align-items:center; gap:14px;}
+.ck-thumb{position:relative; flex:none; display:grid; place-items:center; width:64px; height:64px; border-radius:14px; background:rgba(var(--gold-rgb),.1); border:1px solid var(--line); color:var(--text-faint);}
+.ck-thumb img{width:100%; height:100%; object-fit:cover; border-radius:13px;}
+.ck-thumb > svg{width:24px; height:24px;}
+.ck-qty{position:absolute; top:-7px; right:-7px; min-width:22px; height:22px; padding:0 6px; border-radius:100px; display:grid; place-items:center; font-size:11.5px; font-weight:700; color:#241c0f; background:linear-gradient(135deg,#F3DDB1,var(--gold)); box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.ck-line-info{flex:1; min-width:0;}
+.ck-line-title{font-size:14px; font-weight:600; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+.ck-line-sub{margin-top:3px; font-size:12.5px; color:var(--text-faint);}
+.ck-line-total{flex:none; font-size:14.5px; font-weight:650;}
+.ck-rows{margin:20px 0 0; padding:18px 0 0; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:12px;}
+.ck-row{display:flex; justify-content:space-between; gap:12px; font-size:14px; color:var(--text-soft);}
+.ck-row span:last-child{color:var(--text); font-weight:600;}
+.ck-row-discount span:last-child{color:var(--gold);}
+.ck-free{color:var(--gold) !important; letter-spacing:.08em; font-size:12.5px;}
+.ck-row-total{align-items:center; margin-top:6px; padding:16px 18px; border-radius:16px; color:var(--text) !important; background:linear-gradient(135deg,rgba(var(--gold-rgb),.26),rgba(var(--gold-rgb),.08)); border:1px solid rgba(var(--gold-rgb),.55);}
+.ck-row-total span:first-child{font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text);}
+.ck-row-total span:last-child{font-family:'Playfair Display',serif; font-size:30px; font-weight:600; letter-spacing:-.01em; line-height:1;
+  background:linear-gradient(135deg,#F3DDB1,var(--gold) 45%,#B5853E); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;}
+.ck-trust{list-style:none; margin:22px 0 0; padding:0; display:flex; flex-direction:column; gap:12px;}
+.ck-trust li{display:flex; align-items:center; gap:12px; font-size:13px; font-weight:500; color:var(--text-soft);}
+.ck-trust .ico{flex:none; display:grid; place-items:center; width:34px; height:34px; border-radius:50%; color:var(--gold); background:rgba(var(--gold-rgb),.12);}
+.ck-trust svg{width:17px; height:17px;}
+
+/* empty state */
+.ck-empty{max-width:560px; margin:0 auto; padding:clamp(34px,5vw,56px); text-align:center;}
+.ck-empty .ico{display:grid; place-items:center; width:64px; height:64px; margin:0 auto 18px; border-radius:50%; color:var(--gold); background:rgba(var(--gold-rgb),.12);}
+.ck-empty .ico svg{width:28px; height:28px;}
+.ck-empty h2{margin:0 0 8px; font-family:'Playfair Display',serif; font-weight:500; font-size:28px;}
+.ck-empty p{margin:0 0 24px; color:var(--text-soft); line-height:1.65;}
+
+/* buttons shared by empty + success */
+.ck-btn{display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:54px; padding:0 30px; border-radius:100px; font-family:inherit; font-size:15px; font-weight:700; text-decoration:none; cursor:pointer; transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease,background .2s ease;}
+.ck-btn svg{width:18px; height:18px;}
+.ck-btn:focus-visible{outline:2px solid var(--gold); outline-offset:4px;}
+.ck-btn-gold{color:#241c0f; background:linear-gradient(135deg,#F6E7C4,var(--gold)); box-shadow:0 14px 34px -12px rgba(var(--gold-rgb),.85);}
+.ck-btn-gold:hover{transform:translateY(-2px); box-shadow:0 20px 40px -12px rgba(var(--gold-rgb),.95);}
+.ck-btn-ghost{color:var(--text); background:var(--card-bg); border:1px solid var(--line);}
+.ck-btn-ghost:hover{border-color:var(--gold); transform:translateY(-2px);}
+
+/* confirmation */
+.ck-success{max-width:940px; margin:0 auto;}
+.ck-done{padding:clamp(28px,5vw,60px); text-align:center;}
+.ck-done-badge{display:grid; place-items:center; width:84px; height:84px; margin:0 auto 22px; border-radius:50%; color:#241c0f; background:radial-gradient(circle at 30% 25%,#F6E7C4,var(--gold)); box-shadow:0 0 0 10px rgba(var(--gold-rgb),.14),0 18px 44px -12px rgba(var(--gold-rgb),.9); animation:ckPop .6s cubic-bezier(.2,.9,.3,1.3) both;}
+.ck-done-badge svg{width:40px; height:40px;}
+.ck-draw{stroke-dasharray:30; stroke-dashoffset:30; animation:ckDraw .6s .35s ease forwards;}
+@keyframes ckPop{from{transform:scale(.5); opacity:0;}to{transform:none; opacity:1;}}
+@keyframes ckDraw{to{stroke-dashoffset:0;}}
+.ck-done-title{margin:0; font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(30px,4.6vw,48px); letter-spacing:-.015em; line-height:1.12; outline:none;}
+.ck-done-sub{margin:12px 0 0; font-size:16px; color:var(--text-soft);}
+.ck-idbox{display:inline-block; margin:30px 0 6px; padding:20px 30px; border-radius:20px; background:linear-gradient(135deg,rgba(var(--gold-rgb),.22),rgba(var(--gold-rgb),.07)); border:1px solid rgba(var(--gold-rgb),.55);}
+.ck-idlabel{display:block; margin:0 0 6px; font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--text-faint);}
+.ck-idrow{display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap;}
+.ck-id{font-family:'Playfair Display',serif; font-size:clamp(32px,5vw,46px); font-weight:600; letter-spacing:.02em; line-height:1.1;
+  background:linear-gradient(135deg,#F3DDB1,var(--gold) 45%,#B5853E); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;}
+.ck-copy{display:inline-flex; align-items:center; gap:7px; padding:8px 14px; border-radius:100px; cursor:pointer; font-family:inherit; font-size:12.5px; font-weight:650; color:var(--text-soft); background:var(--card-bg); border:1px solid var(--line); transition:border-color .2s ease,color .2s ease;}
+.ck-copy:hover{border-color:var(--gold); color:var(--text);}
+.ck-copy:focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+.ck-copy svg{width:15px; height:15px;}
+.ck-done-note{margin:18px auto 0; max-width:520px; font-size:15px; line-height:1.65; color:var(--text-soft);}
+.ck-done-note strong{color:var(--text);}
+.ck-recap{display:grid; grid-template-columns:1.2fr 1fr; gap:clamp(20px,3vw,36px); margin:34px 0 0; padding:clamp(20px,3vw,30px); text-align:left; border-radius:20px; background:rgba(var(--gold-rgb),.05); border:1px solid var(--line);}
+.ck-recap-h{margin:0 0 16px; font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--text-faint); font-family:inherit;}
+.ck-recap-p{margin:0 0 16px; font-size:14px; line-height:1.65; color:var(--text-soft);}
+.ck-recap-p strong{color:var(--text);}
+.ck-recap-k{font-size:12px; color:var(--text-faint);}
+.ck-recap .ck-lines{max-height:none;}
+.ck-done-actions{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin:34px 0 0;}
+.ck-done-help{margin:22px 0 0; font-size:13px; color:var(--text-faint);}
+.ck-done-help a{color:var(--gold); font-weight:600; text-decoration:none; border-bottom:1px solid rgba(var(--gold-rgb),.4);}
+
+@media (max-width:980px){
+  .ck-layout{grid-template-columns:1fr;}
+  .ck-summary{position:static; order:-1; padding:clamp(18px,3vw,26px);}
+  .ck-sum-top{display:none;}
+  .ck-sum-toggle{display:flex;}
+  .ck-recap{grid-template-columns:1fr;}
+}
+@media (max-width:620px){
+  .ck-wallets{grid-template-columns:1fr;}
+  .ck-grid.two, .ck-grid.three{grid-template-columns:1fr;}
+  .ck-grid.three .ck-field:first-child{grid-column:auto;}
+  .ck-methods{grid-template-columns:1fr;}
+  .ck-promo-row{flex-direction:column;} .ck-apply{min-height:50px;}
+  .ck-grid.exp-row{grid-template-columns:1fr 1fr;} .ck-grid.exp-row .ck-field:last-child{grid-column:1 / -1;}
+  .ck-steps li + li::before{width:14px;}
+  .ck-done-actions .ck-btn{width:100%;}
+}
+@media (prefers-reduced-motion:reduce){
+  .ck-done-badge, .ck-draw{animation:none; stroke-dashoffset:0;}
+  .ck-wallet, .ck-submit, .ck-btn{transition:none;}
+}
+</style>
+</head>
+<body>
+<script src="nav.js"></script>
+
+
+<main id="top">
+
+  <!-- ================= HEADER ================= -->
+  <section class="ck-head" aria-labelledby="ck-head-title">
+    <div class="container">
+      <span class="f-eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>Secure Checkout</span>
+      <h1 id="ck-head-title">Secure <em style="font-style:italic;color:var(--gold)">Checkout</em></h1>
+      <p id="ck-head-sub">Complete your order in just a couple of minutes. Free Express insured shipping on every order.</p>
+      <ol class="ck-steps" aria-label="Checkout progress">
+        <li class="done" data-ck-step="1"><span class="n">1</span>Bag</li>
+        <li class="active" data-ck-step="2" aria-current="step"><span class="n">2</span>Details &amp; Payment</li>
+        <li data-ck-step="3"><span class="n">3</span>Confirmation</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:clamp(24px,3vw,40px);" aria-label="Checkout">
+    <div class="container">
+
+      <!-- ===== empty bag ===== -->
+      <div class="glass-card ck-empty" id="ck-empty" hidden>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg></div>
+        <h2>Your bag is empty</h2>
+        <p>Add a favorite to your bag and come back here to check out.</p>
+        <a class="ck-btn ck-btn-gold" href="catalog.html">Shop the Collection</a>
+      </div>
+
+      <!-- ===== checkout ===== -->
+      <div class="ck-layout" id="ck-layout" hidden>
+
+        <form class="ck-main" id="ck-form" novalidate autocomplete="on" aria-label="Checkout form">
+
+          <!-- express checkout -->
+          <section class="glass-card ck-card" aria-labelledby="ck-exp-h">
+            <p class="ck-express-h" id="ck-exp-h">Express checkout</p>
+            <div class="ck-wallets">
+              <button type="button" class="ck-wallet ck-apple" data-wallet="Apple Pay" aria-label="Pay with Apple Pay"><span>Apple Pay</span></button>
+              <button type="button" class="ck-wallet ck-google" data-wallet="Google Pay" aria-label="Pay with Google Pay"><span><span class="g">G</span> Pay</span></button>
+              <button type="button" class="ck-wallet ck-paypal" data-wallet="PayPal" aria-label="Pay with PayPal"><span><i>Pay</i><i>Pal</i></span></button>
+            </div>
+            <div class="ck-or"><span>or continue below</span></div>
+          </section>
+
+          <!-- contact -->
+          <fieldset class="glass-card ck-card">
+            <legend class="ck-card-h"><span class="n">1</span>Contact Information</legend>
+            <div class="ck-field "><label class="ck-label" for="ck-email">Email address</label><input class="ck-input" type="email" id="ck-email" name="ck-email" autocomplete="email" aria-describedby="ck-email-err ck-email-hint" aria-invalid="false" inputmode="email" placeholder="you@example.com" required><p class="ck-hint" id="ck-email-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/></svg>Order confirmation &amp; tracking ID will be sent here</p><p class="ck-err" id="ck-email-err" role="alert" hidden></p></div>
+          </fieldset>
+
+          <!-- shipping -->
+          <fieldset class="glass-card ck-card">
+            <legend class="ck-card-h"><span class="n">2</span>Shipping Address</legend>
+            <div class="ck-grid">
+              <div class="ck-grid two">
+                <div class="ck-field "><label class="ck-label" for="ck-first">First name</label><input class="ck-input" type="text" id="ck-first" name="ck-first" autocomplete="given-name" aria-describedby="ck-first-err" aria-invalid="false" required><p class="ck-err" id="ck-first-err" role="alert" hidden></p></div><div class="ck-field "><label class="ck-label" for="ck-last">Last name</label><input class="ck-input" type="text" id="ck-last" name="ck-last" autocomplete="family-name" aria-describedby="ck-last-err" aria-invalid="false" required><p class="ck-err" id="ck-last-err" role="alert" hidden></p></div>
+              </div>
+              <div class="ck-field "><label class="ck-label" for="ck-address">Street address</label><input class="ck-input" type="text" id="ck-address" name="ck-address" autocomplete="address-line1" aria-describedby="ck-address-err" aria-invalid="false" placeholder="House number and street name" required><p class="ck-err" id="ck-address-err" role="alert" hidden></p></div>
+              <div class="ck-field "><label class="ck-label" for="ck-apt">Apartment, suite, etc. <span class="opt">(optional)</span></label><input class="ck-input" type="text" id="ck-apt" name="ck-apt" autocomplete="address-line2" aria-describedby="ck-apt-err" aria-invalid="false"><p class="ck-err" id="ck-apt-err" role="alert" hidden></p></div>
+              <div class="ck-grid two">
+                <div class="ck-field "><label class="ck-label" for="ck-city">City</label><input class="ck-input" type="text" id="ck-city" name="ck-city" autocomplete="address-level2" aria-describedby="ck-city-err" aria-invalid="false" required><p class="ck-err" id="ck-city-err" role="alert" hidden></p></div><div class="ck-field "><label class="ck-label" for="ck-postal">Postal code</label><input class="ck-input" type="text" id="ck-postal" name="ck-postal" autocomplete="postal-code" aria-describedby="ck-postal-err" aria-invalid="false" required><p class="ck-err" id="ck-postal-err" role="alert" hidden></p></div>
+              </div>
+              <div class="ck-field"><label class="ck-label" for="ck-country">Country</label>
+                <select class="ck-select" id="ck-country" name="ck-country" autocomplete="country-name" aria-describedby="ck-country-err" aria-invalid="false" required><option value="">Select country</option><option value="United States" selected>United States</option><option value="Canada">Canada</option><option value="United Kingdom">United Kingdom</option><option value="Ireland">Ireland</option><option value="Australia">Australia</option><option value="New Zealand">New Zealand</option><option value="Germany">Germany</option><option value="France">France</option><option value="Spain">Spain</option><option value="Italy">Italy</option><option value="Netherlands">Netherlands</option><option value="Belgium">Belgium</option><option value="Switzerland">Switzerland</option><option value="Austria">Austria</option><option value="Sweden">Sweden</option><option value="Norway">Norway</option><option value="Denmark">Denmark</option><option value="Finland">Finland</option><option value="Poland">Poland</option><option value="Czechia">Czechia</option><option value="Portugal">Portugal</option><option value="Greece">Greece</option><option value="Romania">Romania</option><option value="Hungary">Hungary</option><option value="Ukraine">Ukraine</option><option value="Lithuania">Lithuania</option><option value="Latvia">Latvia</option><option value="Estonia">Estonia</option><option value="United Arab Emirates">United Arab Emirates</option><option value="Saudi Arabia">Saudi Arabia</option><option value="Israel">Israel</option><option value="Turkey">Turkey</option><option value="India">India</option><option value="Japan">Japan</option><option value="South Korea">South Korea</option><option value="Singapore">Singapore</option><option value="Hong Kong">Hong Kong</option><option value="Malaysia">Malaysia</option><option value="Thailand">Thailand</option><option value="Philippines">Philippines</option><option value="Indonesia">Indonesia</option><option value="Mexico">Mexico</option><option value="Brazil">Brazil</option><option value="Argentina">Argentina</option><option value="Chile">Chile</option><option value="Colombia">Colombia</option><option value="South Africa">South Africa</option><option value="Egypt">Egypt</option></select>
+                <p class="ck-err" id="ck-country-err" role="alert" hidden></p></div>
+              <div class="ck-field "><label class="ck-label" for="ck-phone">Phone number</label><input class="ck-input" type="tel" id="ck-phone" name="ck-phone" autocomplete="tel" aria-describedby="ck-phone-err" aria-invalid="false" inputmode="tel" placeholder="For delivery updates" required><p class="ck-err" id="ck-phone-err" role="alert" hidden></p></div>
+            </div>
+          </fieldset>
+
+          <!-- payment -->
+          <fieldset class="glass-card ck-card">
+            <legend class="ck-card-h"><span class="n">3</span>Payment Method</legend>
+            <div class="ck-methods" role="radiogroup" aria-label="Payment method">
+              <label class="ck-method is-selected" data-method="card"><input type="radio" name="ck-method" value="card" checked>
+                <span class="ck-method-body"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20M6 15h4"/></svg></span><span><span class="t">Credit / Debit Card</span><span class="s">Visa, Mastercard, Amex</span></span><span class="dot"></span></span></label>
+              <label class="ck-method" data-method="paypal"><input type="radio" name="ck-method" value="paypal">
+                <span class="ck-method-body"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 7a2 2 0 012-2h13v4"/><path d="M3 7v11a2 2 0 002 2h15a1 1 0 001-1v-9a1 1 0 00-1-1H5a2 2 0 01-2-2z"/><circle cx="17" cy="14.5" r="1.2"/></svg></span><span><span class="t">PayPal / Express Pay</span><span class="s">Pay with your wallet</span></span><span class="dot"></span></span></label>
+            </div>
+
+            <div class="ck-panel" id="ck-card-panel">
+              <div class="ck-grid">
+                <div class="ck-field"><label class="ck-label" for="ck-card">Card number</label>
+                  <div class="ck-inwrap"><input class="ck-input" type="text" id="ck-card" name="ck-card-number" inputmode="numeric" autocomplete="cc-number" placeholder="1234 1234 1234 1234" maxlength="23" aria-describedby="ck-card-err" aria-invalid="false"><span class="ck-brand" id="ck-brand" hidden></span></div>
+                  <p class="ck-err" id="ck-card-err" role="alert" hidden></p></div>
+                <div class="ck-grid three exp-row">
+                  <div class="ck-field"><label class="ck-label" for="ck-exp">Expiration</label>
+                    <input class="ck-input" type="text" id="ck-exp" name="ck-exp" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/YY" maxlength="5" aria-describedby="ck-exp-err" aria-invalid="false"><p class="ck-err" id="ck-exp-err" role="alert" hidden></p></div>
+                  <div class="ck-field"><label class="ck-label" for="ck-cvc">CVC</label>
+                    <input class="ck-input" type="text" id="ck-cvc" name="ck-cvc" inputmode="numeric" autocomplete="cc-csc" placeholder="123" maxlength="3" aria-describedby="ck-cvc-err" aria-invalid="false"><p class="ck-err" id="ck-cvc-err" role="alert" hidden></p></div>
+                  <div class="ck-field"><label class="ck-label" for="ck-zip">Billing ZIP</label>
+                    <input class="ck-input" type="text" id="ck-zip" name="ck-zip" autocomplete="billing postal-code" placeholder="ZIP / postal" aria-describedby="ck-zip-err" aria-invalid="false"><p class="ck-err" id="ck-zip-err" role="alert" hidden></p></div>
+                </div>
+              </div>
+              <p class="ck-secure-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>Your card details are checked on this device and are never saved on our servers.</p>
+            </div>
+
+            <div class="ck-panel" id="ck-paypal-panel" hidden>
+              <p>You&rsquo;ve chosen <strong>PayPal</strong>. Review your details and select <strong>Complete Order</strong> to continue with PayPal&rsquo;s secure payment.</p>
+            </div>
+          </fieldset>
+
+          <!-- notes + promo -->
+          <fieldset class="glass-card ck-card">
+            <legend class="ck-card-h"><span class="n">4</span>Order Notes &amp; Promo Code</legend>
+            <div class="ck-field"><label class="ck-label" for="ck-notes">Order notes <span class="opt">(optional)</span></label>
+              <textarea class="ck-textarea" id="ck-notes" name="ck-notes" maxlength="500" placeholder="Delivery instructions, gift message, anything we should know"></textarea>
+              <span class="ck-notes-count" id="ck-notes-count">0/500</span></div>
+            <div class="ck-divider"></div>
+            <div class="ck-field"><label class="ck-label" for="ck-promo-input">Promo code</label>
+              <div id="ck-promo-form"><div class="ck-promo-row">
+                <input class="ck-input" type="text" id="ck-promo-input" name="ck-promo" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Enter code" aria-describedby="ck-promo-msg">
+                <button type="button" class="ck-apply" id="ck-promo-apply">Apply</button></div></div>
+              <div class="ck-promo-applied" id="ck-promo-applied" hidden>
+                <div><strong id="ck-promo-code"></strong><span id="ck-promo-desc"></span></div>
+                <button type="button" class="ck-linkbtn" id="ck-promo-remove">Remove</button></div>
+              <p class="ck-promo-msg" id="ck-promo-msg" role="status" aria-live="polite"></p></div>
+          </fieldset>
+
+          <p class="ck-banner" id="ck-banner" role="alert" hidden></p>
+
+          <div>
+            <button type="submit" class="ck-submit" id="ck-submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg><span id="ck-submit-text">Complete Order</span><span class="sep" aria-hidden="true">&middot;</span><span id="ck-submit-total"></span></button>
+            <p class="ck-legal">By placing your order you agree to our <a href="privacy.html">Privacy Policy &amp; Terms</a>.<br>Questions? <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a></p>
+          </div>
+        </form>
+
+        <!-- ===== order summary ===== -->
+        <aside class="glass-card ck-summary" aria-label="Order summary">
+          <div class="ck-sum-top"><h2>Order Summary</h2></div>
+          <details id="ck-sum-details" open>
+            <summary class="ck-sum-toggle"><span class="l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>Order summary <span id="ck-toggle-count"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg></span><span class="r" id="ck-toggle-total"></span></summary>
+            <ul class="ck-lines" id="ck-lines" role="list"></ul>
+            <p style="margin:14px 0 0"><button type="button" class="ck-linkbtn" id="ck-edit-bag">Edit bag</button></p>
+          </details>
+          <div class="ck-rows">
+            <div class="ck-row"><span>Subtotal</span><span id="ck-subtotal"></span></div>
+            <div class="ck-row ck-row-discount" id="ck-discount-row" hidden><span id="ck-discount-label">Discount</span><span id="ck-discount"></span></div>
+            <div class="ck-row"><span>Express Insured Shipping</span><span class="ck-free">FREE</span></div>
+            <div class="ck-row"><span id="ck-tax-label">Estimated Tax</span><span id="ck-tax"></span></div>
+            <div class="ck-row ck-row-total"><span>Total</span><span id="ck-total"></span></div>
+          </div>
+          <ul class="ck-trust" aria-label="Security and guarantees">
+            <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></span>256-Bit SSL Encrypted Checkout</li>
+            <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg></span>100-Day Risk-Free Money Back Guarantee</li>
+            <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>Express Tracked Delivery</li>
+          </ul>
+        </aside>
+      </div>
+
+      <!-- ===== thank you ===== -->
+      <div class="ck-success" id="ck-success" aria-live="polite" hidden></div>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="site">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <a href="index.html" class="logo" style="font-size:22px;">NIK<em>ora</em></a>
+        <p style="margin-top:14px;">Smart care. Instant glow. Beauty tech designed around the routine you actually have time for.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Shop</h5>
+        <a href="catalog.html">Full Catalog</a>
+        <a href="index.html">Home</a>
+        <a href="reviews.html">Verified Reviews</a>
+      </div>
+      <div class="footer-col">
+        <h5>Support</h5>
+        <a href="track-order.html">Track Order</a>
+        <a href="guarantee.html">Guarantee</a>
+        <a href="returns.html">Start a Return</a>
+        <a href="faq.html">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <a href="science.html">Science</a>
+        <a href="mailto:nikora.support@gmail.com">Contact Support</a>
+        <p>nikora.support@gmail.com</p>
+        <p>Mon&ndash;Sun, 8am&ndash;10pm EST</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 NIKORA. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ================= CART DRAWER ================= -->
+<div class="cart-overlay" id="cart-overlay"></div>
+<div id="cart-drawer" aria-label="Shopping cart">
+  <div class="cart-head">
+    <h3>Your Bag</h3>
+    <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="ship-progress-wrap">
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Add $50.00 more to unlock FREE Express Shipping</div>
+    <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
+  </div>
+  <div class="cart-items" id="cart-items-list"></div>
+  <div class="cart-recs-section" id="cart-recs-section">
+    <div class="cart-recs-head">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-9M14 17H5M17 3l3 4-3 4M7 21l-3-4 3-4"/></svg>
+      Frequently Bought Together
+    </div>
+    <div class="cart-recs-grid" id="cart-recs-grid"></div>
+  </div>
+  <div class="cart-foot">
+    <div class="promo-box" id="promo-box">
+      <button type="button" class="promo-toggle" id="promo-toggle" aria-expanded="false" aria-controls="promo-body"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.4"/></svg><span>Have a promo code?</span><svg class="promo-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="promo-body" id="promo-body">
+        <div class="promo-form">
+          <input type="text" id="promo-input" placeholder="Enter code" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" aria-label="Promo code">
+          <button type="button" class="promo-apply" id="promo-apply"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Apply</button>
+        </div>
+      </div>
+      <div class="promo-msg" id="promo-msg" role="status" aria-live="polite"></div>
+      <div class="promo-active" id="promo-active" hidden></div>
+    </div>
+    <div class="cart-sub-row"><span>Subtotal</span><strong id="cart-subtotal">$0.00</strong></div>
+    <div class="cart-sub-row cart-discount-row" id="cart-discount-row" hidden><span id="cart-discount-label"></span><span id="cart-discount-amount"></span></div>
+    <div class="cart-sub-row cart-total-row" id="cart-total-row" hidden><span>Total</span><strong id="cart-total">$0.00</strong></div>
+    <button type="button" class="cart-checkout" id="checkout-btn" onclick="window.location.href='checkout.html'">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+      Secure Checkout
+    </button>
+    <div class="trust-badges" id="cart-trust-badges"></div>
+  </div>
+</div>
+
+
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span id="toast-text"></span></div>
+
+<script>
+/* ---------------- Safe storage (falls back to memory if blocked) ---------------- */
+/* ================= 1. SAFE STORAGE WRAPPER (iframe-safe) =================
+   Every localStorage/sessionStorage call is wrapped in try/catch so a
+   SecurityError thrown inside a sandboxed preview iframe never halts
+   script execution — it falls back to an in-memory object instead. */
+var safeStorage = {
+  getItem: function(key){
+    try { return localStorage.getItem(key); }
+    catch(e) { return window['_mem_' + key] || null; }
+  },
+  setItem: function(key, val){
+    try { localStorage.setItem(key, val); }
+    catch(e) { window['_mem_' + key] = val; }
+  },
+  removeItem: function(key){
+    try { localStorage.removeItem(key); }
+    catch(e) { delete window['_mem_' + key]; }
+  }
+};
+var safeSession = {
+  getItem: function(key){
+    try { return sessionStorage.getItem(key); }
+    catch(e) { return window['_smem_' + key] || null; }
+  },
+  setItem: function(key, val){
+    try { sessionStorage.setItem(key, val); }
+    catch(e) { window['_smem_' + key] = val; }
+  },
+  removeItem: function(key){
+    try { sessionStorage.removeItem(key); }
+    catch(e) { delete window['_smem_' + key]; }
+  }
+};
+
+/* ================= FIREBASE REALTIME SYNC =================
+   '/products' is shared with catalog.html / product.html. This page's
+   card overrides are keyed by their static slug (e.g. "wand"), which
+   never collides with the numeric ids ("1".."11") those two pages use
+   in the same object. '/reviews/home' holds this page's general
+   testimonials — they aren't tied to one product id, so "home" is used
+   as a stand-in productId for this shared path. Firebase is the source
+   of truth when reachable; 'nikora_products' / 'nikora_reviews' remain
+   local caches so the page still works fully offline or if Firebase
+   fails to load. */
+var firebaseConfig = {
+  apiKey: "AIzaSyCCHdCGRQCiKdeHRkC4e6bnvrMwUIq80TY",
+  authDomain: "nikora-store.firebaseapp.com",
+  databaseURL: "https://nikora-store-default-rtdb.firebaseio.com",
+  projectId: "nikora-store",
+  storageBucket: "nikora-store.firebasestorage.app",
+  messagingSenderId: "840991674151",
+  appId: "1:840991674151:web:f656f83210d412684ee302",
+  measurementId: "G-EDM84G1JPG"
+};
+var firebaseReady = false;
+var db = null;
+try{
+  if(typeof firebase !== 'undefined'){
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    firebaseReady = true;
+  }
+}catch(e){
+  console.warn('Firebase unavailable — continuing on local data only.', e);
+  firebaseReady = false;
+}
+
+
+var FREE_SHIP_THRESHOLD = 50;
+var SHIP_COST = 4.99;
+
+function escapeHtml(str){
+  var div = document.createElement('div');
+  div.textContent = str == null ? '' : str;
+  return div.innerHTML;
+}
+
+/* ================= UNIFIED CART MODULE (identical on index / catalog / product) =================
+   - Cart lives in localStorage 'nikora_cart' as [{id,title,price,qty}] and is mirrored to
+     Firebase '/carts/<cartId>' (last-write-wins by timestamp) so every page and tab stays in sync.
+   - Thumbnails + "Frequently Bought Together" come live from Firebase '/products'.
+   - Drawer close (X button, overlay, Escape) uses delegated listeners so it can never be lost
+     when the drawer's contents are re-rendered. */
+var NK_FREE_SHIP = 50;
+var NK_MAX_RECS = 8;
+var NK_SCROLL_SPEED = 28;   /* carousel auto-scroll, px per second */
+var NK_ICONS = {
+  minus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>',
+  plus:  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>',
+  image: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg>',
+  truck: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>'
+};
+
+/* Fallback pool so the recommendations strip is NEVER empty (used until Firebase '/products' answers, or if it fails/is empty). */
+var NK_FALLBACK = [
+  { id:'1',  name:'NIKORA RED Light & EMS Facial Wand 4-in-1', price:34.99, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
+  { id:'2',  name:'3D EMS Gua Sha Sculptor', price:24.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400' },
+  { id:'3',  name:'Hydro-Vacuum Pore Cleaner', price:29.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
+  { id:'4',  name:'LED Therapy Mask 7-in-1 Pro', price:49.99, category:'LED Therapy', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
+  { id:'5',  name:'EMS Body Sculptor RF', price:59.99, category:'Body Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'6',  name:'Sonic Eye Massager', price:19.99, category:'Eye Care', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
+  { id:'7',  name:'Ultrasonic Skin Scrubber', price:24.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
+  { id:'8',  name:'Thermal Neck & Face Massager', price:39.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' }
+];
+
+function nkEsc(str){
+  var d = document.createElement('div');
+  d.textContent = str == null ? '' : str;
+  return d.innerHTML;
+}
+
+/* ---- product data (normalises catalog {name,img}, index overrides {title,imgUrl}, product {images[]}) ---- */
+function nkNormalize(p, key){
+  if(!p || typeof p !== 'object' || p._deleted) return null;
+  var name = p.name || p.title;
+  var price = Number(p.price);
+  if(!name || !(price > 0)) return null;
+  var img = (Array.isArray(p.images) && p.images[0]) || p.img || p.imgUrl || '';
+  return { id: String(p.id != null ? p.id : key), name: String(name), price: price, img: String(img || ''), category: p.category || '' };
+}
+function nkListFromObject(obj){
+  var out = [];
+  Object.keys(obj || {}).forEach(function(k){ var n = nkNormalize(obj[k], k); if(n) out.push(n); });
+  return out;
+}
+var NK_PRODUCTS = (typeof ALL_PRODUCTS !== 'undefined' && ALL_PRODUCTS)
+  ? ALL_PRODUCTS.map(function(p){ return nkNormalize(p, p && p.id); }).filter(Boolean)
+  : [];
+function nkFind(id){
+  for(var i=0;i<NK_PRODUCTS.length;i++){ if(NK_PRODUCTS[i].id === String(id)) return NK_PRODUCTS[i]; }
+  if(typeof resolveProduct === 'function'){ try{ var rp = nkNormalize(resolveProduct(id), id); if(rp) return rp; }catch(e){} }
+  for(var j=0;j<NK_FALLBACK.length;j++){ if(NK_FALLBACK[j].id === String(id)) return NK_FALLBACK[j]; }
+  return null;
+}
+function nkThumb(img, alt){
+  return img ? '<img src="' + nkEsc(img) + '" alt="' + nkEsc(alt) + '" loading="lazy" draggable="false">' : NK_ICONS.image;
+}
+
+/* ---- cart storage + Firebase mirror ---- */
+var NK_CART_REF = null;
+function nkCartId(){
+  var id = safeStorage.getItem('nikora_cart_id');
+  if(!id){
+    id = 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    safeStorage.setItem('nikora_cart_id', id);
+  }
+  return id;
+}
+function getCart(){
+  try{ var c = JSON.parse(safeStorage.getItem('nikora_cart')); return Array.isArray(c) ? c : []; }
+  catch(e){ return []; }
+}
+function nkPushCart(cart, ts){
+  if(!NK_CART_REF) return;
+  try{
+    NK_CART_REF.set({ items: cart, updatedAt: ts }).catch(function(err){ console.warn('Firebase cart write failed', err); });
+  }catch(e){ console.warn('Firebase cart write failed', e); }
+}
+function saveCart(cart){
+  var ts = Date.now();
+  safeStorage.setItem('nikora_cart', JSON.stringify(cart));
+  safeStorage.setItem('nikora_cart_ts', String(ts));
+  nkPushCart(cart, ts);
+}
+function nkCleanItems(raw){
+  var arr = Array.isArray(raw) ? raw : (raw && typeof raw === 'object' ? Object.keys(raw).map(function(k){ return raw[k]; }) : []);
+  return arr.filter(function(i){ return i && i.id != null && i.title && Number(i.price) >= 0 && Number(i.qty) > 0; })
+            .map(function(i){ return { id: String(i.id), title: String(i.title), price: Number(i.price), qty: Math.floor(Number(i.qty)) }; });
+}
+function nkSyncCartFromFirebase(){
+  if(typeof firebaseReady === 'undefined' || !firebaseReady) return;
+  try{
+    NK_CART_REF = db.ref('carts/' + nkCartId());
+    NK_CART_REF.on('value', function(snap){
+      var v = snap.val();
+      var localTs = Number(safeStorage.getItem('nikora_cart_ts')) || 0;
+      if(!v){                                   /* nothing in the cloud yet: publish what we have */
+        var lc = getCart();
+        if(lc.length) nkPushCart(lc, localTs || Date.now());
+        return;
+      }
+      var remoteTs = Number(v.updatedAt) || 0;
+      if(remoteTs > localTs){                   /* newer cloud copy (other tab / page): adopt it */
+        safeStorage.setItem('nikora_cart', JSON.stringify(nkCleanItems(v.items)));
+        safeStorage.setItem('nikora_cart_ts', String(remoteTs));
+        renderCart();
+      } else if(localTs > remoteTs){            /* local copy is newer: publish it */
+        nkPushCart(getCart(), localTs);
+      }
+    }, function(err){ console.warn('Firebase cart sync error — using local cart.', err); });
+  }catch(e){ console.warn('Firebase cart sync unavailable', e); }
+}
+
+/* ---- cart actions ---- */
+function bumpCartBadge(){
+  var badge = document.getElementById('cart-count');
+  if(!badge) return;
+  badge.classList.remove('bump');
+  void badge.offsetWidth;
+  badge.classList.add('bump');
+}
+/* Silent add: no drawer, no toast. */
+function cartAdd(id, title, price, qty){
+  id = String(id);
+  var cart = getCart(), found = null;
+  for(var i=0;i<cart.length;i++){ if(String(cart[i].id) === id){ found = cart[i]; break; } }
+  if(found){ found.qty += (qty || 1); } else { cart.push({ id: id, title: title, price: Number(price), qty: qty || 1 }); }
+  saveCart(cart);
+  renderCart();
+}
+/* Card / CTA add: adds, confirms, and opens the drawer. */
+window.addToCart = function(id, title, price){
+  cartAdd(id, title, price, 1);
+  bumpCartBadge();
+  showToast(title + ' added to your bag.');
+  openCart();
+};
+/* Recommendation add: adds WITHOUT closing or re-opening the drawer. */
+function addRecommended(id){
+  var p = nkFind(id);
+  if(!p) return;
+  cartAdd(p.id, p.name, p.price, 1);
+  bumpCartBadge();
+  showToast(p.name + ' added to your bag.');
+}
+function changeQty(id, delta){
+  var cart = getCart(), item = null;
+  for(var i=0;i<cart.length;i++){ if(String(cart[i].id) === String(id)){ item = cart[i]; break; } }
+  if(!item) return;
+  item.qty += delta;
+  if(item.qty <= 0){ cart = cart.filter(function(c){ return String(c.id) !== String(id); }); }
+  saveCart(cart);
+  renderCart();
+}
+function removeFromCart(id){
+  saveCart(getCart().filter(function(c){ return String(c.id) !== String(id); }));
+  renderCart();
+}
+
+/* ---- recommendations carousel ---- */
+var NK_CAR = { raf: 0, pos: 0, last: 0, hover: false, touching: false, resumeAt: 0, bound: false };
+var NK_REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+function nkCarouselPeriod(g){
+  if(g.getAttribute('data-loop') !== '1') return 0;
+  var gap = parseFloat(getComputedStyle(g).columnGap) || 12;
+  return (g.scrollWidth + gap) / 2;      /* the card set is rendered twice; one set = one loop */
+}
+function nkCarouselStep(ts){
+  var drawer = document.getElementById('cart-drawer');
+  var g = document.getElementById('cart-recs-grid');
+  if(!drawer || !g || !drawer.classList.contains('active') || NK_REDUCED){ NK_CAR.raf = 0; return; }
+  var dt = NK_CAR.last ? Math.min(64, ts - NK_CAR.last) : 16;
+  NK_CAR.last = ts;
+  var period = nkCarouselPeriod(g);
+  if(period > 0){
+    var busy = NK_CAR.hover || NK_CAR.touching || Date.now() < NK_CAR.resumeAt || g.contains(document.activeElement);
+    if(busy){ NK_CAR.pos = g.scrollLeft; }                        /* user is in control: just track */
+    else{
+      NK_CAR.pos += NK_SCROLL_SPEED * dt / 1000;
+      if(NK_CAR.pos >= period) NK_CAR.pos -= period;              /* seamless wrap */
+      g.scrollLeft = NK_CAR.pos;
+    }
+  }
+  NK_CAR.raf = requestAnimationFrame(nkCarouselStep);
+}
+function nkCarouselStart(){
+  if(NK_CAR.raf || NK_REDUCED) return;
+  NK_CAR.last = 0;
+  NK_CAR.raf = requestAnimationFrame(nkCarouselStep);
+}
+function nkCarouselBind(){
+  var g = document.getElementById('cart-recs-grid');
+  if(!g || NK_CAR.bound) return;
+  NK_CAR.bound = true;
+  function hold(ms){ NK_CAR.resumeAt = Date.now() + ms; }
+  g.addEventListener('mouseenter', function(){ NK_CAR.hover = true; });
+  g.addEventListener('mouseleave', function(){ NK_CAR.hover = false; hold(400); });
+  g.addEventListener('touchstart', function(){ NK_CAR.touching = true; }, { passive: true });
+  g.addEventListener('touchend', function(){ NK_CAR.touching = false; hold(2500); }, { passive: true });
+  g.addEventListener('touchcancel', function(){ NK_CAR.touching = false; hold(2500); }, { passive: true });
+  g.addEventListener('wheel', function(){ hold(2500); }, { passive: true });
+  g.addEventListener('pointerdown', function(){ hold(2500); });
+  g.addEventListener('scroll', function(){                        /* manual swipes also loop seamlessly */
+    var period = nkCarouselPeriod(g);
+    if(period > 0 && g.scrollLeft >= period){ g.scrollLeft -= period; }
+  }, { passive: true });
+}
+
+function renderCartRecs(cart){
+  var section = document.getElementById('cart-recs-section');
+  var grid = document.getElementById('cart-recs-grid');
+  if(!section || !grid) return;
+
+  var excluded = {};
+  cart.forEach(function(c){ excluded[String(c.id)] = true; });
+  var current = (typeof CURRENT_PRODUCT !== 'undefined' && CURRENT_PRODUCT) ? CURRENT_PRODUCT : null;
+  if(current) excluded[String(current.id)] = true;               /* product page: skip the item being viewed */
+
+  var pool = NK_PRODUCTS.length ? NK_PRODUCTS : NK_FALLBACK;
+  var candidates = pool.filter(function(p){ return !excluded[p.id]; });
+  if(current && current.category){
+    candidates = candidates.filter(function(p){ return p.category === current.category; })
+      .concat(candidates.filter(function(p){ return p.category !== current.category; }));
+  }
+  var picks = candidates.slice(0, NK_MAX_RECS);
+
+  section.style.display = 'block';                               /* the recommendations section is NEVER hidden */
+  if(!picks.length){
+    grid.removeAttribute('data-loop');
+    grid.scrollLeft = 0;
+    grid.innerHTML = '<div class="cart-recs-done">You\u2019ve added everything in the collection \u2014 a complete routine.</div>';
+    return;
+  }
+
+  function card(p, clone){
+    return '<div class="cart-rec-card"' + (clone ? ' aria-hidden="true"' : '') + '>' +
+      '<div class="cart-rec-thumb">' + nkThumb(p.img, p.name) + '</div>' +
+      '<div class="cart-rec-title">' + nkEsc(p.name) + '</div>' +
+      '<div class="cart-rec-price">$' + p.price.toFixed(2) + '</div>' +
+      '<button type="button" class="cart-rec-add" data-action="add-rec" data-id="' + nkEsc(p.id) + '"' + (clone ? ' tabindex="-1"' : '') + ' aria-label="Add ' + nkEsc(p.name) + ' to bag">' + NK_ICONS.plus + 'Add</button>' +
+    '</div>';
+  }
+  var first = picks.map(function(p){ return card(p, false); }).join('');
+  var viewW = grid.clientWidth || 372;
+  var loops = !NK_REDUCED && picks.length * 142 > viewW;         /* only loop when the strip actually overflows */
+  var prev = grid.scrollLeft;
+  grid.innerHTML = loops ? first + picks.map(function(p){ return card(p, true); }).join('') : first;
+  if(loops) grid.setAttribute('data-loop', '1'); else grid.removeAttribute('data-loop');
+  grid.scrollLeft = loops ? prev : 0;                            /* adding an item must not snap the strip back */
+  NK_CAR.pos = grid.scrollLeft;
+  nkCarouselStart();
+}
+
+function renderCart(){
+  var cart = getCart();
+  var wrap = document.getElementById('cart-items-list');
+  var subtotal = 0, count = 0;
+
+  if(!cart.length){
+    wrap.innerHTML = '<div class="cart-empty">Your bag is empty. Add a favorite below to start your routine:</div>';
+  } else {
+    wrap.innerHTML = cart.map(function(item){
+      var price = Number(item.price) || 0;
+      subtotal += price * item.qty;
+      count += item.qty;
+      var prod = nkFind(item.id);
+      var id = nkEsc(item.id);
+      return '<div class="cart-item">' +
+        '<div class="ci-thumb">' + nkThumb(prod && prod.img, item.title) + '</div>' +
+        '<div class="ci-info">' +
+          '<div class="ci-top">' +
+            '<div><div class="ci-title">' + nkEsc(item.title) + '</div><div class="ci-price">$' + price.toFixed(2) + ' each</div></div>' +
+            '<button type="button" class="ci-remove" data-action="remove-item" data-id="' + id + '" aria-label="Remove ' + nkEsc(item.title) + '">' + NK_ICONS.trash + '</button>' +
+          '</div>' +
+          '<div class="ci-bottom">' +
+            '<div class="qty-ctrl">' +
+              '<button type="button" data-action="qty-dec" data-id="' + id + '" aria-label="Decrease quantity">' + NK_ICONS.minus + '</button>' +
+              '<span>' + item.qty + '</span>' +
+              '<button type="button" data-action="qty-inc" data-id="' + id + '" aria-label="Increase quantity">' + NK_ICONS.plus + '</button>' +
+            '</div>' +
+            '<div class="ci-line-total">$' + (price * item.qty).toFixed(2) + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  document.getElementById('cart-subtotal').textContent = '$' + subtotal.toFixed(2);
+  var promo = nkPromoCalc(subtotal);
+  var discount = promo ? promo.discount : 0;
+  var payable = Math.max(0, subtotal - discount);
+  nkPromoRender(promo, payable);
+  var badge = document.getElementById('cart-count');
+  if(badge) badge.textContent = count;
+
+  var text = document.getElementById('ship-progress-text');
+  var fill = document.getElementById('ship-progress-fill');
+  var unlocked = payable >= NK_FREE_SHIP;
+  fill.style.width = Math.min(100, (payable / NK_FREE_SHIP) * 100) + '%';
+  text.classList.toggle('unlocked', unlocked);
+  fill.classList.toggle('unlocked', unlocked);
+  text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
+    ? 'You\u2019ve unlocked FREE Express Shipping!'
+    : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
+
+  renderCartRecs(cart);
+}
+
+/* ---- open / close (single source of truth for every page) ---- */
+window.openCart = function(){
+  document.getElementById('cart-drawer').classList.add('active');
+  document.getElementById('cart-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  var g = document.getElementById('cart-recs-grid');
+  if(g){ NK_CAR.pos = g.scrollLeft; }
+  nkCarouselStart();
+};
+window.closeCart = function(){
+  var drawer = document.getElementById('cart-drawer');
+  var overlay = document.getElementById('cart-overlay');
+  if(drawer){ drawer.classList.remove('active'); drawer.classList.remove('open'); }
+  if(overlay){ overlay.classList.remove('active'); overlay.classList.remove('open'); }
+  document.body.style.overflow = '';
+};
+
+/* Called once on page load. Everything is delegated, so re-rendering the drawer never breaks it. */
+var NK_CART_READY = false;
+function initCartSync(){
+  if(NK_CART_READY) return;
+  NK_CART_READY = true;
+
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    if(t.closest('.cart-close-btn')){ closeCart(); return; }                              /* X button */
+    if(t.classList && t.classList.contains('cart-overlay')){ closeCart(); return; }       /* dark background */
+    var a = t.closest('#cart-drawer [data-action]');
+    if(!a) return;
+    var act = a.getAttribute('data-action'), id = a.getAttribute('data-id');
+    if(act === 'qty-inc') changeQty(id, 1);
+    else if(act === 'qty-dec') changeQty(id, -1);
+    else if(act === 'remove-item') removeFromCart(id);
+    else if(act === 'add-rec') addRecommended(id);
+  });
+  nkBindPromoAndTools();
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){ closeCart(); nkLightboxClose(); nkModalCloseAll(); }
+  });
+
+  nkCarouselBind();
+
+  if(!NK_PRODUCTS.length && typeof getAllProductsFallback === 'function'){
+    try{ NK_PRODUCTS = getAllProductsFallback().map(function(p){ return nkNormalize(p, p && p.id); }).filter(Boolean); }catch(e){}
+  }
+  if(typeof firebaseReady !== 'undefined' && firebaseReady){
+    db.ref('products').on('value', function(snap){
+      var list = nkListFromObject(snap.val());
+      if(list.length){ NK_PRODUCTS = list; }
+      renderCart();
+    }, function(err){ console.warn('Cart products sync error — using local data.', err); });
+    nkSyncCartFromFirebase();
+    nkPromoInit();
+  } else {
+    NK_PROMOS = nkClone(NK_PROMO_FALLBACK); NK_PROMOS_LOADED = true;
+  }
+  renderCart();
+}
+
+
+/* ================= PROMO CODES =================
+   Firebase '/promocodes/<CODE>' = { code, type:'percent'|'fixed', value, active, expiresAt? (ms) }.
+   The applied code (just the name) is kept in localStorage 'nikora_promo' and is re-validated
+   against live data on every render. NOTE: this discount is a client-side display; the checkout
+   step must re-validate the code before charging. */
+var NK_PROMO_FALLBACK = { GLOW10: { code:'GLOW10', type:'percent', value:10, active:true } };
+var NK_PROMOS = null, NK_PROMOS_LOADED = false, NK_PROMO_REF = null, NK_PROMO_OPEN = false, NK_PROMO_NOTE = '';
+function nkClone(o){ return JSON.parse(JSON.stringify(o)); }
+function nkPromoKey(s){ return String(s == null ? '' : s).toUpperCase().replace(/[^A-Z0-9_-]/g, ''); }
+function nkPromoMap(obj){
+  var out = {};
+  Object.keys(obj || {}).forEach(function(k){
+    var p = obj[k]; if(!p || typeof p !== 'object') return;
+    var code = nkPromoKey(p.code || k); if(!code) return;
+    out[code] = { code: code, type: p.type === 'fixed' ? 'fixed' : 'percent', value: Number(p.value) || 0,
+                  active: p.active !== false, expiresAt: p.expiresAt ? Number(p.expiresAt) : 0 };
+  });
+  return out;
+}
+function nkPromoStatus(p){
+  if(!p || p.active === false || !(p.value > 0)) return 'invalid';
+  if(p.expiresAt && Date.now() > p.expiresAt) return 'expired';
+  return 'ok';
+}
+function nkPromoDesc(p){ return p.type === 'percent' ? (p.value + '% OFF') : ('$' + Number(p.value).toFixed(2) + ' OFF'); }
+function nkMoney(n){ return '$' + (Math.round(n * 100) / 100).toFixed(2); }
+function nkPromoApplied(){ return nkPromoKey(safeStorage.getItem('nikora_promo')); }
+
+function nkPromoCalc(subtotal){
+  var code = nkPromoApplied();
+  if(!code || !NK_PROMOS_LOADED) return null;
+  var p = NK_PROMOS && NK_PROMOS[code], st = nkPromoStatus(p);
+  if(st !== 'ok'){                                    /* deleted / expired since it was applied */
+    safeStorage.setItem('nikora_promo', '');
+    NK_PROMO_NOTE = 'Code ' + code + (st === 'expired' ? ' has expired' : ' is no longer valid') + ' and was removed.';
+    return null;
+  }
+  var d = p.type === 'percent' ? subtotal * Math.min(100, p.value) / 100 : p.value;
+  d = Math.min(Math.round(d * 100) / 100, subtotal);
+  return { code: code, promo: p, discount: d };
+}
+function nkPromoMsg(text, kind){
+  var m = document.getElementById('promo-msg'); if(!m) return;
+  m.textContent = text || ''; m.className = 'promo-msg' + (kind ? ' ' + kind : '');
+}
+function nkPromoRender(promo, payable){
+  var box = document.getElementById('promo-box'); if(!box) return;
+  var active = document.getElementById('promo-active'), toggle = document.getElementById('promo-toggle');
+  var applied = !!promo;
+  box.classList.toggle('open', NK_PROMO_OPEN && !applied);
+  toggle.setAttribute('aria-expanded', String(NK_PROMO_OPEN && !applied));
+  toggle.style.display = applied ? 'none' : '';
+  active.hidden = !applied;
+  if(applied){
+    active.innerHTML = '<span class="promo-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.4"/></svg><b>' + nkEsc(promo.code) + '</b><em>' + nkEsc(nkPromoDesc(promo.promo)) + '</em></span>' +
+      '<button type="button" class="promo-remove" id="promo-remove" aria-label="Remove promo code ' + nkEsc(promo.code) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Remove</button>';
+  } else { active.innerHTML = ''; }
+  if(NK_PROMO_NOTE){ nkPromoMsg(NK_PROMO_NOTE, 'err'); NK_PROMO_NOTE = ''; }
+  var row = document.getElementById('cart-discount-row'), tot = document.getElementById('cart-total-row');
+  var show = applied && promo.discount > 0;
+  row.hidden = !show; tot.hidden = !show;
+  if(show){
+    document.getElementById('cart-discount-label').textContent = 'Discount (' + promo.code + ')';
+    document.getElementById('cart-discount-amount').textContent = '-' + nkMoney(promo.discount);
+    document.getElementById('cart-total').textContent = nkMoney(payable);
+  }
+}
+function nkPromoApply(){
+  var input = document.getElementById('promo-input'); if(!input) return;
+  var code = nkPromoKey(input.value);
+  if(!code){ nkPromoMsg('Please enter a promo code.', 'err'); return; }
+  function finish(){
+    var p = NK_PROMOS && NK_PROMOS[code], st = nkPromoStatus(p);
+    if(st === 'expired'){ nkPromoMsg('Sorry, code ' + code + ' has expired.', 'err'); return; }
+    if(st !== 'ok'){ nkPromoMsg('That code isn\u2019t valid. Please check it and try again.', 'err'); return; }
+    safeStorage.setItem('nikora_promo', code);
+    input.value = ''; nkPromoMsg('', '');
+    renderCart();
+    showToast('Promo code ' + code + ' applied (' + nkPromoDesc(p) + ').');
+  }
+  if(NK_PROMOS === null && NK_PROMO_REF){                /* codes still loading: fetch once, then validate */
+    NK_PROMO_REF.once('value').then(function(s){ NK_PROMOS = nkPromoMap(s.val()); NK_PROMOS_LOADED = true; finish(); })
+      .catch(function(){ nkPromoMsg('Could not check the code right now. Please try again.', 'err'); });
+  } else { finish(); }
+}
+function nkPromoRemove(){
+  safeStorage.setItem('nikora_promo', ''); nkPromoMsg('', ''); renderCart();
+}
+function nkPromoInit(){
+  try{
+    NK_PROMO_REF = db.ref('promocodes');
+    NK_PROMO_REF.on('value', function(snap){
+      NK_PROMOS = nkPromoMap(snap.val()); NK_PROMOS_LOADED = true;
+      renderCart();
+    }, function(err){
+      console.warn('Promo codes sync error \u2014 using built-in list.', err);
+      if(NK_PROMOS === null){ NK_PROMOS = nkClone(NK_PROMO_FALLBACK); NK_PROMOS_LOADED = true; renderCart(); }
+    });
+    /* Seed GLOW10 once, only if the list has never been seeded and is empty. */
+    db.ref('promoMeta/seeded').once('value').then(function(s){
+      if(s.val() === true) return;
+      return NK_PROMO_REF.once('value').then(function(ps){
+        if(ps.val()){ return db.ref('promoMeta/seeded').set(true); }
+        return NK_PROMO_REF.child('GLOW10').set({ code:'GLOW10', type:'percent', value:10, active:true, createdAt:Date.now() })
+          .then(function(){ return db.ref('promoMeta/seeded').set(true); });
+      });
+    }).catch(function(e){ console.warn('Promo seed skipped', e); });
+  }catch(e){ NK_PROMOS = nkClone(NK_PROMO_FALLBACK); NK_PROMOS_LOADED = true; }
+}
+
+/* ---- shared modal helpers ---- */
+function nkModalOpen(id){
+  var m = document.getElementById(id); if(!m) return;
+  m.classList.add('active'); m.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
+}
+function nkModalClose(id){
+  var m = document.getElementById(id); if(!m) return;
+  m.classList.remove('active'); m.setAttribute('aria-hidden', 'true');
+  if(!document.querySelector('.nk-modal-overlay.active')) document.body.style.overflow = '';
+}
+function nkModalCloseAll(){
+  Array.prototype.forEach.call(document.querySelectorAll('.nk-modal-overlay.active'), function(m){ nkModalClose(m.id); });
+}
+
+
+/* ---- photo lightbox + image compression (shared) ---- */
+function nkLightboxOpen(src){
+  var box = document.getElementById('nk-lightbox');
+  if(!box){
+    box = document.createElement('div'); box.id = 'nk-lightbox';
+    box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', 'Review photo');
+    box.innerHTML = '<button type="button" class="nk-lightbox-close" aria-label="Close photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><img alt="Review photo">';
+    document.body.appendChild(box);
+  }
+  box.querySelector('img').src = src;
+  box.classList.add('active');
+}
+function nkLightboxClose(){ var b = document.getElementById('nk-lightbox'); if(b) b.classList.remove('active'); }
+/* Resizes to max 900px JPEG so Base64 review photos stay small enough for Realtime Database. */
+function nkCompressImage(file, done, fail, maxDim, quality){
+  if(!file || !/^image\//.test(file.type)){ fail('Please choose an image file.'); return; }
+  if(file.size > 12 * 1024 * 1024){ fail('That image is too large (12 MB max).'); return; }
+  var reader = new FileReader();
+  reader.onerror = function(){ fail('Could not read that image.'); };
+  reader.onload = function(){
+    var img = new Image();
+    img.onerror = function(){ fail('That image format isn\u2019t supported.'); };
+    img.onload = function(){
+      var s = Math.min(1, (maxDim || 900) / Math.max(img.width, img.height));
+      var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s));
+      var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+      done(c.toDataURL('image/jpeg', quality || 0.8));
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function nkSafePhoto(s){ return (typeof s === 'string' && /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(s)) ? s : ''; }
+
+function nkBindPromoAndTools(){
+  document.addEventListener('click', function(e){
+    var t = e.target; if(!t || !t.closest) return;
+    var nkc = t.closest('[data-nk-close]'); if(nkc){ var ov = nkc.closest('.nk-modal-overlay'); if(ov) nkModalClose(ov.id); return; }
+    if(t.classList && t.classList.contains('nk-modal-overlay')){ nkModalClose(t.id); return; }
+    if(t.closest('#promo-toggle')){ NK_PROMO_OPEN = !NK_PROMO_OPEN; var b = document.getElementById('promo-box'); b.classList.toggle('open', NK_PROMO_OPEN); document.getElementById('promo-toggle').setAttribute('aria-expanded', String(NK_PROMO_OPEN)); if(NK_PROMO_OPEN){ var i = document.getElementById('promo-input'); if(i) setTimeout(function(){ i.focus(); }, 30); } return; }
+    if(t.closest('#promo-apply')){ nkPromoApply(); return; }
+    if(t.closest('#promo-remove')){ nkPromoRemove(); return; }
+    var ph = t.closest('.rphoto img, .review-photo img'); if(ph && ph.src){ nkLightboxOpen(ph.src); return; }
+    if(t.id === 'nk-lightbox' || t.closest('.nk-lightbox-close')){ nkLightboxClose(); }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Enter') return;
+    if(e.target && e.target.id === 'promo-input'){ e.preventDefault(); nkPromoApply(); }
+  });
+}
+
+
+/* ================= TRUST BADGES ================= */
+function trustBadgesHtml(){
+  return (
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>30-Day Risk-Free Trial</span>' +
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Free Shipping over $50</span>' +
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>2-Year Warranty</span>'
+  );
+}
+function renderTrustBadges(){
+  var el = document.getElementById('cart-trust-badges');
+  if(el) el.innerHTML = trustBadgesHtml();
+}
+
+
+
+
+/* ======================================================================
+   NIKORA — faq.html page logic
+   (cart, promo codes, Firebase sync and trust badges come from the shared
+   modules above; this block adds the page-specific behaviour)
+   ====================================================================== */
+
+/* ---------------- Toast ---------------- */
+var toastTimer;
+function showToast(msg){
+  var toast = document.getElementById('toast');
+  if(!toast) return;
+  document.getElementById('toast-text').textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2600);
+}
+
+/* ---------------- Theme (called by nav.js theme buttons; nav.js keeps its own buttons in sync) ---------------- */
+function setTheme(mode){
+  mode = (mode === 'dark') ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', mode);
+  try{ localStorage.setItem('theme', mode); }catch(e){}
+  safeStorage.setItem('nikora_theme', mode);
+}
+
+
+
+/* ================= FAQ PAGE ================= */
+var F_REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+
+
+/* ---- scroll reveal (staggered inside grids); falls back to showing everything ---- */
+function fInitReveal(){
+  var els = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+  if(!els.length) return;
+
+  function reveal(el, delay){
+    el.style.transitionDelay = delay + 'ms';
+    el.classList.add('in');
+    setTimeout(function(){                          /* hand the element back to its own hover transitions */
+      el.classList.remove('reveal', 'in');
+      el.style.transitionDelay = '';
+    }, delay + 900);
+  }
+  if(!('IntersectionObserver' in window)){ els.forEach(function(el){ reveal(el, 0); }); return; }
+
+  els.forEach(function(el){
+    var sib = el.parentElement ? Array.prototype.indexOf.call(el.parentElement.children, el) : 0;
+    el.setAttribute('data-rd', String(Math.min(sib, 4) * 80));
+  });
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(!en.isIntersecting) return;
+      io.unobserve(en.target);
+      reveal(en.target, Number(en.target.getAttribute('data-rd')) || 0);
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(function(el){ io.observe(el); });
+  setTimeout(function(){ els.forEach(function(el){ if(el.classList.contains('reveal') && !el.classList.contains('in')){ io.unobserve(el); reveal(el, 0); } }); }, 5000);
+}
+
+/* ---------------- Init ---------------- */
+/* ================= CHECKOUT (checkout.html) =================
+   Reads the live cart from localStorage via the shared cart module (getCart / saveCart / renderCart),
+   re-uses the shared promo engine (nkPromoCalc, NK_PROMOS) and product data (nkFind), and writes the
+   finished order to Firebase Realtime Database:
+
+     /orders/{NK-####}    full order (customer, items, pricing, total, status "Processing", createdAt)
+     /tracking/{NK-####}  non-personal mirror used by track-order.html (status + hashed email/phone)
+
+   IMPORTANT  Card numbers, expiry and CVC are validated in the browser only. They are never sent to
+   Firebase, never logged and are wiped from the form once the order is placed. Only the card brand and
+   last 4 digits are kept on the order, for support. To take real payments, connect a payment provider
+   (e.g. Stripe Elements) where marked "PAYMENT HOOK" in ckSubmit().
+   ============================================================================================= */
+var CK_TAX_RATE = 0.08;                          /* estimated sales-tax rate: shown to the customer and saved on the order */
+var CK_DELIVERY_BUSINESS_DAYS = [5, 9];          /* delivery estimate shown on the confirmation screen */
+var CK_EMAIL_CONFIRMATIONS = true;               /* set false until a real confirmation email is wired up (see README note) */
+var CK_FALLBACK_IMG = {
+  "1": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400",
+  "2": "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400",
+  "3": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400",
+  "4": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400",
+  "5": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400",
+  "6": "https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400",
+  "7": "https://images.unsplash.com/photo-1556228722-d119f018d480?w=400",
+  "8": "https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400"
+};
+var CK_LAST_KEY = 'nikora_last_order';
+var CK = { method: 'card', busy: false, placed: false };
+
+var CK_ICON = {
+  image: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="ck-draw" d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/></svg>',
+  truck: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+  arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
+};
+
+/* ---------------- small helpers ---------------- */
+function ckEl(id){ return document.getElementById(id); }
+function ckAttr(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function ckMoney(n){ return '$' + (Math.round((Number(n) || 0) * 100) / 100).toFixed(2); }
+function ckItems(){ return getCart().filter(function(i){ return i && Number(i.qty) > 0; }); }
+function ckImg(item){
+  var p = (typeof nkFind === 'function') ? nkFind(item.id) : null;
+  return (p && p.img) || CK_FALLBACK_IMG[String(item.id)] || '';
+}
+function ckRandomInt(min, max){
+  var span = max - min + 1;
+  try{ var a = new Uint32Array(1); (window.crypto || window.msCrypto).getRandomValues(a); return min + (a[0] % span); }
+  catch(e){ return min + Math.floor(Math.random() * span); }
+}
+function ckRandomSalt(){ var s = ''; for(var i = 0; i < 4; i++) s += ckRandomInt(0, 0xFFFFFF).toString(36); return s; }
+function ckAddBusinessDays(ts, n){
+  var d = new Date(ts), added = 0;
+  while(added < n){ d.setDate(d.getDate() + 1); var w = d.getDay(); if(w !== 0 && w !== 6) added++; }
+  return d;
+}
+function ckFmtDate(d){ return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
+function ckWithTimeout(p, ms){
+  return new Promise(function(resolve, reject){
+    var t = setTimeout(function(){ reject(new Error('timeout')); }, ms);
+    p.then(function(v){ clearTimeout(t); resolve(v); }, function(e){ clearTimeout(t); reject(e); });
+  });
+}
+
+/* SHA-256 (pure JS, works on http and https). Used so tracking can verify an email/phone without storing it in the clear. */
+function nkSha256(msg){
+  function rr(n, x){ return (x >>> n) | (x << (32 - n)); }
+  var K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+           0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+           0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+           0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  var H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  var s = unescape(encodeURIComponent(String(msg))), b = [], i, j;
+  for(i = 0; i < s.length; i++) b.push(s.charCodeAt(i));
+  var bits = b.length * 8;
+  b.push(0x80);
+  while(b.length % 64 !== 56) b.push(0);
+  b.push(0, 0, 0, 0, (bits >>> 24) & 255, (bits >>> 16) & 255, (bits >>> 8) & 255, bits & 255);
+  for(i = 0; i < b.length; i += 64){
+    var w = [];
+    for(j = 0; j < 16; j++) w[j] = (b[i + j*4] << 24) | (b[i + j*4 + 1] << 16) | (b[i + j*4 + 2] << 8) | b[i + j*4 + 3];
+    for(j = 16; j < 64; j++){
+      var s0 = rr(7, w[j-15]) ^ rr(18, w[j-15]) ^ (w[j-15] >>> 3), s1 = rr(17, w[j-2]) ^ rr(19, w[j-2]) ^ (w[j-2] >>> 10);
+      w[j] = (w[j-16] + s0 + w[j-7] + s1) | 0;
+    }
+    var a = H[0], bb = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+    for(j = 0; j < 64; j++){
+      var S1 = rr(6, e) ^ rr(11, e) ^ rr(25, e), ch = (e & f) ^ (~e & g), t1 = (h + S1 + ch + K[j] + w[j]) | 0;
+      var S0 = rr(2, a) ^ rr(13, a) ^ rr(22, a), mj = (a & bb) ^ (a & c) ^ (bb & c), t2 = (S0 + mj) | 0;
+      h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = bb; bb = a; a = (t1 + t2) | 0;
+    }
+    H[0] = (H[0] + a) | 0; H[1] = (H[1] + bb) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+    H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+  }
+  return H.map(function(x){ return ('00000000' + (x >>> 0).toString(16)).slice(-8); }).join('');
+}
+
+
+/* ---------------- totals ---------------- */
+function ckTotals(items){
+  var subtotal = 0;
+  items.forEach(function(i){ subtotal += (Number(i.price) || 0) * i.qty; });
+  subtotal = Math.round(subtotal * 100) / 100;
+  var promo = (typeof nkPromoCalc === 'function') ? nkPromoCalc(subtotal) : null;
+  var discount = promo ? promo.discount : 0;
+  var taxable = Math.max(0, subtotal - discount);
+  var tax = Math.round(taxable * CK_TAX_RATE * 100) / 100;
+  var total = Math.round((taxable + tax) * 100) / 100;
+  return { subtotal: subtotal, discount: discount, promo: promo, promoCode: promo ? promo.code : '', shipping: 0, tax: tax, taxRate: CK_TAX_RATE, total: total };
+}
+
+/* ---------------- summary rendering ---------------- */
+function ckSetText(id, txt){ var e = ckEl(id); if(e) e.textContent = txt; }
+function ckRender(){
+  if(CK.placed) return;
+  var items = ckItems(), empty = !items.length;
+  ckEl('ck-layout').hidden = empty;
+  ckEl('ck-empty').hidden = !empty;
+  if(empty) return;
+
+  var t = ckTotals(items), count = 0;
+  ckEl('ck-lines').innerHTML = items.map(function(it){
+    var img = ckImg(it), price = Number(it.price) || 0; count += it.qty;
+    return '<li class="ck-line">' +
+      '<div class="ck-thumb">' + (img ? '<img src="' + ckAttr(img) + '" alt="" loading="lazy" draggable="false">' : CK_ICON.image) + '<span class="ck-qty" aria-label="Quantity ' + it.qty + '">' + it.qty + '</span></div>' +
+      '<div class="ck-line-info"><div class="ck-line-title">' + ckAttr(it.title) + '</div><div class="ck-line-sub">' + ckMoney(price) + ' each</div></div>' +
+      '<div class="ck-line-total">' + ckMoney(price * it.qty) + '</div></li>';
+  }).join('');
+
+  ckSetText('ck-subtotal', ckMoney(t.subtotal));
+  ckSetText('ck-tax', ckMoney(t.tax));
+  ckSetText('ck-tax-label', 'Estimated Tax (' + Math.round(t.taxRate * 1000) / 10 + '%)');
+  ckSetText('ck-total', ckMoney(t.total));
+  ckSetText('ck-toggle-total', ckMoney(t.total));
+  ckSetText('ck-toggle-count', count + (count === 1 ? ' item' : ' items'));
+  ckSetText('ck-submit-total', ckMoney(t.total));
+  var dRow = ckEl('ck-discount-row'); dRow.hidden = !(t.discount > 0);
+  ckSetText('ck-discount', '\u2212' + ckMoney(t.discount));
+  ckSetText('ck-discount-label', t.promoCode ? 'Discount (' + t.promoCode + ')' : 'Discount');
+
+  var applied = ckEl('ck-promo-applied'), form = ckEl('ck-promo-form');
+  if(t.promo){
+    applied.hidden = false; form.hidden = true;
+    ckSetText('ck-promo-code', t.promo.code);
+    ckSetText('ck-promo-desc', nkPromoDesc(t.promo.promo) + ' \u00b7 saving ' + ckMoney(t.discount));
+  } else { applied.hidden = true; form.hidden = false; }
+  if(typeof NK_PROMO_NOTE === 'string' && NK_PROMO_NOTE){ ckPromoMsg(NK_PROMO_NOTE, 'err'); NK_PROMO_NOTE = ''; }
+}
+
+/* ---------------- promo code (same rules as the cart drawer) ---------------- */
+function ckPromoMsg(msg, kind){
+  var el = ckEl('ck-promo-msg'); if(!el) return;
+  el.textContent = msg || ''; el.className = 'ck-promo-msg' + (kind ? ' ' + kind : '');
+}
+function ckPromoApply(){
+  var input = ckEl('ck-promo-input'), code = nkPromoKey(input.value);
+  if(!code){ ckPromoMsg('Please enter a promo code.', 'err'); input.focus(); return; }
+  function finish(){
+    var p = NK_PROMOS && NK_PROMOS[code], st = nkPromoStatus(p);
+    if(st === 'expired'){ ckPromoMsg('Sorry, code ' + code + ' has expired.', 'err'); return; }
+    if(st !== 'ok'){ ckPromoMsg('That code isn\u2019t valid. Please check it and try again.', 'err'); return; }
+    safeStorage.setItem('nikora_promo', code);
+    input.value = ''; ckPromoMsg('', '');
+    renderCart();                                              /* re-prices the drawer and this page instantly */
+    showToast('Promo code ' + code + ' applied (' + nkPromoDesc(p) + ').');
+  }
+  if(NK_PROMOS === null && NK_PROMO_REF){
+    NK_PROMO_REF.once('value').then(function(s){ NK_PROMOS = nkPromoMap(s.val()); NK_PROMOS_LOADED = true; finish(); })
+      .catch(function(){ ckPromoMsg('Could not check the code right now. Please try again.', 'err'); });
+  } else { finish(); }
+}
+function ckPromoRemove(){ safeStorage.setItem('nikora_promo', ''); ckPromoMsg('', ''); renderCart(); }
+
+/* ---------------- card formatting / validation helpers ---------------- */
+function ckBrand(d){
+  if(/^4/.test(d)) return 'Visa';
+  if(/^(5[1-5]|2[2-7])/.test(d)) return 'Mastercard';
+  if(/^3[47]/.test(d)) return 'Amex';
+  if(/^(6011|65|64[4-9])/.test(d)) return 'Discover';
+  return '';
+}
+function ckFormatCard(v){
+  var d = String(v).replace(/\D/g, '');
+  if(/^3[47]/.test(d)){ d = d.slice(0, 15); return [d.slice(0, 4), d.slice(4, 10), d.slice(10, 15)].filter(Boolean).join(' '); }
+  d = d.slice(0, 19);
+  return (d.match(/.{1,4}/g) || []).join(' ');
+}
+function ckLuhn(d){
+  if(d.length < 13 || d.length > 19) return false;
+  var sum = 0, alt = false;
+  for(var i = d.length - 1; i >= 0; i--){ var n = d.charCodeAt(i) - 48; if(alt){ n *= 2; if(n > 9) n -= 9; } sum += n; alt = !alt; }
+  return sum % 10 === 0;
+}
+function ckFormatExp(v){
+  var d = String(v).replace(/\D/g, '').slice(0, 4);
+  if(d.length === 1 && Number(d) > 1) d = '0' + d;
+  return d.length > 2 ? d.slice(0, 2) + '/' + d.slice(2) : d;
+}
+function ckExpOk(v){
+  var m = /^(\d{2})\/(\d{2})$/.exec(v); if(!m) return false;
+  var mo = Number(m[1]), yr = 2000 + Number(m[2]);
+  if(mo < 1 || mo > 12) return false;
+  var now = new Date(), endOfMonth = new Date(yr, mo, 1);
+  return endOfMonth > now && yr <= now.getFullYear() + 20;
+}
+
+/* ---------------- field rules ---------------- */
+var CK_RULES = {
+  'ck-email':   { test: function(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()); }, msg: 'Please enter a valid email address.' },
+  'ck-first':   { test: function(v){ return v.trim().length >= 1; }, msg: 'Please enter your first name.' },
+  'ck-last':    { test: function(v){ return v.trim().length >= 1; }, msg: 'Please enter your last name.' },
+  'ck-address': { test: function(v){ return v.trim().length >= 4; }, msg: 'Please enter your street address.' },
+  'ck-city':    { test: function(v){ return v.trim().length >= 2; }, msg: 'Please enter your city.' },
+  'ck-postal':  { test: function(v){ return v.trim().length >= 3; }, msg: 'Please enter your postal code.' },
+  'ck-country': { test: function(v){ return v.trim().length >= 2; }, msg: 'Please choose your country.' },
+  'ck-phone':   { test: function(v){ var d = v.replace(/\D/g, ''); return /^[+\d][\d\s().-]{5,}$/.test(v.trim()) && d.length >= 7 && d.length <= 15; }, msg: 'Please enter a valid phone number for delivery updates.' },
+  'ck-card':    { test: function(v){ return ckLuhn(v.replace(/\D/g, '')); }, msg: 'Please check your card number.' },
+  'ck-exp':     { test: ckExpOk, msg: 'Enter a valid expiry date (MM/YY).' },
+  'ck-cvc':     { test: function(v){ var n = v.replace(/\D/g, '').length, amex = ckBrand(ckEl('ck-card').value.replace(/\D/g, '')) === 'Amex'; return amex ? n === 4 : n === 3; }, msg: 'Enter the security code on your card.' },
+  'ck-zip':     { test: function(v){ return v.trim().length >= 3; }, msg: 'Enter your billing ZIP / postal code.' }
+};
+var CK_BASE_FIELDS = ['ck-email', 'ck-first', 'ck-last', 'ck-address', 'ck-city', 'ck-postal', 'ck-country', 'ck-phone'];
+var CK_CARD_FIELDS = ['ck-card', 'ck-exp', 'ck-cvc', 'ck-zip'];
+
+function ckSetError(id, msg){
+  var input = ckEl(id), err = ckEl(id + '-err'); if(!input) return;
+  input.setAttribute('aria-invalid', msg ? 'true' : 'false');
+  input.classList.toggle('is-invalid', !!msg);
+  if(err){ err.textContent = msg || ''; err.hidden = !msg; }
+}
+function ckCheck(id, show){
+  var rule = CK_RULES[id], input = ckEl(id); if(!rule || !input) return true;
+  var ok = rule.test(String(input.value || ''));
+  if(show) ckSetError(id, ok ? '' : rule.msg);
+  return ok;
+}
+function ckValidateAll(){
+  var ids = CK_BASE_FIELDS.concat(CK.method === 'card' ? CK_CARD_FIELDS : []), first = null;
+  ids.forEach(function(id){ if(!ckCheck(id, true) && !first) first = ckEl(id); });
+  if(first){
+    ckBanner('Please check the highlighted fields and try again.', 'err');
+    try{ first.scrollIntoView({ behavior: 'smooth', block: 'center' }); }catch(e){}
+    setTimeout(function(){ try{ first.focus({ preventScroll: true }); }catch(e){ first.focus(); } }, 250);
+    return false;
+  }
+  ckBanner('');
+  return true;
+}
+function ckBanner(msg, kind){
+  var el = ckEl('ck-banner'); if(!el) return;
+  el.textContent = msg || ''; el.hidden = !msg; el.className = 'ck-banner' + (kind ? ' ' + kind : '');
+}
+function ckSetBusy(on){
+  CK.busy = on;
+  var b = ckEl('ck-submit'); if(!b) return;
+  b.disabled = on; b.classList.toggle('loading', on); b.setAttribute('aria-busy', on ? 'true' : 'false');
+  ckSetText('ck-submit-text', on ? 'Placing your order\u2026' : 'Complete Order');
+}
+
+/* ---------------- live re-check right before saving (prices + promo) ---------------- */
+function ckPreflight(){
+  if(typeof firebaseReady === 'undefined' || !firebaseReady) return Promise.reject(new Error('firebase-unavailable'));
+  return ckWithTimeout(db.ref('products').once('value'), 9000).then(function(snap){
+    var live = (typeof nkListFromObject === 'function') ? nkListFromObject(snap.val()) : [];
+    if(live.length){
+      var byId = {}; live.forEach(function(p){ byId[String(p.id)] = p; });
+      var changed = false;
+      var next = getCart().map(function(it){
+        var p = byId[String(it.id)];
+        if(p && Math.abs(Number(p.price) - Number(it.price)) > 0.005){ changed = true; return { id: it.id, title: it.title, price: Number(p.price), qty: it.qty }; }
+        return it;
+      });
+      if(changed){ saveCart(next); renderCart(); return { ok: false, message: 'A price in your bag was updated. Please review your new total and place your order again.' }; }
+    }
+    var code = nkPromoApplied();
+    if(!code) return { ok: true };
+    return ckWithTimeout(db.ref('promocodes/' + code).once('value'), 9000).then(function(ps){
+      var wrap = {}; if(ps.val()) wrap[code] = ps.val();
+      var p = nkPromoMap(wrap)[code], st = nkPromoStatus(p);
+      if(st !== 'ok'){
+        safeStorage.setItem('nikora_promo', ''); renderCart();
+        return { ok: false, message: 'Promo code ' + code + (st === 'expired' ? ' has expired' : ' is no longer valid') + ' and was removed. Please review your total.' };
+      }
+      if(NK_PROMOS) NK_PROMOS[code] = p;
+      return { ok: true };
+    });
+  });
+}
+
+/* ---------------- build + save the order ---------------- */
+function ckVal(id){ var e = ckEl(id); return e ? String(e.value || '').trim() : ''; }
+function ckCollect(items, t){
+  var first = ckVal('ck-first'), last = ckVal('ck-last');
+  var digits = ckVal('ck-card').replace(/\D/g, '');
+  return {
+    customer: {
+      name: first + ' ' + last, firstName: first, lastName: last,
+      email: ckVal('ck-email').toLowerCase(), phone: ckVal('ck-phone'),
+      address: { line1: ckVal('ck-address'), line2: ckVal('ck-apt'), city: ckVal('ck-city'), postalCode: ckVal('ck-postal'), country: ckVal('ck-country') }
+    },
+    items: items.map(function(i){
+      var p = Number(i.price) || 0;
+      return { id: String(i.id), title: String(i.title), price: p, qty: i.qty, lineTotal: Math.round(p * i.qty * 100) / 100 };
+    }),
+    pricing: { subtotal: t.subtotal, discount: t.discount, promoCode: t.promoCode, shipping: 0, shippingLabel: 'Express Insured Shipping', tax: t.tax, taxRate: t.taxRate },
+    total: t.total, currency: 'USD',
+    payment: CK.method === 'card' ? { method: 'card', brand: ckBrand(digits), last4: digits.slice(-4) } : { method: 'paypal' },
+    notes: ckVal('ck-notes').slice(0, 500),
+    status: 'Processing'
+  };
+}
+/* Claims a free 4-digit ID atomically (transaction), so two customers can never get the same order number. */
+function ckClaimOrder(data){
+  var created = Date.now();
+  function attempt(n){
+    var key = 'NK-' + ckRandomInt(1002, 9999);                  /* NK-1001 is reserved for the demo order */
+    var payload = JSON.parse(JSON.stringify(data));
+    payload.orderId = key; payload.displayId = '#' + key; payload.createdAt = created;
+    return db.ref('orders/' + key).transaction(function(cur){ return cur === null ? payload : undefined; }, undefined, false).then(function(res){
+      if(res && res.committed) return payload;
+      if(n >= 8) throw new Error('no-free-order-id');
+      return attempt(n + 1);
+    }, function(err){
+      if(n >= 8) throw err;
+      return attempt(n + 1);                                    /* ID taken (or rejected): try another */
+    });
+  }
+  return ckWithTimeout(attempt(1), 25000);
+}
+/* Non-personal record that track-order.html reads. Email/phone are stored only as salted hashes. */
+function ckMirrorTracking(rec){
+  var salt = ckRandomSalt();
+  var phone = String(rec.customer.phone).replace(/\D/g, '').slice(-9);
+  var tr = {
+    orderId: rec.orderId, status: rec.status, step: 1, createdAt: rec.createdAt,
+    eta: ckAddBusinessDays(rec.createdAt, CK_DELIVERY_BUSINESS_DAYS[1]).getTime(),
+    itemCount: rec.items.reduce(function(n, i){ return n + i.qty; }, 0),
+    s: salt, k: [nkSha256(salt + ':e:' + rec.customer.email), nkSha256(salt + ':p:' + phone)]
+  };
+  function put(){ return ckWithTimeout(db.ref('tracking/' + rec.orderId).set(tr), 10000); }
+  return put().catch(function(){ return put(); }).catch(function(e){ console.warn('Tracking record not saved', e); });
+}
+
+function ckSubmit(e){
+  if(e) e.preventDefault();
+  if(CK.busy || CK.placed) return;
+  if(!ckItems().length) return;
+  if(!ckValidateAll()) return;
+  ckSetBusy(true); ckBanner('');
+
+  ckPreflight().then(function(pre){
+    if(!pre.ok){ ckSetBusy(false); ckBanner(pre.message, 'warn'); ckEl('ck-banner').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+    var items = ckItems(), t = ckTotals(items), data = ckCollect(items, t);
+
+    /* PAYMENT HOOK: authorise / capture the payment here (e.g. Stripe confirmCardPayment) and abort on failure.
+       The card fields must never be copied into `data`. */
+
+    return ckClaimOrder(data).then(function(rec){
+      return ckMirrorTracking(rec).then(function(){ ckComplete(rec); });
+    });
+  }).catch(function(err){
+    console.warn('Checkout failed', err);
+    ckSetBusy(false);
+    ckBanner('We couldn\u2019t place your order just now. Your bag is safe. Please try again, or email nikora.support@gmail.com and we\u2019ll help right away.', 'err');
+    try{ ckEl('ck-banner').scrollIntoView({ behavior: 'smooth', block: 'center' }); }catch(e2){}
+  });
+}
+
+/* ---------------- success ---------------- */
+function ckPaymentLabel(p){
+  if(!p) return '';
+  if(p.method === 'paypal') return 'PayPal';
+  return (p.brand ? p.brand + ' ' : 'Card ') + (p.last4 ? 'ending in ' + p.last4 : '');
+}
+function ckComplete(rec){
+  CK.placed = true;
+  var summary = {
+    id: rec.orderId, name: rec.customer.name, email: rec.customer.email, address: rec.customer.address,
+    items: rec.items, pricing: rec.pricing, total: rec.total, payment: rec.payment, createdAt: rec.createdAt
+  };
+  safeSession.setItem(CK_LAST_KEY, JSON.stringify(summary));    /* this tab only: lets the Thank You screen survive a refresh and pre-fills tracking */
+  saveCart([]);
+  safeStorage.setItem('nikora_promo', '');
+  var badge = ckEl('cart-count'); if(badge) badge.textContent = '0';
+  try{ renderCart(); }catch(e){}
+  CK_CARD_FIELDS.forEach(function(id){ var f = ckEl(id); if(f) f.value = ''; });      /* wipe card data */
+  ckSetBusy(false);
+  ckShowConfirmation(summary);
+  try{ history.replaceState(null, '', '#order-' + rec.orderId); }catch(e){}
+}
+function ckShowConfirmation(s){
+  CK.placed = true;
+  var addr = s.address || {};
+  var addrText = [addr.line1, addr.line2, [addr.city, addr.postalCode].filter(Boolean).join(' '), addr.country].filter(Boolean).map(ckAttr).join('<br>');
+  var eta = ckFmtDate(ckAddBusinessDays(s.createdAt, CK_DELIVERY_BUSINESS_DAYS[0])) + ' \u2013 ' + ckFmtDate(ckAddBusinessDays(s.createdAt, CK_DELIVERY_BUSINESS_DAYS[1]));
+  var emailLine = CK_EMAIL_CONFIRMATIONS
+    ? 'A confirmation email has been sent to <strong>' + ckAttr(s.email) + '</strong>.'
+    : 'Keep your Order ID safe. You can track your order any time with <strong>' + ckAttr(s.email) + '</strong>.';
+  var p = s.pricing || {};
+  var lines = (s.items || []).map(function(i){
+    var img = ckImg(i);
+    return '<li class="ck-line"><div class="ck-thumb">' + (img ? '<img src="' + ckAttr(img) + '" alt="" loading="lazy" draggable="false">' : CK_ICON.image) + '<span class="ck-qty">' + i.qty + '</span></div>' +
+      '<div class="ck-line-info"><div class="ck-line-title">' + ckAttr(i.title) + '</div><div class="ck-line-sub">' + ckMoney(i.price) + ' each</div></div>' +
+      '<div class="ck-line-total">' + ckMoney(i.price * i.qty) + '</div></li>';
+  }).join('');
+  var rows = '<div class="ck-row"><span>Subtotal</span><span>' + ckMoney(p.subtotal) + '</span></div>' +
+    (p.discount > 0 ? '<div class="ck-row ck-row-discount"><span>Discount' + (p.promoCode ? ' (' + ckAttr(p.promoCode) + ')' : '') + '</span><span>\u2212' + ckMoney(p.discount) + '</span></div>' : '') +
+    '<div class="ck-row"><span>Express Insured Shipping</span><span class="ck-free">FREE</span></div>' +
+    '<div class="ck-row"><span>Estimated Tax</span><span>' + ckMoney(p.tax) + '</span></div>' +
+    '<div class="ck-row ck-row-total"><span>Total</span><span>' + ckMoney(s.total) + '</span></div>';
+  var trackHref = 'track-order.html?orderId=' + encodeURIComponent(s.id);
+
+  var box = ckEl('ck-success');
+  box.innerHTML =
+    '<div class="glass-card ck-done">' +
+      '<div class="ck-done-badge" aria-hidden="true">' + CK_ICON.check + '</div>' +
+      '<h1 class="ck-done-title" id="ck-done-title" tabindex="-1">Thank You for Your Order!</h1>' +
+      '<p class="ck-done-sub">Your order is in and our team is already getting it ready.</p>' +
+      '<div class="ck-idbox"><span class="ck-idlabel">Your Order ID</span>' +
+        '<div class="ck-idrow"><strong class="ck-id" id="ck-order-id">#' + ckAttr(s.id) + '</strong>' +
+        '<button type="button" class="ck-copy" id="ck-copy" aria-label="Copy order ID">' + CK_ICON.copy + '<span>Copy</span></button></div></div>' +
+      '<p class="ck-done-note">' + emailLine + '</p>' +
+      '<div class="ck-recap">' +
+        '<div class="ck-recap-col"><h2 class="ck-recap-h">Order Summary</h2><ul class="ck-lines" role="list">' + lines + '</ul><div class="ck-rows">' + rows + '</div></div>' +
+        '<div class="ck-recap-col"><h2 class="ck-recap-h">Delivery</h2>' +
+          '<p class="ck-recap-p"><strong>' + ckAttr(s.name) + '</strong><br>' + addrText + '</p>' +
+          '<p class="ck-recap-p"><span class="ck-recap-k">Estimated arrival</span><br><strong>' + eta + '</strong> (' + CK_DELIVERY_BUSINESS_DAYS[0] + '\u2013' + CK_DELIVERY_BUSINESS_DAYS[1] + ' business days)</p>' +
+          '<p class="ck-recap-p"><span class="ck-recap-k">Payment</span><br><strong>' + ckAttr(ckPaymentLabel(s.payment)) + '</strong></p>' +
+        '</div>' +
+      '</div>' +
+      '<div class="ck-done-actions">' +
+        '<a class="ck-btn ck-btn-gold" id="ck-track" href="' + ckAttr(trackHref) + '">' + CK_ICON.truck + 'Track Your Order</a>' +
+        '<a class="ck-btn ck-btn-ghost" href="catalog.html">Continue Shopping ' + CK_ICON.arrow + '</a>' +
+      '</div>' +
+      '<p class="ck-done-help">Questions? Email <a href="mailto:nikora.support@gmail.com?subject=' + encodeURIComponent('Order #' + s.id) + '">nikora.support@gmail.com</a></p>' +
+    '</div>';
+  ckEl('ck-layout').hidden = true; ckEl('ck-empty').hidden = true; box.hidden = false;
+  ckSteps(3);
+  ckSetText('ck-head-title', 'Order Confirmed');
+  ckSetText('ck-head-sub', 'Thank you for choosing NIKORA.');
+  var copy = ckEl('ck-copy');
+  if(copy) copy.addEventListener('click', function(){
+    var txt = '#' + s.id;
+    function ok(){ showToast('Order ID ' + txt + ' copied.'); }
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(ok, ok); }
+    else { var ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e){} document.body.removeChild(ta); ok(); }
+  });
+  window.scrollTo({ top: 0, behavior: 'auto' });
+  setTimeout(function(){ var h = ckEl('ck-done-title'); if(h){ try{ h.focus({ preventScroll: true }); }catch(e){ h.focus(); } } }, 60);
+}
+function ckRestore(){
+  var m = /^#order-(NK-\d{4})$/.exec(location.hash || '');
+  if(!m) return false;
+  try{
+    var s = JSON.parse(safeSession.getItem(CK_LAST_KEY) || 'null');
+    if(s && s.id === m[1] && Array.isArray(s.items)){ ckShowConfirmation(s); return true; }
+  }catch(e){}
+  return false;
+}
+function ckSteps(n){
+  Array.prototype.forEach.call(document.querySelectorAll('[data-ck-step]'), function(li){
+    var i = Number(li.getAttribute('data-ck-step'));
+    li.classList.toggle('done', i < n); li.classList.toggle('active', i === n);
+    if(i === n) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+  });
+}
+
+/* ---------------- wiring ---------------- */
+function ckSelectMethod(m){
+  CK.method = m;
+  Array.prototype.forEach.call(document.querySelectorAll('.ck-method'), function(l){
+    var on = l.getAttribute('data-method') === m; l.classList.toggle('is-selected', on);
+  });
+  ckEl('ck-card-panel').hidden = (m !== 'card');
+  ckEl('ck-paypal-panel').hidden = (m !== 'paypal');
+  if(m !== 'card') CK_CARD_FIELDS.forEach(function(id){ ckSetError(id, ''); });
+}
+function ckInit(){
+  if(!ckEl('ck-form')) return;
+
+  /* keep the summary live when the cart changes anywhere (drawer, other tab, price sync) */
+  if(typeof renderCart === 'function' && !renderCart._ck){
+    var base = renderCart;
+    renderCart = function(){ var r = base.apply(this, arguments); try{ ckRender(); }catch(e){ console.warn(e); } return r; };
+    renderCart._ck = true;
+  }
+
+  ckEl('ck-form').addEventListener('submit', ckSubmit);
+  ckEl('ck-promo-apply').addEventListener('click', ckPromoApply);
+  ckEl('ck-promo-remove').addEventListener('click', ckPromoRemove);
+  ckEl('ck-promo-input').addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); ckPromoApply(); } });
+  ckEl('ck-edit-bag').addEventListener('click', function(){ if(typeof openCart === 'function') openCart(); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-wallet]'), function(b){
+    b.addEventListener('click', function(){ showToast(b.getAttribute('data-wallet') + ' isn\u2019t enabled on this store yet. Please complete the secure form below.'); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="ck-method"]'), function(r){
+    r.addEventListener('change', function(){ if(r.checked) ckSelectMethod(r.value); });
+  });
+
+  /* live field behaviour: validate on blur, clear the error as soon as the value becomes valid */
+  CK_BASE_FIELDS.concat(CK_CARD_FIELDS).forEach(function(id){
+    var f = ckEl(id); if(!f) return;
+    f.addEventListener('blur', function(){ if(String(f.value).trim() !== '' || f.classList.contains('is-invalid')) ckCheck(id, true); });
+    f.addEventListener('input', function(){ if(f.classList.contains('is-invalid') && CK_RULES[id].test(String(f.value))) ckSetError(id, ''); });
+    f.addEventListener('change', function(){ if(f.classList.contains('is-invalid')) ckCheck(id, true); });
+  });
+  var num = ckEl('ck-card'), brand = ckEl('ck-brand');
+  num.addEventListener('input', function(){
+    num.value = ckFormatCard(num.value);
+    var b = ckBrand(num.value.replace(/\D/g, '')); brand.textContent = b; brand.hidden = !b;
+    var cvc = ckEl('ck-cvc'); cvc.maxLength = (b === 'Amex') ? 4 : 3;
+  });
+  ckEl('ck-exp').addEventListener('input', function(){ this.value = ckFormatExp(this.value); });
+  ckEl('ck-cvc').addEventListener('input', function(){ this.value = this.value.replace(/\D/g, '').slice(0, 4); });
+  ckEl('ck-phone').addEventListener('input', function(){ this.value = this.value.replace(/[^\d+()\-\s.]/g, '').slice(0, 24); });
+  ckEl('ck-notes').addEventListener('input', function(){ ckSetText('ck-notes-count', this.value.length + '/500'); });
+
+  /* mobile: collapsible order summary; desktop: always open */
+  var det = ckEl('ck-sum-details'), mq = window.matchMedia ? window.matchMedia('(min-width: 981px)') : null;
+  if(det && mq){
+    det.open = mq.matches;
+    var onMq = function(e){ if(e.matches) det.open = true; };
+    if(mq.addEventListener) mq.addEventListener('change', onMq); else if(mq.addListener) mq.addListener(onMq);
+  }
+
+  ckSelectMethod('card');
+  ckSteps(2);
+  if(!ckRestore()) ckRender();
+}
+
+
+function init(){
+  var saved = safeStorage.getItem('theme') || safeStorage.getItem('nikora_theme');
+  setTheme(saved === 'dark' ? 'dark' : 'light');
+
+  renderCart();
+  renderTrustBadges();
+  initCartSync();
+
+
+  fInitReveal();
+  ckInit();
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
