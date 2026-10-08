@@ -1,0 +1,6 @@
+{
+  "functions": {
+    "api/orders/create.js": { "maxDuration": 30 },
+    "api/webhooks/fulfillment.js": { "maxDuration": 30 }
+  }
+}
