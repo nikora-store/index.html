@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<script>
+/* Anti-flicker: apply the saved theme before first paint ('theme' key, legacy 'nikora_theme' fallback). */
+(function(){
+  try{
+    var saved = localStorage.getItem('theme') || localStorage.getItem('nikora_theme');
+    if(saved === 'light' || saved === 'dark'){ document.documentElement.setAttribute('data-theme', saved); }
+  }catch(e){}
+  /* scroll-reveal is only armed when JS runs, so content is never hidden without it */
+  document.documentElement.classList.add('js-on');
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Returns &amp; 30-Day Guarantee Portal — NIKORA</title>
+<meta name="description" content="Start a return or replacement request in under 2 minutes, or check the status of an existing return. 30-day money-back guarantee. Support: nikora.support@gmail.com.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Firebase (compat build — plain <script> globals, no bundler/import needed) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<style>
+:root{
+  --canvas:#FAF8F5;
+  --canvas-rgb:250,248,245;
+  --card-bg: rgba(255,255,255,0.65);
+  --card-border: rgba(230,220,210,0.6);
+  --text:#1A1615;
+  --text-soft: rgba(26,22,21,0.62);
+  --text-faint: rgba(26,22,21,0.4);
+  --gold:#C59B56;
+  --gold-rgb:197,155,86;
+  --rose:#D81E5B;
+  --rose-rgb:216,30,91;
+  --line: rgba(26,22,21,0.1);
+  --surface-raised: rgba(255,255,255,0.85);
+  --shadow-ambient: 0 20px 60px -20px rgba(60,45,30,0.18);
+  --success:#2E6B4F;
+  color-scheme: light;
+}
+[data-theme="dark"]{
+  --canvas:#0D0B12;
+  --canvas-rgb:13,11,18;
+  --card-bg: rgba(25,20,32,0.55);
+  --card-border: rgba(255,255,255,0.08);
+  --text:#F7F4F0;
+  --text-soft: rgba(247,244,240,0.64);
+  --text-faint: rgba(247,244,240,0.38);
+  --gold:#E5BA73;
+  --gold-rgb:229,186,115;
+  --rose:#FF527B;
+  --rose-rgb:255,82,123;
+  --line: rgba(255,255,255,0.09);
+  --surface-raised: rgba(30,25,38,0.9);
+  --shadow-ambient: 0 20px 70px -20px rgba(0,0,0,0.6);
+  color-scheme: dark;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+
+/* ================= 1. LIVE ANIMATED GRADIENT BACKGROUND ================= */
+body {
+  background: linear-gradient(-45deg, #FAF7F2, #F8F4F0, #F5EFE6, #FAF7F2);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+  margin:0;
+  color:var(--text);
+  font-family:'Montserrat',sans-serif;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  transition:color .4s ease;
+}
+[data-theme="dark"] body {
+  background: linear-gradient(-45deg, #0D0B12, #170E1B, #2A0F1D, #0D0B12);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@media (prefers-reduced-motion: reduce){
+  body{animation:none;}
+  *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+}
+
+img{max-width:100%;display:block;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+.container{
+  width:100%;
+  max-width:1240px;
+  margin:0 auto;
+  padding:0 clamp(20px,4vw,48px);
+}
+:focus-visible{outline:2px solid var(--rose); outline-offset:3px; border-radius:4px;}
+
+
+
+
+
+
+
+
+/* ---------------- LOGO (footer) ----------------
+   The header, "More" dropdown and mobile drawer are rendered and styled entirely by nav.js. */
+.logo{
+  font-family:'Playfair Display',serif;
+  font-size:26px; letter-spacing:.06em; font-weight:600;
+}
+.logo em{font-style:italic; color:var(--gold);}
+
+.btn-primary{
+  background:var(--text); color:var(--canvas);
+  padding:16px 30px; border-radius:100px; border:none;
+  font-size:13.5px; font-weight:600; letter-spacing:.03em;
+  display:inline-flex; align-items:center; gap:10px;
+  transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s ease;
+  box-shadow:0 12px 30px -12px rgba(26,22,21,0.4);
+}
+.btn-primary:hover{transform:translateY(-2px); box-shadow:0 16px 36px -12px rgba(26,22,21,0.5);}
+.btn-primary svg{width:14px;height:14px;stroke:currentColor;fill:none;transition:transform .25s ease;}
+.btn-primary:hover svg{transform:translateX(3px);}
+.btn-ghost{font-size:13.5px; font-weight:600; color:var(--text); padding:16px 8px; border-bottom:1px solid var(--text); display:inline-flex; align-items:center; gap:8px;}
+
+/* ---------------- SECTION HEADERS ---------------- */
+.section{padding:clamp(60px,8vw,100px) 0;}
+.section-head{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:44px; flex-wrap:wrap;}
+.section-head h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(28px,3.4vw,40px); margin:0; letter-spacing:-.01em;}
+.section-head h2 em{font-style:italic;color:var(--gold);}
+.section-head p{margin:8px 0 0; color:var(--text-soft); font-size:14.5px; max-width:440px;}
+.section-link{font-size:13px; font-weight:600; border-bottom:1px solid var(--text); padding-bottom:2px; white-space:nowrap; background:none; border-left:none; border-right:none; border-top:none;}
+
+/* ================= TACTILE 3D CARD SPOTLIGHT ================= */
+.glass-card{
+  --mouse-x:50%; --mouse-y:50%;
+  position:relative;
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  border-radius:22px;
+  backdrop-filter:blur(20px) saturate(180%);
+  transition:transform .12s ease-out, box-shadow .25s ease;
+  box-shadow:var(--shadow-ambient);
+  transform-style:preserve-3d;
+  will-change:transform;
+}
+.glass-card::after{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:radial-gradient(350px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.45), transparent 70%);
+  opacity:0; transition:opacity .3s ease;
+}
+[data-theme="dark"] .glass-card::after{
+  background:radial-gradient(350px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.14), transparent 70%);
+}
+.glass-card:hover::after{opacity:1;}
+
+/* ---------------- FOOTER ---------------- */
+footer.site{border-top:1px solid var(--line); padding:60px 0 30px; margin-top:20px;}
+.footer-grid{display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; margin-bottom:44px;}
+@media (max-width:760px){ .footer-grid{grid-template-columns:1fr 1fr;} }
+.footer-col h5{font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); font-weight:600; margin:0 0 16px;}
+.footer-col a, .footer-col p{display:block; font-size:13.5px; color:var(--text-soft); margin-bottom:11px; line-height:1.5;}
+.footer-col a:hover{color:var(--text);}
+.footer-bottom{display:flex; justify-content:space-between; align-items:center; padding-top:26px; border-top:1px solid var(--line); font-size:12px; color:var(--text-faint); flex-wrap:wrap; gap:12px;}
+
+/* ================= 3. CLICK-LOCK & OVERLAY CSS FIX ================= */
+.modal-overlay, .cart-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 9998;
+  display: flex; align-items: center; justify-content: center;
+  padding:20px;
+}
+.modal-overlay.active, .cart-overlay.active {
+  opacity: 1; visibility: visible; pointer-events: auto;
+}
+.modal-card, .cart-drawer, .modal-box { z-index: 9999; position: relative; }
+#cart-drawer { z-index: 9999; }
+
+.modal-box, .modal-card{
+  background:var(--surface-raised); border:1px solid var(--card-border); border-radius:22px;
+  width:100%; max-width:440px; padding:36px; max-height:88vh; overflow-y:auto;
+  box-shadow:0 40px 90px -20px rgba(0,0,0,0.5);
+}
+.modal-box.wide{max-width:640px;}
+.modal-close, .close-btn{position:absolute; top:18px; right:18px; background:none; border:none; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background .2s ease; font-size:16px; color:var(--text); cursor:pointer;}
+.modal-close:hover, .close-btn:hover{background:var(--line);}
+.modal-close svg{width:16px;height:16px;stroke:var(--text);}
+.modal-box h3, .modal-card h3{font-family:'Playfair Display',serif; font-size:22px; font-weight:500; margin:0 0 20px;}
+.modal-box .modal-sub{font-size:13px; color:var(--text-soft); margin:0 0 24px;}
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:11.5px; font-weight:600; letter-spacing:.03em; text-transform:uppercase; color:var(--text-faint); margin-bottom:7px;}
+.field input, .field select, .field textarea,
+.modal-card input[type="password"]{
+  width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line);
+  background:rgba(var(--canvas-rgb),0.5); color:var(--text); font-family:inherit; font-size:13.5px;
+  margin-bottom:16px;
+}
+.field textarea{resize:vertical; min-height:70px;}
+.field input:focus, .field select:focus, .field textarea:focus,
+.modal-card input:focus{border-color:var(--gold); outline:none;}
+.field-row{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.form-error{font-size:12.5px; color:var(--rose); margin:-4px 0 14px; display:none;}
+.form-error.show{display:block;}
+.modal-submit, .submit-btn, .primary-btn{
+  width:100%; padding:15px; border-radius:100px; border:none; background:var(--text); color:var(--canvas);
+  font-size:13px; font-weight:600; letter-spacing:.03em; margin-top:8px; cursor:pointer;
+}
+
+/* ---------------- CART DRAWER layout (slide-in panel, not centered) ---------------- */
+#cart-drawer{
+  position:fixed; top:0; right:0; bottom:0; left:auto; margin:0; width:min(420px,100%); background:var(--surface-raised);
+  transform:translateX(100%); transition:transform .35s ease;
+  display:flex; flex-direction:column; border-left:1px solid var(--card-border);
+  max-width:none; padding:0; border-radius:0; box-shadow:none;
+  opacity:1; visibility:visible; pointer-events:none;
+}
+#cart-drawer.active{
+  transform:translateX(0) !important;
+  pointer-events:auto;
+  visibility:visible;
+  display:flex;
+}
+.cart-head{padding:24px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); flex-shrink:0;}
+.cart-head h3{font-family:'Playfair Display',serif; font-size:20px; margin:0; font-weight:500;}
+.cart-close-btn{
+  width:38px; height:38px; border-radius:50%; border:1px solid var(--line); background:var(--card-bg);
+  display:flex; align-items:center; justify-content:center; color:var(--text); cursor:pointer;
+  transition:background .2s ease, border-color .2s ease, transform .15s ease;
+}
+.cart-close-btn:hover{background:var(--line); border-color:var(--gold); transform:rotate(90deg);}
+#cart-drawer svg{fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
+.cart-close-btn svg{width:16px; height:16px; stroke-width:2.2;}
+#cart-drawer{overflow:hidden;}
+.ship-progress-wrap{padding:16px 24px; border-bottom:1px solid var(--line); flex-shrink:0;}
+.ship-progress-text{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-soft); margin-bottom:8px; line-height:1.4;}
+.ship-progress-text svg{width:14px; height:14px; stroke:var(--gold);}
+.ship-progress-text.unlocked{color:var(--success); font-weight:600;}
+.ship-progress-text.unlocked svg{stroke:var(--success);}
+.ship-progress-bar{height:6px; border-radius:100px; background:var(--line); overflow:hidden;}
+.ship-progress-fill{height:100%; background:linear-gradient(90deg,var(--gold),var(--rose)); width:0%; transition:width .4s ease;}
+.ship-progress-fill.unlocked{background:linear-gradient(90deg,var(--success),var(--gold));}
+.cart-items{flex:0 1 auto; overflow-y:auto; padding:6px 24px; min-height:0;}
+.cart-item{display:flex; gap:14px; padding:16px 0; border-bottom:1px solid var(--line);}
+.ci-thumb{width:62px; height:62px; border-radius:12px; overflow:hidden; flex-shrink:0; background:var(--surface-tint,var(--card-bg)); border:1px solid var(--line); display:flex; align-items:center; justify-content:center;}
+.ci-thumb img{width:100%; height:100%; object-fit:cover;}
+.ci-thumb svg{width:22px; height:22px; color:var(--text-faint); stroke-width:1.6;}
+.ci-info{flex:1; min-width:0;}
+.ci-top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+.ci-title{font-size:13px; font-weight:600; line-height:1.35;}
+.ci-price{font-size:12px; color:var(--text-soft); margin-top:3px;}
+.ci-bottom{display:flex; align-items:center; justify-content:space-between; margin-top:10px;}
+.qty-ctrl{display:inline-flex; align-items:center; gap:2px; border:1px solid var(--line); border-radius:100px; padding:2px;}
+.qty-ctrl button{width:26px; height:26px; border-radius:50%; border:none; background:none; color:var(--text); display:flex; align-items:center; justify-content:center; transition:background .2s ease;}
+.qty-ctrl button:hover{background:var(--line);}
+.qty-ctrl button svg{width:12px; height:12px; stroke-width:2.4;}
+.qty-ctrl span{font-size:12.5px; font-weight:600; min-width:22px; text-align:center;}
+.ci-line-total{font-size:13px; font-weight:700; color:var(--gold);}
+.ci-remove{width:30px; height:30px; flex-shrink:0; border-radius:50%; border:1px solid var(--line); background:none; color:var(--text-faint); display:flex; align-items:center; justify-content:center; transition:color .2s ease, border-color .2s ease, background .2s ease;}
+.ci-remove svg{width:14px; height:14px;}
+.ci-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5); background:rgba(225,29,72,.08);}
+.cart-empty{padding:28px 24px 22px; text-align:center; color:var(--text-soft); font-size:13.5px; line-height:1.55;}
+.cart-foot{padding:18px 24px 22px; border-top:1px solid var(--line); flex-shrink:0;}
+
+/* ---------------- IN-CART RECOMMENDATIONS: auto-scrolling horizontal carousel ---------------- */
+.cart-recs-section{border-top:1px solid var(--line); padding:16px 24px 4px; flex-shrink:0;}
+.cart-recs-head{display:flex; align-items:center; gap:7px; font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin-bottom:12px;}
+.cart-recs-head svg{width:14px; height:14px; stroke:var(--gold);}
+.cart-recs-grid{
+  display:flex; gap:12px; overflow-x:auto; overflow-y:hidden; padding-bottom:14px;
+  -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;
+  scrollbar-width:thin; scrollbar-color:var(--line) transparent;
+}
+.cart-recs-grid::-webkit-scrollbar{height:5px;}
+.cart-recs-grid::-webkit-scrollbar-track{background:transparent;}
+.cart-recs-grid::-webkit-scrollbar-thumb{background:var(--line); border-radius:100px;}
+.cart-rec-card{
+  flex:0 0 130px; background:var(--card-bg); border:1px solid var(--card-border);
+  border-radius:14px; padding:10px; display:flex; flex-direction:column; gap:7px;
+}
+.cart-rec-thumb{width:100%; aspect-ratio:4/3; border-radius:10px; overflow:hidden; background:var(--surface-tint,var(--card-bg)); display:flex; align-items:center; justify-content:center;}
+.cart-rec-thumb img{width:100%; height:100%; object-fit:cover; pointer-events:none; -webkit-user-drag:none;}
+.cart-rec-thumb svg{width:24px; height:24px; color:var(--text-faint); stroke-width:1.6;}
+.cart-rec-title{
+  font-size:11.5px; font-weight:600; line-height:1.35; color:var(--text); min-height:2.7em;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.cart-rec-price{font-size:12.5px; font-weight:700; color:var(--gold); font-family:'Playfair Display',serif;}
+.cart-rec-add{
+  display:flex; align-items:center; justify-content:center; gap:4px; margin-top:auto;
+  padding:7px 8px; border-radius:100px; border:1px solid var(--gold); background:transparent; color:var(--gold);
+  font-size:10.5px; font-weight:700; letter-spacing:.02em; cursor:pointer; transition:background .2s ease, color .2s ease;
+}
+.cart-rec-add svg{width:11px; height:11px; stroke-width:2.6;}
+.cart-rec-add:hover{background:var(--gold); color:#241c0f;}
+.cart-sub-row{display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:10px; color:var(--text-soft);}
+.cart-sub-row strong{color:var(--text); font-size:17px;}
+.cart-checkout{
+  width:100%; padding:16px; border-radius:100px; border:none; background:var(--gold); color:#241c0f;
+  font-weight:700; font-size:13.5px; margin-bottom:14px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
+}
+.cart-checkout svg{width:15px; height:15px;}
+.cart-recs-done{font-size:12.5px; color:var(--text-soft); line-height:1.5; padding:4px 0 16px;}
+
+/* ---------------- PROMO CODE (cart footer) ---------------- */
+.cart-sub-row[hidden], .promo-active[hidden]{display:none;}
+.promo-box{margin-bottom:12px;}
+.promo-toggle{
+  width:100%; display:flex; align-items:center; gap:8px; background:none; border:none; padding:2px 0 10px;
+  color:var(--text-soft); font-size:12.5px; font-weight:600; cursor:pointer; text-align:left;
+}
+.promo-toggle:hover{color:var(--text);}
+.promo-toggle svg{width:15px; height:15px; stroke:var(--gold);}
+.promo-toggle .promo-chev{margin-left:auto; width:14px; height:14px; stroke:var(--text-faint); transition:transform .25s ease;}
+.promo-box.open .promo-chev{transform:rotate(180deg);}
+.promo-body{display:none; padding-bottom:6px;}
+.promo-box.open .promo-body{display:block;}
+.promo-form{display:flex; gap:8px;}
+.promo-form input{
+  flex:1; min-width:0; padding:11px 16px; border-radius:100px; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); font:inherit; font-size:13px; letter-spacing:.06em; text-transform:uppercase;
+  outline:none; transition:border-color .2s ease;
+}
+.promo-form input::placeholder{text-transform:none; letter-spacing:0; color:var(--text-faint);}
+.promo-form input:focus{border-color:var(--gold);}
+.promo-apply{
+  display:inline-flex; align-items:center; gap:6px; padding:0 18px; border-radius:100px; border:1px solid var(--gold);
+  background:transparent; color:var(--gold); font-size:12.5px; font-weight:700; cursor:pointer; transition:background .2s ease, color .2s ease;
+}
+.promo-apply svg{width:14px; height:14px; stroke-width:2.4;}
+.promo-apply:hover{background:var(--gold); color:#241c0f;}
+.promo-msg{font-size:11.5px; line-height:1.4; min-height:0; margin-top:6px;}
+.promo-msg:empty{display:none;}
+.promo-msg.err{color:#e11d48;}
+.promo-msg.ok{color:var(--success);}
+.promo-active{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 8px 8px 12px; border-radius:100px; border:1px solid var(--success); background:rgba(46,107,79,.08);}
+.promo-chip{display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--text); min-width:0;}
+.promo-chip svg{width:15px; height:15px; stroke:var(--success);}
+.promo-chip b{letter-spacing:.06em;}
+.promo-chip em{font-style:normal; color:var(--success); font-weight:700;}
+.promo-remove{display:inline-flex; align-items:center; gap:4px; padding:5px 10px; border-radius:100px; border:1px solid var(--line); background:var(--card-bg); color:var(--text-soft); font-size:11px; font-weight:700; cursor:pointer; flex-shrink:0;}
+.promo-remove svg{width:11px; height:11px; stroke-width:2.6;}
+.promo-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5);}
+.cart-discount-row span:last-child{color:var(--success); font-weight:700;}
+.cart-total-row{margin-top:-2px; padding-top:8px; border-top:1px dashed var(--line);}
+.cart-total-row span{color:var(--text); font-weight:600;}
+.cart-total-row strong{color:var(--gold);}
+@media (max-height:900px){ #cart-drawer .trust-badges{display:none;} }
+@media (hover:none){ .promo-form input{font-size:16px;} }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ---------------- PHOTO LIGHTBOX ---------------- */
+#nk-lightbox{
+  position:fixed; inset:0; z-index:10050; display:flex; align-items:center; justify-content:center; padding:24px;
+  background:rgba(10,8,12,.88); opacity:0; visibility:hidden; transition:opacity .25s ease, visibility 0s linear .25s;
+}
+#nk-lightbox.active{opacity:1; visibility:visible;}
+#nk-lightbox img{max-width:min(92vw,900px); max-height:86vh; border-radius:14px; box-shadow:0 30px 80px rgba(0,0,0,.6); object-fit:contain; background:#111;}
+#nk-lightbox .nk-lightbox-close{
+  position:absolute; top:18px; right:18px; width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.1); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+#nk-lightbox .nk-lightbox-close svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round;}
+.review-photo img, .rphoto img{cursor:zoom-in;}
+
+/* ---------------- shared modal / form kit (promo manager, hero image) ---------------- */
+[hidden]{display:none !important;}
+.nk-modal-overlay{
+  position:fixed; inset:0; z-index:10020; display:flex; align-items:center; justify-content:center; padding:20px;
+  background:rgba(10,8,12,.6); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+  opacity:0; visibility:hidden; transition:opacity .25s ease, visibility 0s linear .25s;
+}
+.nk-modal-overlay.active{opacity:1; visibility:visible;}
+.nk-modal-card{
+  position:relative; width:100%; max-width:480px; max-height:90vh; overflow-y:auto;
+  background:var(--surface-raised); color:var(--text); border:1px solid var(--card-border);
+  border-radius:24px; padding:30px 26px 26px; box-shadow:0 30px 80px rgba(0,0,0,.35);
+  transform:translateY(12px); transition:transform .25s ease;
+}
+.nk-modal-overlay.active .nk-modal-card{transform:none;}
+.nk-modal-card h3{font-family:'Playfair Display',serif; font-size:22px; font-weight:500; margin:0 0 6px; padding-right:34px;}
+.nk-modal-sub{font-size:12.5px; color:var(--text-soft); margin:0 0 18px; line-height:1.5;}
+.nk-modal-close{
+  position:absolute; top:14px; right:14px; width:36px; height:36px; border-radius:50%; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+.nk-modal-close svg{width:15px; height:15px; stroke:currentColor; fill:none;}
+.nk-modal-close:hover{border-color:var(--gold);}
+.nk-primary, .nk-ghost{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 20px; border-radius:100px;
+  font-weight:700; font-size:13px; cursor:pointer; transition:background .2s ease, color .2s ease, border-color .2s ease;
+}
+.nk-primary{border:none; background:var(--gold); color:#241c0f;}
+.nk-primary:hover{filter:brightness(1.06);}
+.nk-ghost{border:1px solid var(--line); background:transparent; color:var(--text-soft);}
+.nk-ghost:hover{border-color:var(--gold); color:var(--text);}
+.nk-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;}
+.nk-actions .nk-primary{flex:1;}
+.nk-field{margin-bottom:14px;}
+.nk-lbl{display:block; font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin-bottom:6px;}
+.nk-error{font-size:12px; color:#e11d48; margin:0 0 10px; min-height:0;}
+.nk-error:empty{display:none;}
+/* image field: upload a photo (Base64) or paste a URL, with preview + Remove */
+.nk-img-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.nk-img-btn{
+  display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:100px; border:1px dashed var(--line);
+  color:var(--text-soft); font-size:12.5px; font-weight:600; cursor:pointer; margin:0; text-transform:none; letter-spacing:0;
+  transition:border-color .2s ease, color .2s ease;
+}
+.nk-img-btn:hover{border-color:var(--gold); color:var(--gold);}
+.nk-img-btn svg{width:16px; height:16px; stroke:currentColor; fill:none;}
+.nk-img-or{font-size:11px; color:var(--text-faint);}
+.nk-img-row input[type=text]{
+  flex:1; min-width:150px; box-sizing:border-box; padding:10px 14px; border-radius:100px; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); font:inherit; font-size:13px; outline:none;
+}
+.nk-img-row input[type=text]:focus{border-color:var(--gold);}
+.nk-img-preview{display:none; align-items:center; gap:12px; margin-top:10px;}
+.nk-img-preview.show{display:flex;}
+.nk-img-preview img{width:84px; height:84px; object-fit:cover; border-radius:12px; border:1px solid var(--card-border); background:var(--surface-tint);}
+.nk-img-remove{display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:100px; border:1px solid var(--line); background:var(--card-bg); color:var(--text-soft); font-size:11.5px; font-weight:700; cursor:pointer;}
+.nk-img-remove svg{width:12px; height:12px; stroke:currentColor; fill:none;}
+.nk-img-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5);}
+
+
+
+
+.nk-modal-overlay.active, #nk-lightbox.active{transition:opacity .25s ease, visibility 0s;}
+.trust-badges{display:flex; flex-wrap:wrap; gap:8px; justify-content:center;}
+.trust-badge{display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:600; color:var(--text-soft); border:1px solid var(--line); border-radius:100px; padding:6px 10px;}
+.trust-badge svg{width:13px; height:13px; stroke:var(--gold); fill:none; flex-shrink:0;}
+.icon-inline{display:inline-flex; align-items:center; gap:8px;}
+.icon-inline svg{width:14px; height:14px; stroke:currentColor; fill:none; flex-shrink:0;}
+.drawer-close-btn svg, .close-btn svg, .modal-close svg{width:16px; height:16px; stroke:currentColor; fill:none;}
+.pc-add{display:flex; align-items:center; justify-content:center; gap:8px;}
+.pc-add svg{width:15px; height:15px; stroke:currentColor; fill:none;}
+
+.toast{
+  position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--text); color:var(--canvas); padding:14px 24px; border-radius:100px; font-size:13px; font-weight:500;
+  z-index:3000; opacity:0; pointer-events:none; transition:all .3s ease; display:flex; align-items:center; gap:10px;
+  box-shadow:0 20px 40px -12px rgba(0,0,0,0.4);
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+.toast svg{width:15px;height:15px;stroke:var(--success);fill:none; flex-shrink:0;}
+.visually-hidden{position:absolute; width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
+
+/* ================= RETURNS PORTAL ================= */
+html.js-on .reveal{opacity:0; transform:translateY(22px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1);}
+html.js-on .reveal.in{opacity:1; transform:none;}
+[hidden]{display:none !important;}
+.sr-only{position:absolute !important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
+
+/* ---------------- HERO ---------------- */
+.r-hero{position:relative; padding:clamp(56px,8vw,96px) 0 clamp(24px,3vw,40px); overflow:hidden;}
+.r-hero::before{
+  content:""; position:absolute; inset:-20% -10% auto -10%; height:560px; pointer-events:none;
+  background: radial-gradient(600px 380px at 25% 15%, rgba(var(--gold-rgb),0.2), transparent 70%),
+              radial-gradient(520px 340px at 85% 10%, rgba(var(--rose-rgb),0.1), transparent 70%);
+}
+.r-hero-inner{display:grid; grid-template-columns:1.05fr .95fr; gap:clamp(32px,5vw,60px); align-items:center; position:relative; z-index:1;}
+@media (max-width:960px){ .r-hero-inner{grid-template-columns:1fr;} }
+.r-eyebrow{
+  display:inline-flex; align-items:center; gap:8px; margin-bottom:22px;
+  font-size:11.5px; letter-spacing:.08em; font-weight:700; text-transform:uppercase;
+  color:var(--gold); border:1px solid rgba(var(--gold-rgb),.45); border-radius:100px; padding:7px 14px; background:rgba(var(--gold-rgb),.08);
+}
+.r-eyebrow svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+h1.r-title{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(34px,4.6vw,58px); line-height:1.08; letter-spacing:-.01em; margin:0 0 20px;}
+h1.r-title em{font-style:italic; color:var(--gold);}
+.r-sub{font-size:clamp(15.5px,1.4vw,17.5px); line-height:1.65; color:var(--text-soft); max-width:520px; margin:0;}
+
+.policy{padding:clamp(22px,3vw,34px); border-radius:30px;}
+.policy-top{display:flex; align-items:center; gap:14px; margin-bottom:14px;}
+.policy-ico{flex:none; width:50px; height:50px; border-radius:15px; display:grid; place-items:center; background:rgba(var(--gold-rgb),.14); color:var(--gold);}
+.policy-ico svg{width:26px; height:26px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;}
+.policy h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(20px,2.2vw,25px); margin:0; line-height:1.2;}
+.policy-list{list-style:none; margin:0 0 18px; padding:0; display:grid; gap:10px;}
+.policy-list li, .checklist li{display:flex; gap:11px; align-items:flex-start; font-size:14px; line-height:1.5; color:var(--text-soft);}
+.policy-list svg, .checklist svg{flex:none; width:19px; height:19px; margin-top:1px; stroke:var(--gold); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+.policy-list strong{color:var(--text); font-weight:600;}
+.checklist-box{padding:16px 18px; border-radius:18px; background:rgba(var(--gold-rgb),.1); border:1px solid rgba(var(--gold-rgb),.3); margin-bottom:16px;}
+.checklist-box h3{margin:0 0 10px; font-size:11.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint);}
+.checklist{list-style:none; margin:0; padding:0; display:grid; gap:9px;}
+.checklist li{color:var(--text);}
+.policy-link{font-size:13px; font-weight:700; color:var(--text); border-bottom:1px solid var(--text); padding-bottom:2px;}
+.policy-link:hover{color:var(--gold); border-color:var(--gold);}
+
+/* ---------------- TABS ---------------- */
+.r-tabs-wrap{display:flex; justify-content:center; margin:0 0 26px;}
+.r-tabs{display:inline-flex; gap:6px; padding:6px; border-radius:100px; background:var(--card-bg); border:1px solid var(--line); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); max-width:100%;}
+.r-tab{
+  display:inline-flex; align-items:center; gap:9px; padding:13px 24px; border-radius:100px; cursor:pointer; border:none; background:none;
+  font:inherit; font-size:13.5px; font-weight:700; color:var(--text-soft); transition:background .2s ease, color .2s ease; white-space:nowrap;
+}
+.r-tab svg{width:17px; height:17px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+.r-tab:hover{color:var(--text);}
+.r-tab[aria-selected="true"]{background:var(--text); color:var(--canvas);}
+@media (max-width:560px){ .r-tabs{flex-direction:column; border-radius:28px; width:100%;} .r-tab{justify-content:center;} }
+
+.r-panel{max-width:860px; margin:0 auto;}
+.r-card{padding:clamp(22px,3.6vw,44px); border-radius:32px;}
+
+/* ---------------- STEPPER ---------------- */
+.stepper{list-style:none; margin:0 0 clamp(26px,3.6vw,38px); padding:0; display:grid; grid-template-columns:repeat(3,1fr);}
+.stepper li{position:relative; display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; padding:0 6px;}
+.stepper li::before{content:""; position:absolute; top:22px; right:50%; width:100%; height:3px; border-radius:3px; background:var(--line); z-index:0;}
+.stepper li:first-child::before{display:none;}
+.stepper li.done::before, .stepper li.active::before{background:var(--gold);}
+.st-node{
+  position:relative; z-index:1; width:46px; height:46px; border-radius:50%; display:grid; place-items:center;
+  background:var(--canvas); border:2px solid var(--line); color:var(--text-faint); transition:background .3s ease, border-color .3s ease, color .3s ease;
+}
+.st-node svg{width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+.stepper li.done .st-node{background:var(--gold); border-color:var(--gold); color:#241c0f;}
+.stepper li.active .st-node{border-color:var(--gold); color:var(--gold); box-shadow:0 0 0 6px rgba(var(--gold-rgb),.16);}
+.st-label{font-size:13px; font-weight:700; color:var(--text-soft); line-height:1.3;}
+.stepper li.done .st-label, .stepper li.active .st-label{color:var(--text);}
+.st-sub{font-size:11.5px; color:var(--text-faint); margin-top:-6px;}
+@media (max-width:520px){ .st-sub{display:none;} .st-label{font-size:12px;} }
+
+/* ---------------- FORM ---------------- */
+.r-step-title{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(22px,2.6vw,29px); margin:0 0 6px; line-height:1.2;}
+.r-step-sub{margin:0 0 24px; font-size:14px; line-height:1.6; color:var(--text-soft);}
+.r-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+@media (max-width:640px){ .r-grid{grid-template-columns:1fr;} }
+.r-field{display:flex; flex-direction:column; margin-bottom:18px;}
+.r-grid .r-field{margin-bottom:0;}
+.r-field label, .r-label{font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--text-faint); margin-bottom:8px;}
+.r-label .opt{font-weight:400; text-transform:none; letter-spacing:0; opacity:.7; margin-left:4px;}
+.r-input, .r-select, .r-textarea{
+  width:100%; font:inherit; font-size:14.5px; font-weight:500; color:var(--text); outline:none;
+  background:rgba(var(--canvas-rgb),.55); border:1px solid var(--line); transition:border-color .2s ease, box-shadow .2s ease;
+}
+.r-input, .r-select{height:56px; padding:0 20px; border-radius:100px;}
+.r-textarea{min-height:130px; padding:16px 20px; border-radius:22px; resize:vertical; line-height:1.6;}
+.r-input::placeholder, .r-textarea::placeholder{color:var(--text-faint); font-weight:400;}
+.r-select{
+  appearance:none; -webkit-appearance:none; padding-right:48px; cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 20px center;
+}
+.r-select option{color:#1c1917; background:#fff;}
+.r-input:focus, .r-select:focus, .r-textarea:focus{border-color:var(--gold); box-shadow:0 0 0 4px rgba(var(--gold-rgb),.16);}
+.r-input[aria-invalid="true"], .r-select[aria-invalid="true"], .r-textarea[aria-invalid="true"]{border-color:#e11d48; box-shadow:0 0 0 4px rgba(225,29,72,.12);}
+.r-hint{margin:8px 4px 0; font-size:12px; color:var(--text-faint); line-height:1.5;}
+.r-error{margin:4px 2px 14px; font-size:13px; line-height:1.5; color:#e11d48;}
+.r-error:empty{display:none;}
+.r-notice{display:flex; gap:12px; align-items:flex-start; padding:14px 16px; border-radius:16px; font-size:13px; line-height:1.55; color:var(--text-soft); background:rgba(var(--rose-rgb),.08); border:1px solid rgba(var(--rose-rgb),.3); margin-bottom:18px;}
+.r-notice svg{flex:none; width:19px; height:19px; margin-top:1px; stroke:var(--rose); fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+.r-notice a{color:var(--text); font-weight:600; border-bottom:1px solid rgba(var(--gold-rgb),.6);}
+
+/* evidence upload */
+.drop{
+  display:flex; align-items:center; gap:14px; padding:18px 20px; border-radius:20px; cursor:pointer;
+  border:1.5px dashed rgba(var(--gold-rgb),.6); background:rgba(var(--gold-rgb),.07); color:var(--text-soft); font-size:13.5px; line-height:1.5;
+  transition:background .2s ease, border-color .2s ease;
+}
+.drop:hover, .drop:focus-within, .drop.over{background:rgba(var(--gold-rgb),.14); border-color:var(--gold);}
+.drop svg{flex:none; width:30px; height:30px; stroke:var(--gold); fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;}
+.drop strong{color:var(--text); font-weight:600;}
+.drop[aria-disabled="true"]{opacity:.5; cursor:default;}
+.thumbs{display:flex; gap:12px; flex-wrap:wrap; margin-top:14px;}
+.thumb{position:relative; width:92px; height:92px; border-radius:16px; overflow:hidden; border:1px solid var(--card-border);}
+.thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+.thumb button{position:absolute; top:5px; right:5px; width:24px; height:24px; border-radius:50%; border:none; padding:0; cursor:pointer; background:rgba(0,0,0,.68); color:#fff; display:grid; place-items:center;}
+.thumb button svg{width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:3; stroke-linecap:round;}
+.thumb.busy::after{content:""; position:absolute; inset:0; background:rgba(0,0,0,.35);}
+.thumb.busy::before{content:""; position:absolute; z-index:2; top:50%; left:50%; width:20px; height:20px; margin:-10px 0 0 -10px; border-radius:50%; border:2px solid #fff; border-right-color:transparent; animation:rSpin .7s linear infinite;}
+@keyframes rSpin{to{transform:rotate(360deg);}}
+
+/* actions */
+.r-actions{display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; margin-top:26px;}
+.r-actions .btn-primary, .r-actions .btn-ghost{cursor:pointer; padding:16px 30px; justify-content:center;}
+.r-actions .btn-primary svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:none;}
+.r-actions .btn-primary:hover svg{transform:none;}
+.r-actions .btn-primary[disabled]{opacity:.65; cursor:progress; transform:none;}
+.r-spin{display:none; width:16px; height:16px; border-radius:50%; border:2px solid currentColor; border-right-color:transparent; animation:rSpin .7s linear infinite;}
+.btn-primary.loading .r-spin{display:inline-block;}
+.btn-primary.loading .r-arrow{display:none;}
+@media (max-width:520px){ .r-actions{flex-direction:column-reverse; align-items:stretch;} }
+
+/* review summary (step 3) */
+.sum-list{margin:0 0 20px; padding:0; list-style:none; border:1px solid var(--line); border-radius:22px; overflow:hidden;}
+.sum-list li{display:grid; grid-template-columns:150px 1fr; gap:14px; padding:14px 20px; border-bottom:1px solid var(--line); font-size:14px; line-height:1.55;}
+.sum-list li:last-child{border-bottom:none;}
+.sum-list .k{font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--text-faint); padding-top:2px;}
+.sum-list .v{color:var(--text); overflow-wrap:anywhere; white-space:pre-line;}
+@media (max-width:560px){ .sum-list li{grid-template-columns:1fr; gap:4px;} }
+.sum-thumbs{display:flex; gap:8px; flex-wrap:wrap;}
+.sum-thumbs img{width:64px; height:64px; object-fit:cover; border-radius:12px; border:1px solid var(--card-border);}
+.consent{display:flex; gap:12px; align-items:flex-start; font-size:13px; line-height:1.55; color:var(--text-soft); cursor:pointer; margin-bottom:6px;}
+.consent input{flex:none; width:20px; height:20px; margin-top:1px; accent-color:var(--gold); cursor:pointer;}
+.consent a{color:var(--text); font-weight:600; border-bottom:1px solid rgba(var(--gold-rgb),.6);}
+
+/* ---------------- SUCCESS ---------------- */
+.success{text-align:center; padding:clamp(6px,1vw,14px) 0;}
+.ok-ring{width:84px; height:84px; margin:0 auto 22px; border-radius:50%; display:grid; place-items:center; background:rgba(var(--gold-rgb),.16); border:1.5px solid rgba(var(--gold-rgb),.6);}
+.ok-ring svg{width:42px; height:42px; fill:none; stroke:var(--gold); stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:50; stroke-dashoffset:50; animation:rDraw .7s ease .15s forwards;}
+@keyframes rDraw{to{stroke-dashoffset:0;}}
+.success h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(26px,3.2vw,38px); margin:0 0 10px; line-height:1.15;}
+.success h2 em{font-style:italic; color:var(--gold);}
+.success > p{margin:0 auto 24px; max-width:480px; font-size:14.5px; line-height:1.65; color:var(--text-soft);}
+.ret-id{
+  display:inline-flex; align-items:center; gap:14px; padding:16px 22px 16px 28px; border-radius:100px; margin-bottom:8px;
+  background:rgba(var(--gold-rgb),.12); border:1px solid rgba(var(--gold-rgb),.5);
+}
+.ret-id span{font-family:'Playfair Display',serif; font-size:clamp(26px,4vw,38px); font-weight:600; letter-spacing:.02em; color:var(--gold); font-variant-numeric:tabular-nums;}
+.ret-id button{width:42px; height:42px; border-radius:50%; border:1px solid var(--line); background:var(--card-bg); cursor:pointer; display:grid; place-items:center; color:var(--text-soft); padding:0;}
+.ret-id button:hover{color:var(--gold); border-color:var(--gold);}
+.ret-id button svg{width:17px; height:17px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+.ret-keep{font-size:12.5px; color:var(--text-faint); margin:0 0 30px;}
+.next{text-align:left; margin:0 auto 26px; max-width:620px; padding:0; list-style:none; display:grid; gap:14px; counter-reset:nx;}
+.next li{display:grid; grid-template-columns:38px 1fr; gap:14px; align-items:start; font-size:14px; line-height:1.6; color:var(--text-soft); counter-increment:nx;}
+.next li::before{content:counter(nx); width:38px; height:38px; border-radius:50%; display:grid; place-items:center; font-family:'Playfair Display',serif; font-size:17px; font-weight:600; color:var(--gold); background:rgba(var(--gold-rgb),.14); border:1px solid rgba(var(--gold-rgb),.45);}
+.next strong{color:var(--text); font-weight:600;}
+.success-actions{display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
+.success-actions .btn-primary, .success-actions .btn-ghost{cursor:pointer; padding:15px 26px;}
+.success-actions .btn-primary svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:none;}
+.success-actions .btn-primary:hover svg{transform:none;}
+.mail-note{margin:18px auto 0; max-width:520px; font-size:12.5px; line-height:1.6; color:var(--text-faint);}
+.mail-note a{color:var(--text); font-weight:600; border-bottom:1px solid rgba(var(--gold-rgb),.6);}
+
+/* ---------------- STATUS PANEL ---------------- */
+.s-form{display:grid; grid-template-columns:1fr 1fr auto; gap:14px; align-items:end;}
+@media (max-width:760px){ .s-form{grid-template-columns:1fr;} }
+.s-form .r-field{margin:0;}
+.s-form .btn-primary{height:56px; padding:0 30px; justify-content:center; cursor:pointer;}
+.s-form .btn-primary svg{width:17px; height:17px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:none;}
+.s-form .btn-primary:hover svg{transform:none;}
+.s-result{margin-top:28px; padding-top:28px; border-top:1px solid var(--line);}
+.s-head{display:flex; align-items:center; justify-content:space-between; gap:14px 20px; flex-wrap:wrap; margin-bottom:22px;}
+.s-id{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(22px,2.6vw,30px); margin:0; outline:none;}
+.s-id em{font-style:italic; color:var(--gold);}
+.s-live{display:inline-flex; align-items:center; gap:8px; font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint);}
+.s-live i{width:7px; height:7px; border-radius:50%; background:var(--rose); animation:rLive 2s ease-out infinite;}
+@keyframes rLive{0%{box-shadow:0 0 0 0 rgba(var(--rose-rgb),.55);} 100%{box-shadow:0 0 0 9px rgba(var(--rose-rgb),0);}}
+.badge{
+  display:inline-flex; align-items:center; gap:9px; padding:10px 18px; border-radius:100px; font-size:13.5px; font-weight:700; letter-spacing:.02em;
+  background:rgba(var(--gold-rgb),.16); color:#80591f; border:1px solid rgba(var(--gold-rgb),.5);
+}
+[data-theme="dark"] .badge{color:var(--gold);}
+.badge i{width:8px; height:8px; border-radius:50%; background:currentColor;}
+.badge.b-approved{background:rgba(var(--rose-rgb),.14); color:#9b3d58; border-color:rgba(var(--rose-rgb),.45);}
+[data-theme="dark"] .badge.b-approved{color:#f08fa6;}
+.badge.b-received{background:rgba(70,120,190,.14); color:#2f5a96; border-color:rgba(70,120,190,.45);}
+[data-theme="dark"] .badge.b-received{color:#8db7f0;}
+.badge.b-done{background:rgba(46,107,79,.14); color:var(--success); border-color:rgba(46,107,79,.45);}
+[data-theme="dark"] .badge.b-done{color:#6fcf9e;}
+.badge.b-other{background:var(--card-bg); color:var(--text-soft); border-color:var(--line);}
+.s-steps{list-style:none; margin:26px 0 0; padding:0; display:grid; gap:0;}
+.s-steps li{position:relative; display:grid; grid-template-columns:40px 1fr; gap:16px; padding-bottom:24px;}
+.s-steps li:last-child{padding-bottom:0;}
+.s-steps li::before{content:""; position:absolute; left:19px; top:40px; bottom:0; width:2px; background:var(--line);}
+.s-steps li:last-child::before{display:none;}
+.s-steps li.done::before{background:var(--gold);}
+.ss-dot{width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:var(--canvas); border:2px solid var(--line); color:var(--text-faint); z-index:1;}
+.ss-dot svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+.s-steps li.done .ss-dot{background:var(--gold); border-color:var(--gold); color:#241c0f;}
+.s-steps li.active .ss-dot{border-color:var(--gold); color:var(--gold); box-shadow:0 0 0 5px rgba(var(--gold-rgb),.16);}
+.ss-t{font-size:14.5px; font-weight:700; color:var(--text-soft); padding-top:2px;}
+.s-steps li.done .ss-t, .s-steps li.active .ss-t{color:var(--text);}
+.ss-d{font-size:13px; line-height:1.55; color:var(--text-faint); margin-top:3px;}
+.s-meta{margin:24px 0 0; font-size:12.5px; color:var(--text-faint);}
+
+
+
+
+
+
+/* ---------------- HELP CARDS ---------------- */
+.help-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px;}
+@media (max-width:900px){ .help-grid{grid-template-columns:1fr;} }
+.help-card{padding:clamp(24px,3vw,32px); border-radius:26px; display:flex; flex-direction:column; align-items:flex-start;}
+.help-card .ico{width:50px; height:50px; border-radius:15px; display:grid; place-items:center; background:rgba(var(--gold-rgb),.14); color:var(--gold); margin-bottom:16px;}
+.help-card .ico svg{width:26px; height:26px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;}
+.help-card h3{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(19px,2vw,22px); line-height:1.3; margin:0 0 10px;}
+.help-card p{margin:0 0 16px; font-size:14px; line-height:1.65; color:var(--text-soft);}
+.help-card p strong{color:var(--text); font-weight:600;}
+.help-card .more{margin-top:auto; font-size:13px; font-weight:700; color:var(--text); border-bottom:1px solid var(--text); padding-bottom:2px;}
+.help-card .more:hover{color:var(--gold); border-color:var(--gold);}
+.help-card.contact{background:linear-gradient(160deg, rgba(var(--gold-rgb),.16), var(--card-bg));}
+.h-email{display:block; margin:0 0 16px; font-family:'Playfair Display',serif; font-size:clamp(16px,1.8vw,19px); font-weight:500; color:var(--text); word-break:break-all; border-bottom:1px solid rgba(var(--gold-rgb),.6); align-self:flex-start; padding-bottom:1px;}
+.h-email:hover{color:var(--gold);}
+.help-card .btn-primary{padding:14px 24px; font-size:12.5px; margin-top:auto;}
+.help-card .btn-primary svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:none;}
+.help-card .btn-primary:hover svg{transform:none;}
+
+/* ---------------- CLOSING CTA ---------------- */
+.cta-banner{position:relative; overflow:hidden; text-align:center; border-radius:32px; padding:clamp(40px,6vw,72px) clamp(22px,5vw,60px);}
+.cta-banner::before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background: radial-gradient(520px 300px at 20% 0%, rgba(var(--gold-rgb),.28), transparent 70%),
+              radial-gradient(480px 300px at 90% 100%, rgba(var(--rose-rgb),.16), transparent 70%);
+}
+.cta-banner > *{position:relative;}
+.cta-banner h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(28px,3.8vw,44px); line-height:1.1; margin:0 0 14px;}
+.cta-banner h2 em{font-style:italic; color:var(--gold);}
+.cta-banner p{margin:0 auto 28px; max-width:480px; font-size:15px; line-height:1.6; color:var(--text-soft);}
+.cta-banner .btn-primary{padding:17px 34px;}
+
+/* <button class="btn-ghost"> should look like the link version (reset the browser's default button box) */
+button.btn-ghost{background:none; border:none; border-bottom:1px solid var(--text); border-radius:0; font-family:inherit; cursor:pointer; padding:16px 8px;}
+button.btn-ghost:hover{color:var(--gold); border-bottom-color:var(--gold);}
+.rf-hp{position:absolute !important; left:-9999px !important; width:1px; height:1px; overflow:hidden;}
+@media (prefers-reduced-motion: reduce){
+  html.js-on .reveal{opacity:1; transform:none; transition:none;}
+  .s-live i, .ok-ring svg, .r-spin, .thumb.busy::before{animation:none !important;}
+  .ok-ring svg{stroke-dashoffset:0;}
+}
+</style>
+</head>
+<body>
+<script src="nav.js"></script>
+
+
+<main id="top">
+
+  <!-- ================= 1. HERO + POLICY CALLOUT ================= -->
+  <section class="r-hero" aria-labelledby="r-h1">
+    <div class="container r-hero-inner">
+      <div>
+        <span class="r-eyebrow reveal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 109-9 9.7 9.7 0 00-6.7 2.8L3 8"/><path d="M3 3v5h5"/></svg>Returns Portal</span>
+        <h1 class="r-title reveal" id="r-h1">Hassle-Free Returns &amp; <em>30-Day Guarantee</em> Portal</h1>
+        <p class="r-sub reveal">Initiate your return or replacement request in under 2 minutes.</p>
+      </div>
+
+      <aside class="glass-card policy reveal" aria-label="30-Day Money-Back Guarantee summary">
+        <div class="policy-top">
+          <span class="policy-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg></span>
+          <h2>30-Day Money-Back Guarantee</h2>
+        </div>
+        <ul class="policy-list">
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span><strong>Order risk-free for 30 days.</strong> Not the right fit? Return it unopened and unused for a full refund.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span><strong>Loss &amp; damage protection:</strong> free reshipment or a full refund for defective, damaged or lost orders.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span><strong>Return shipping:</strong> Customers are responsible for return shipping costs for change-of-mind returns. Returns apply to unopened/unused items within 30 days.</span></li>
+        </ul>
+        <div class="checklist-box">
+          <h3>Have these ready before you start</h3>
+          <ul class="checklist">
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h14M5 15h14M10 3L8 21M16 3l-2 18"/></svg>Your Order ID (starts with #NK-)</li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>The original packaging</li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>Your device and charger</li>
+          </ul>
+        </div>
+        <a class="policy-link" href="guarantee.html">Read the full 30-Day Guarantee</a>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================= 2. TABS ================= -->
+  <section class="section" id="portal" style="padding-top:clamp(18px,3vw,30px);" aria-label="Returns portal">
+    <div class="container">
+      <div class="r-tabs-wrap reveal">
+        <div class="r-tabs" role="tablist" aria-label="Returns portal mode">
+          <button type="button" class="r-tab" role="tab" id="tab-new" aria-controls="panel-new" aria-selected="true" data-tab="new"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Submit New Return Request</button>
+          <button type="button" class="r-tab" role="tab" id="tab-status" aria-controls="panel-status" aria-selected="false" data-tab="status" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5L16 16"/></svg>Check Return Status</button>
+        </div>
+      </div>
+
+      <!-- ===== TAB 1: RETURN WIZARD ===== -->
+      <div class="r-panel" id="panel-new" role="tabpanel" aria-labelledby="tab-new">
+        <div class="glass-card r-card">
+          <ol class="stepper" id="stepper" aria-label="Progress">
+            <li class="active" data-s="1" aria-current="step"><span class="st-node"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg></span><span class="st-label">Verification</span><span class="st-sub">Step 1</span></li>
+            <li data-s="2"><span class="st-node"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l1 2h3a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h3l1-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg></span><span class="st-label">Return Details</span><span class="st-sub">Step 2</span></li>
+            <li data-s="3"><span class="st-node"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="st-label">Confirmation</span><span class="st-sub">Step 3</span></li>
+          </ol>
+
+          <!-- STEP 1 -->
+          <form id="step-1" novalidate autocomplete="on">
+            <h2 class="r-step-title" tabindex="-1">Verify your order</h2>
+            <p class="r-step-sub">Enter the order number and the email address you used at checkout.</p>
+            <div class="r-grid">
+              <div class="r-field">
+                <label for="rt-order">Order Number</label>
+                <input class="r-input" type="text" id="rt-order" placeholder="#NK-1001" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" required>
+              </div>
+              <div class="r-field">
+                <label for="rt-email">Account Email Address</label>
+                <input class="r-input" type="email" id="rt-email" placeholder="email@domain.com" autocomplete="email" inputmode="email" maxlength="100" required>
+              </div>
+            </div>
+            <p class="r-hint">Your Order ID is in your confirmation email. Need it? <a href="track-order.html" style="border-bottom:1px solid var(--gold);">Track your order</a>.</p>
+            <div class="r-error" id="err-1" role="alert" aria-live="assertive"></div>
+            <div class="r-actions" style="justify-content:flex-end;">
+              <button type="submit" class="btn-primary" id="btn-next-1"><span>Continue</span><svg class="r-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
+          </form>
+
+          <!-- STEP 2 -->
+          <form id="step-2" novalidate hidden>
+            <h2 class="r-step-title" tabindex="-1">Return details &amp; evidence</h2>
+            <p class="r-step-sub">Tell us what happened. Clear photos help us resolve your request faster.</p>
+            <div class="r-grid">
+              <div class="r-field">
+                <label for="rt-reason">Return Reason</label>
+                <select class="r-select" id="rt-reason" required>
+                  <option value="">Select a reason</option>
+                  <option value="trial">Changed my mind (30-Day Guarantee)</option>
+                  <option value="defective">Defective/Not Working</option>
+                  <option value="damaged">Damaged on Arrival</option>
+                  <option value="wrong">Received Wrong Item</option>
+                  <option value="sensitivity">Skin Sensitivity/Reaction</option>
+                </select>
+              </div>
+              <div class="r-field">
+                <label for="rt-condition">Item Condition</label>
+                <select class="r-select" id="rt-condition" required>
+                  <option value="">Select the condition</option>
+                  <option value="likenew">Like New (Original Box &amp; Accessories)</option>
+                  <option value="opened">Opened / Lightly Used</option>
+                  <option value="damagedbox">Damaged Box</option>
+                </select>
+              </div>
+            </div>
+            <div class="r-notice" id="rt-sens-note" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg><span>If you had a strong reaction, stop using the device and seek medical advice. Then tell us what happened, or email <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a>.</span></div>
+            <div class="r-field" style="margin-top:18px;">
+              <label for="rt-desc"><span id="rt-desc-lbl">Problem Description</span></label>
+              <textarea class="r-textarea" id="rt-desc" maxlength="1500" placeholder="Describe the issue, or tell us why the device wasn&rsquo;t right for you."></textarea>
+              <p class="r-hint" id="rt-desc-hint"></p>
+            </div>
+            <div class="r-field">
+              <span class="r-label" id="rt-ev-lbl">Photo Evidence <span class="opt" id="rt-ev-opt">(up to 3)</span></span>
+              <label class="drop" id="rt-drop" for="rt-files">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg>
+                <span><strong>Add photos</strong> of the device, the box or the issue.<br><span style="font-size:12px;color:var(--text-faint);">Tap to choose or drop images here. They&rsquo;re compressed automatically.</span></span>
+              </label>
+              <input type="file" id="rt-files" accept="image/*" multiple class="sr-only" aria-labelledby="rt-ev-lbl">
+              <div class="thumbs" id="rt-thumbs" aria-live="polite"></div>
+            </div>
+            <div class="r-error" id="err-2" role="alert" aria-live="assertive"></div>
+            <div class="r-actions">
+              <button type="button" class="btn-ghost" id="btn-back-2">Back</button>
+              <button type="submit" class="btn-primary" id="btn-next-2"><span>Review Request</span><svg class="r-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
+          </form>
+
+          <!-- STEP 3 -->
+          <form id="step-3" novalidate hidden>
+            <h2 class="r-step-title" tabindex="-1">Review &amp; submit</h2>
+            <p class="r-step-sub">Check your details, then submit. You&rsquo;ll get your return ID instantly.</p>
+            <ul class="sum-list" id="rt-summary"></ul>
+            <input type="text" class="rf-hp" id="rt-website" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <label class="consent"><input type="checkbox" id="rt-consent"><span>I confirm these details are correct and agree to NIKORA using them to process my return, as described in the <a href="guarantee.html">30-Day Guarantee</a>.</span></label>
+            <div class="r-error" id="err-3" role="alert" aria-live="assertive"></div>
+            <div class="r-actions">
+              <button type="button" class="btn-ghost" id="btn-back-3">Back</button>
+              <button type="submit" class="btn-primary" id="btn-submit"><span class="r-spin" aria-hidden="true"></span><span id="btn-submit-text">Submit Return Request</span><svg class="r-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+            </div>
+          </form>
+
+          <!-- SUCCESS -->
+          <div class="success" id="step-done" hidden>
+            <div class="ok-ring"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+            <h2 tabindex="-1">Your return request is <em>in.</em></h2>
+            <p>Thank you. Keep your return ID to check progress at any time.</p>
+            <div class="ret-id"><span id="done-id">#RET-0000</span><button type="button" id="done-copy" aria-label="Copy return ID"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg></button></div>
+            <p class="ret-keep" id="done-copied" role="status" aria-live="polite">Status: Pending Review</p>
+            <ol class="next">
+              <li><span><strong>We review your request.</strong> Track the status any time with your return ID and email.</span></li>
+              <li><span><strong>Get your return instructions.</strong> Once approved, we send you the details for returning your item. Return shipping for change-of-mind returns is paid by the customer.</span></li>
+              <li><span><strong>Pack it up.</strong> Pack the unopened, unused item securely in its original packaging, with all accessories.</span></li>
+              <li><span><strong>Refund processed.</strong> After we receive and check in your return, your refund goes to your original payment method.</span></li>
+            </ol>
+            <div class="success-actions">
+              <a class="btn-primary" id="done-mail" href="mailto:nikora.support@gmail.com"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>Email Confirmation to Support</a>
+              <button type="button" class="btn-ghost" id="done-status">Check Return Status</button>
+              <a class="btn-ghost" href="catalog.html">Continue Shopping</a>
+            </div>
+            <p class="mail-note">Your request is saved to our returns system. The button above opens an email to <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a> with your details, so you have a copy for your records.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TAB 2: STATUS ===== -->
+      <div class="r-panel" id="panel-status" role="tabpanel" aria-labelledby="tab-status" hidden>
+        <div class="glass-card r-card">
+          <h2 class="r-step-title">Check your return status</h2>
+          <p class="r-step-sub">Enter the return ID from your confirmation and the email you used.</p>
+          <form class="s-form" id="s-form" novalidate>
+            <div class="r-field">
+              <label for="s-id-in">Return ID</label>
+              <input class="r-input" type="text" id="s-id-in" placeholder="#RET-8492" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" required>
+            </div>
+            <div class="r-field">
+              <label for="s-email-in">Email Address</label>
+              <input class="r-input" type="email" id="s-email-in" placeholder="email@domain.com" autocomplete="email" inputmode="email" maxlength="100" required>
+            </div>
+            <button type="submit" class="btn-primary" id="s-btn"><svg class="r-arrow" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5L16 16"/></svg><span class="r-spin" aria-hidden="true"></span><span id="s-btn-text">Check Status</span></button>
+          </form>
+          <div class="r-error" id="s-error" role="alert" aria-live="assertive" style="margin-top:14px;"></div>
+
+          <div class="s-result" id="s-result" hidden>
+            <div class="s-head">
+              <h3 class="s-id" id="s-id" tabindex="-1">Return <em>#RET-0000</em></h3>
+              <span class="s-live"><i aria-hidden="true"></i>Live status</span>
+            </div>
+            <span class="badge" id="s-badge"><i aria-hidden="true"></i><span id="s-badge-text">Pending Review</span></span>
+            <ol class="s-steps" id="s-steps" aria-label="Return progress"></ol>
+            <p class="s-meta" id="s-meta"></p>
+            <div id="s-label-wrap" style="margin-top:18px;" hidden><a class="btn-primary" id="s-label" href="#" target="_blank" rel="noopener" style="padding:14px 26px;">View Return Instructions</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 5. NEED DIRECT ASSISTANCE ================= -->
+  <section class="section" id="assistance" aria-labelledby="help-h2" style="padding-top:clamp(24px,3.4vw,40px);">
+    <div class="container">
+      <div class="section-head reveal">
+        <div>
+          <h2 id="help-h2">Need direct <em>assistance?</em></h2>
+          <p>Quick answers, and a real person when you need one.</p>
+        </div>
+      </div>
+      <div class="help-grid">
+        <article class="glass-card help-card reveal">
+          <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
+          <h3>Who pays for return shipping?</h3>
+          <p><strong>It depends on the reason.</strong> Customers are responsible for return shipping costs for change-of-mind returns. Returns apply to unopened/unused items within 30 days. If your item is defective, damaged in shipping or lost, we cover it with a free reshipment or a full refund.</p>
+          <a class="more" href="guarantee.html#returns">Read the return policy</a>
+        </article>
+        <article class="glass-card help-card reveal">
+          <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
+          <h3>When will I receive my refund?</h3>
+          <p>After your return arrives and is checked in, we refund the full purchase price to your original payment method within <strong>5&ndash;7 business days</strong>. Your bank may take a little longer to show it.</p>
+          <a class="more" href="guarantee.html#returns">How refunds work</a>
+        </article>
+        <article class="glass-card help-card contact reveal">
+          <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0116 0v2"/><rect x="2.5" y="14" width="4.5" height="6.5" rx="2"/><rect x="17" y="14" width="4.5" height="6.5" rx="2"/><path d="M19.5 20.5c0 1.1-1.6 2-3.5 2h-2"/></svg></span>
+          <h3>Talk to our support team</h3>
+          <p>Questions about a return or a replacement? Email us and a real person will reply.</p>
+          <a class="h-email" href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a>
+          <a class="btn-primary" href="mailto:nikora.support@gmail.com?subject=Returns%20question"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>Email Support</a>
+        </article>
+      </div>
+      <p class="reveal" style="text-align:center; margin:22px 0 0; font-size:13.5px; color:var(--text-soft);">More answers in our <a href="faq.html" style="color:var(--text); font-weight:600; border-bottom:1px solid var(--gold);">FAQ &amp; Help Center</a>.</p>
+    </div>
+  </section>
+
+  <!-- ================= CLOSING CTA ================= -->
+  <section class="section" style="padding-top:clamp(20px,3vw,36px);" aria-labelledby="cta-h2">
+    <div class="container">
+      <div class="glass-card cta-banner reveal">
+        <h2 id="cta-h2">Still deciding? <em>Try it risk-free.</em></h2>
+        <p>Every NIKORA order comes with a 30-day money-back guarantee, plus a free reshipment or full refund if it arrives defective, damaged or lost.</p>
+        <a class="btn-primary" href="catalog.html">Shop Collection <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="site">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <a href="index.html" class="logo" style="font-size:22px;">NIK<em>ora</em></a>
+        <p style="margin-top:14px;">Smart care. Instant glow. Beauty tech designed around the routine you actually have time for.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Shop</h5>
+        <a href="catalog.html">Full Catalog</a>
+        <a href="index.html">Home</a>
+        <a href="reviews.html">Verified Reviews</a>
+      </div>
+      <div class="footer-col">
+        <h5>Support</h5>
+        <a href="track-order.html">Track Order</a>
+        <a href="guarantee.html">Guarantee</a>
+        <a href="returns.html">Start a Return</a>
+        <a href="faq.html">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <a href="science.html">Science</a>
+        <a href="mailto:nikora.support@gmail.com">Contact Support</a>
+        <p>nikora.support@gmail.com</p>
+        <p>Mon&ndash;Sun, 8am&ndash;10pm EST</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 NIKORA. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ================= CART DRAWER ================= -->
+<div class="cart-overlay" id="cart-overlay"></div>
+<div id="cart-drawer" aria-label="Shopping cart">
+  <div class="cart-head">
+    <h3>Your Bag</h3>
+    <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="ship-progress-wrap">
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on every order (7&ndash;15 business days)</div>
+    <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
+  </div>
+  <div class="cart-items" id="cart-items-list"></div>
+  <div class="cart-recs-section" id="cart-recs-section">
+    <div class="cart-recs-head">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-9M14 17H5M17 3l3 4-3 4M7 21l-3-4 3-4"/></svg>
+      Frequently Bought Together
+    </div>
+    <div class="cart-recs-grid" id="cart-recs-grid"></div>
+  </div>
+  <div class="cart-foot">
+    <div class="promo-box" id="promo-box">
+      <button type="button" class="promo-toggle" id="promo-toggle" aria-expanded="false" aria-controls="promo-body"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.4"/></svg><span>Have a promo code?</span><svg class="promo-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="promo-body" id="promo-body">
+        <div class="promo-form">
+          <input type="text" id="promo-input" placeholder="Enter code" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" aria-label="Promo code">
+          <button type="button" class="promo-apply" id="promo-apply"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Apply</button>
+        </div>
+      </div>
+      <div class="promo-msg" id="promo-msg" role="status" aria-live="polite"></div>
+      <div class="promo-active" id="promo-active" hidden></div>
+    </div>
+    <div class="cart-sub-row"><span>Subtotal</span><strong id="cart-subtotal">$0.00</strong></div>
+    <div class="cart-sub-row cart-discount-row" id="cart-discount-row" hidden><span id="cart-discount-label"></span><span id="cart-discount-amount"></span></div>
+    <div class="cart-sub-row cart-total-row" id="cart-total-row" hidden><span>Total</span><strong id="cart-total">$0.00</strong></div>
+    <button type="button" class="cart-checkout" id="checkout-btn" onclick="window.location.href='checkout.html'">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+      Secure Checkout
+    </button>
+    <div class="trust-badges" id="cart-trust-badges"></div>
+  </div>
+</div>
+
+
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span id="toast-text"></span></div>
+
+<script>
+/* ---------------- Safe storage (falls back to memory if blocked) ---------------- */
+/* ================= 1. SAFE STORAGE WRAPPER (iframe-safe) =================
+   Every localStorage/sessionStorage call is wrapped in try/catch so a
+   SecurityError thrown inside a sandboxed preview iframe never halts
+   script execution — it falls back to an in-memory object instead. */
+var safeStorage = {
+  getItem: function(key){
+    try { return localStorage.getItem(key); }
+    catch(e) { return window['_mem_' + key] || null; }
+  },
+  setItem: function(key, val){
+    try { localStorage.setItem(key, val); }
+    catch(e) { window['_mem_' + key] = val; }
+  },
+  removeItem: function(key){
+    try { localStorage.removeItem(key); }
+    catch(e) { delete window['_mem_' + key]; }
+  }
+};
+var safeSession = {
+  getItem: function(key){
+    try { return sessionStorage.getItem(key); }
+    catch(e) { return window['_smem_' + key] || null; }
+  },
+  setItem: function(key, val){
+    try { sessionStorage.setItem(key, val); }
+    catch(e) { window['_smem_' + key] = val; }
+  },
+  removeItem: function(key){
+    try { sessionStorage.removeItem(key); }
+    catch(e) { delete window['_smem_' + key]; }
+  }
+};
+
+/* ================= FIREBASE REALTIME SYNC =================
+   '/products' is shared with catalog.html / product.html. This page's
+   card overrides are keyed by their static slug (e.g. "wand"), which
+   never collides with the numeric ids ("1".."11") those two pages use
+   in the same object. '/reviews/home' holds this page's general
+   testimonials — they aren't tied to one product id, so "home" is used
+   as a stand-in productId for this shared path. Firebase is the source
+   of truth when reachable; 'nikora_products' / 'nikora_reviews' remain
+   local caches so the page still works fully offline or if Firebase
+   fails to load. */
+var firebaseConfig = {
+  apiKey: "AIzaSyCCHdCGRQCiKdeHRkC4e6bnvrMwUIq80TY",
+  authDomain: "nikora-store.firebaseapp.com",
+  databaseURL: "https://nikora-store-default-rtdb.firebaseio.com",
+  projectId: "nikora-store",
+  storageBucket: "nikora-store.firebasestorage.app",
+  messagingSenderId: "840991674151",
+  appId: "1:840991674151:web:f656f83210d412684ee302",
+  measurementId: "G-EDM84G1JPG"
+};
+var firebaseReady = false;
+var db = null;
+try{
+  if(typeof firebase !== 'undefined'){
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    firebaseReady = true;
+  }
+}catch(e){
+  console.warn('Firebase unavailable — continuing on local data only.', e);
+  firebaseReady = false;
+}
+
+
+var FREE_SHIP_THRESHOLD = 50;
+var SHIP_COST = 4.99;
+
+function escapeHtml(str){
+  var div = document.createElement('div');
+  div.textContent = str == null ? '' : str;
+  return div.innerHTML;
+}
+
+/* ================= UNIFIED CART MODULE (identical on index / catalog / product) =================
+   - Cart lives in localStorage 'nikora_cart' as [{id,title,price,qty}] and is mirrored to
+     Firebase '/carts/<cartId>' (last-write-wins by timestamp) so every page and tab stays in sync.
+   - Thumbnails + "Frequently Bought Together" come live from Firebase '/products'.
+   - Drawer close (X button, overlay, Escape) uses delegated listeners so it can never be lost
+     when the drawer's contents are re-rendered. */
+var NK_FREE_SHIP = 50;
+var NK_MAX_RECS = 8;
+var NK_SCROLL_SPEED = 28;   /* carousel auto-scroll, px per second */
+var NK_ICONS = {
+  minus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>',
+  plus:  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>',
+  image: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg>',
+  truck: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>'
+};
+
+/* Fallback pool so the recommendations strip is NEVER empty (used until Firebase '/products' answers, or if it fails/is empty). */
+var NK_FALLBACK = [
+  { id:'1',  name:'NIKORA RED Light & EMS Facial Wand 4-in-1', price:34.99, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
+  { id:'2',  name:'3D EMS Gua Sha Sculptor', price:24.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400' },
+  { id:'3',  name:'Hydro-Vacuum Pore Cleaner', price:29.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
+  { id:'4',  name:'LED Therapy Mask 7-in-1 Pro', price:49.99, category:'LED Therapy', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
+  { id:'5',  name:'EMS Body Sculptor RF', price:59.99, category:'Body Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'6',  name:'Sonic Eye Massager', price:19.99, category:'Eye Care', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
+  { id:'7',  name:'Ultrasonic Skin Scrubber', price:24.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
+  { id:'8',  name:'Thermal Neck & Face Massager', price:39.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' }
+];
+
+function nkEsc(str){
+  var d = document.createElement('div');
+  d.textContent = str == null ? '' : str;
+  return d.innerHTML;
+}
+
+/* ---- product data (normalises catalog {name,img}, index overrides {title,imgUrl}, product {images[]}) ---- */
+function nkNormalize(p, key){
+  if(!p || typeof p !== 'object' || p._deleted) return null;
+  var name = p.name || p.title;
+  var price = Number(p.price);
+  if(!name || !(price > 0)) return null;
+  var img = (Array.isArray(p.images) && p.images[0]) || p.img || p.imgUrl || '';
+  return { id: String(p.id != null ? p.id : key), name: String(name), price: price, img: String(img || ''), category: p.category || '' };
+}
+function nkListFromObject(obj){
+  var out = [];
+  Object.keys(obj || {}).forEach(function(k){ var n = nkNormalize(obj[k], k); if(n) out.push(n); });
+  return out;
+}
+var NK_PRODUCTS = (typeof ALL_PRODUCTS !== 'undefined' && ALL_PRODUCTS)
+  ? ALL_PRODUCTS.map(function(p){ return nkNormalize(p, p && p.id); }).filter(Boolean)
+  : [];
+function nkFind(id){
+  for(var i=0;i<NK_PRODUCTS.length;i++){ if(NK_PRODUCTS[i].id === String(id)) return NK_PRODUCTS[i]; }
+  if(typeof resolveProduct === 'function'){ try{ var rp = nkNormalize(resolveProduct(id), id); if(rp) return rp; }catch(e){} }
+  for(var j=0;j<NK_FALLBACK.length;j++){ if(NK_FALLBACK[j].id === String(id)) return NK_FALLBACK[j]; }
+  return null;
+}
+function nkThumb(img, alt){
+  return img ? '<img src="' + nkEsc(img) + '" alt="' + nkEsc(alt) + '" loading="lazy" draggable="false">' : NK_ICONS.image;
+}
+
+/* ---- cart storage + Firebase mirror ---- */
+var NK_CART_REF = null;
+function nkCartId(){
+  var id = safeStorage.getItem('nikora_cart_id');
+  if(!id){
+    id = 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    safeStorage.setItem('nikora_cart_id', id);
+  }
+  return id;
+}
+function getCart(){
+  try{ var c = JSON.parse(safeStorage.getItem('nikora_cart')); return Array.isArray(c) ? c : []; }
+  catch(e){ return []; }
+}
+function nkPushCart(cart, ts){
+  if(!NK_CART_REF) return;
+  try{
+    NK_CART_REF.set({ items: cart, updatedAt: ts }).catch(function(err){ console.warn('Firebase cart write failed', err); });
+  }catch(e){ console.warn('Firebase cart write failed', e); }
+}
+function saveCart(cart){
+  var ts = Date.now();
+  safeStorage.setItem('nikora_cart', JSON.stringify(cart));
+  safeStorage.setItem('nikora_cart_ts', String(ts));
+  nkPushCart(cart, ts);
+}
+function nkCleanItems(raw){
+  var arr = Array.isArray(raw) ? raw : (raw && typeof raw === 'object' ? Object.keys(raw).map(function(k){ return raw[k]; }) : []);
+  return arr.filter(function(i){ return i && i.id != null && i.title && Number(i.price) >= 0 && Number(i.qty) > 0; })
+            .map(function(i){ return { id: String(i.id), title: String(i.title), price: Number(i.price), qty: Math.floor(Number(i.qty)) }; });
+}
+function nkSyncCartFromFirebase(){
+  if(typeof firebaseReady === 'undefined' || !firebaseReady) return;
+  try{
+    NK_CART_REF = db.ref('carts/' + nkCartId());
+    NK_CART_REF.on('value', function(snap){
+      var v = snap.val();
+      var localTs = Number(safeStorage.getItem('nikora_cart_ts')) || 0;
+      if(!v){                                   /* nothing in the cloud yet: publish what we have */
+        var lc = getCart();
+        if(lc.length) nkPushCart(lc, localTs || Date.now());
+        return;
+      }
+      var remoteTs = Number(v.updatedAt) || 0;
+      if(remoteTs > localTs){                   /* newer cloud copy (other tab / page): adopt it */
+        safeStorage.setItem('nikora_cart', JSON.stringify(nkCleanItems(v.items)));
+        safeStorage.setItem('nikora_cart_ts', String(remoteTs));
+        renderCart();
+      } else if(localTs > remoteTs){            /* local copy is newer: publish it */
+        nkPushCart(getCart(), localTs);
+      }
+    }, function(err){ console.warn('Firebase cart sync error — using local cart.', err); });
+  }catch(e){ console.warn('Firebase cart sync unavailable', e); }
+}
+
+/* ---- cart actions ---- */
+function bumpCartBadge(){
+  var badge = document.getElementById('cart-count');
+  if(!badge) return;
+  badge.classList.remove('bump');
+  void badge.offsetWidth;
+  badge.classList.add('bump');
+}
+/* Silent add: no drawer, no toast. */
+function cartAdd(id, title, price, qty){
+  id = String(id);
+  var cart = getCart(), found = null;
+  for(var i=0;i<cart.length;i++){ if(String(cart[i].id) === id){ found = cart[i]; break; } }
+  if(found){ found.qty += (qty || 1); } else { cart.push({ id: id, title: title, price: Number(price), qty: qty || 1 }); }
+  saveCart(cart);
+  renderCart();
+}
+/* Card / CTA add: adds, confirms, and opens the drawer. */
+window.addToCart = function(id, title, price){
+  cartAdd(id, title, price, 1);
+  bumpCartBadge();
+  showToast(title + ' added to your bag.');
+  openCart();
+};
+/* Recommendation add: adds WITHOUT closing or re-opening the drawer. */
+function addRecommended(id){
+  var p = nkFind(id);
+  if(!p) return;
+  cartAdd(p.id, p.name, p.price, 1);
+  bumpCartBadge();
+  showToast(p.name + ' added to your bag.');
+}
+function changeQty(id, delta){
+  var cart = getCart(), item = null;
+  for(var i=0;i<cart.length;i++){ if(String(cart[i].id) === String(id)){ item = cart[i]; break; } }
+  if(!item) return;
+  item.qty += delta;
+  if(item.qty <= 0){ cart = cart.filter(function(c){ return String(c.id) !== String(id); }); }
+  saveCart(cart);
+  renderCart();
+}
+function removeFromCart(id){
+  saveCart(getCart().filter(function(c){ return String(c.id) !== String(id); }));
+  renderCart();
+}
+
+/* ---- recommendations carousel ---- */
+var NK_CAR = { raf: 0, pos: 0, last: 0, hover: false, touching: false, resumeAt: 0, bound: false };
+var NK_REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+function nkCarouselPeriod(g){
+  if(g.getAttribute('data-loop') !== '1') return 0;
+  var gap = parseFloat(getComputedStyle(g).columnGap) || 12;
+  return (g.scrollWidth + gap) / 2;      /* the card set is rendered twice; one set = one loop */
+}
+function nkCarouselStep(ts){
+  var drawer = document.getElementById('cart-drawer');
+  var g = document.getElementById('cart-recs-grid');
+  if(!drawer || !g || !drawer.classList.contains('active') || NK_REDUCED){ NK_CAR.raf = 0; return; }
+  var dt = NK_CAR.last ? Math.min(64, ts - NK_CAR.last) : 16;
+  NK_CAR.last = ts;
+  var period = nkCarouselPeriod(g);
+  if(period > 0){
+    var busy = NK_CAR.hover || NK_CAR.touching || Date.now() < NK_CAR.resumeAt || g.contains(document.activeElement);
+    if(busy){ NK_CAR.pos = g.scrollLeft; }                        /* user is in control: just track */
+    else{
+      NK_CAR.pos += NK_SCROLL_SPEED * dt / 1000;
+      if(NK_CAR.pos >= period) NK_CAR.pos -= period;              /* seamless wrap */
+      g.scrollLeft = NK_CAR.pos;
+    }
+  }
+  NK_CAR.raf = requestAnimationFrame(nkCarouselStep);
+}
+function nkCarouselStart(){
+  if(NK_CAR.raf || NK_REDUCED) return;
+  NK_CAR.last = 0;
+  NK_CAR.raf = requestAnimationFrame(nkCarouselStep);
+}
+function nkCarouselBind(){
+  var g = document.getElementById('cart-recs-grid');
+  if(!g || NK_CAR.bound) return;
+  NK_CAR.bound = true;
+  function hold(ms){ NK_CAR.resumeAt = Date.now() + ms; }
+  g.addEventListener('mouseenter', function(){ NK_CAR.hover = true; });
+  g.addEventListener('mouseleave', function(){ NK_CAR.hover = false; hold(400); });
+  g.addEventListener('touchstart', function(){ NK_CAR.touching = true; }, { passive: true });
+  g.addEventListener('touchend', function(){ NK_CAR.touching = false; hold(2500); }, { passive: true });
+  g.addEventListener('touchcancel', function(){ NK_CAR.touching = false; hold(2500); }, { passive: true });
+  g.addEventListener('wheel', function(){ hold(2500); }, { passive: true });
+  g.addEventListener('pointerdown', function(){ hold(2500); });
+  g.addEventListener('scroll', function(){                        /* manual swipes also loop seamlessly */
+    var period = nkCarouselPeriod(g);
+    if(period > 0 && g.scrollLeft >= period){ g.scrollLeft -= period; }
+  }, { passive: true });
+}
+
+function renderCartRecs(cart){
+  var section = document.getElementById('cart-recs-section');
+  var grid = document.getElementById('cart-recs-grid');
+  if(!section || !grid) return;
+
+  var excluded = {};
+  cart.forEach(function(c){ excluded[String(c.id)] = true; });
+  var current = (typeof CURRENT_PRODUCT !== 'undefined' && CURRENT_PRODUCT) ? CURRENT_PRODUCT : null;
+  if(current) excluded[String(current.id)] = true;               /* product page: skip the item being viewed */
+
+  var pool = NK_PRODUCTS.length ? NK_PRODUCTS : NK_FALLBACK;
+  var candidates = pool.filter(function(p){ return !excluded[p.id]; });
+  if(current && current.category){
+    candidates = candidates.filter(function(p){ return p.category === current.category; })
+      .concat(candidates.filter(function(p){ return p.category !== current.category; }));
+  }
+  var picks = candidates.slice(0, NK_MAX_RECS);
+
+  section.style.display = 'block';                               /* the recommendations section is NEVER hidden */
+  if(!picks.length){
+    grid.removeAttribute('data-loop');
+    grid.scrollLeft = 0;
+    grid.innerHTML = '<div class="cart-recs-done">You\u2019ve added everything in the collection \u2014 a complete routine.</div>';
+    return;
+  }
+
+  function card(p, clone){
+    return '<div class="cart-rec-card"' + (clone ? ' aria-hidden="true"' : '') + '>' +
+      '<div class="cart-rec-thumb">' + nkThumb(p.img, p.name) + '</div>' +
+      '<div class="cart-rec-title">' + nkEsc(p.name) + '</div>' +
+      '<div class="cart-rec-price">$' + p.price.toFixed(2) + '</div>' +
+      '<button type="button" class="cart-rec-add" data-action="add-rec" data-id="' + nkEsc(p.id) + '"' + (clone ? ' tabindex="-1"' : '') + ' aria-label="Add ' + nkEsc(p.name) + ' to bag">' + NK_ICONS.plus + 'Add</button>' +
+    '</div>';
+  }
+  var first = picks.map(function(p){ return card(p, false); }).join('');
+  var viewW = grid.clientWidth || 372;
+  var loops = !NK_REDUCED && picks.length * 142 > viewW;         /* only loop when the strip actually overflows */
+  var prev = grid.scrollLeft;
+  grid.innerHTML = loops ? first + picks.map(function(p){ return card(p, true); }).join('') : first;
+  if(loops) grid.setAttribute('data-loop', '1'); else grid.removeAttribute('data-loop');
+  grid.scrollLeft = loops ? prev : 0;                            /* adding an item must not snap the strip back */
+  NK_CAR.pos = grid.scrollLeft;
+  nkCarouselStart();
+}
+
+function renderCart(){
+  var cart = getCart();
+  var wrap = document.getElementById('cart-items-list');
+  var subtotal = 0, count = 0;
+
+  if(!cart.length){
+    wrap.innerHTML = '<div class="cart-empty">Your bag is empty. Add a favorite below to start your routine:</div>';
+  } else {
+    wrap.innerHTML = cart.map(function(item){
+      var price = Number(item.price) || 0;
+      subtotal += price * item.qty;
+      count += item.qty;
+      var prod = nkFind(item.id);
+      var id = nkEsc(item.id);
+      return '<div class="cart-item">' +
+        '<div class="ci-thumb">' + nkThumb(prod && prod.img, item.title) + '</div>' +
+        '<div class="ci-info">' +
+          '<div class="ci-top">' +
+            '<div><div class="ci-title">' + nkEsc(item.title) + '</div><div class="ci-price">$' + price.toFixed(2) + ' each</div></div>' +
+            '<button type="button" class="ci-remove" data-action="remove-item" data-id="' + id + '" aria-label="Remove ' + nkEsc(item.title) + '">' + NK_ICONS.trash + '</button>' +
+          '</div>' +
+          '<div class="ci-bottom">' +
+            '<div class="qty-ctrl">' +
+              '<button type="button" data-action="qty-dec" data-id="' + id + '" aria-label="Decrease quantity">' + NK_ICONS.minus + '</button>' +
+              '<span>' + item.qty + '</span>' +
+              '<button type="button" data-action="qty-inc" data-id="' + id + '" aria-label="Increase quantity">' + NK_ICONS.plus + '</button>' +
+            '</div>' +
+            '<div class="ci-line-total">$' + (price * item.qty).toFixed(2) + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  document.getElementById('cart-subtotal').textContent = '$' + subtotal.toFixed(2);
+  var promo = nkPromoCalc(subtotal);
+  var discount = promo ? promo.discount : 0;
+  var payable = Math.max(0, subtotal - discount);
+  nkPromoRender(promo, payable);
+  var badge = document.getElementById('cart-count');
+  if(badge) badge.textContent = count;
+
+  var text = document.getElementById('ship-progress-text');
+  var fill = document.getElementById('ship-progress-fill');
+  var unlocked = true;   /* Express shipping is free on every order */
+  fill.style.width = '100%';
+  text.classList.toggle('unlocked', unlocked);
+  fill.classList.toggle('unlocked', unlocked);
+  text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
+    ? 'FREE Express Shipping on every order (7\u201315 business days)'
+    : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
+
+  renderCartRecs(cart);
+}
+
+/* ---- open / close (single source of truth for every page) ---- */
+window.openCart = function(){
+  document.getElementById('cart-drawer').classList.add('active');
+  document.getElementById('cart-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  var g = document.getElementById('cart-recs-grid');
+  if(g){ NK_CAR.pos = g.scrollLeft; }
+  nkCarouselStart();
+};
+window.closeCart = function(){
+  var drawer = document.getElementById('cart-drawer');
+  var overlay = document.getElementById('cart-overlay');
+  if(drawer){ drawer.classList.remove('active'); drawer.classList.remove('open'); }
+  if(overlay){ overlay.classList.remove('active'); overlay.classList.remove('open'); }
+  document.body.style.overflow = '';
+};
+
+/* Called once on page load. Everything is delegated, so re-rendering the drawer never breaks it. */
+var NK_CART_READY = false;
+function initCartSync(){
+  if(NK_CART_READY) return;
+  NK_CART_READY = true;
+
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    if(t.closest('.cart-close-btn')){ closeCart(); return; }                              /* X button */
+    if(t.classList && t.classList.contains('cart-overlay')){ closeCart(); return; }       /* dark background */
+    var a = t.closest('#cart-drawer [data-action]');
+    if(!a) return;
+    var act = a.getAttribute('data-action'), id = a.getAttribute('data-id');
+    if(act === 'qty-inc') changeQty(id, 1);
+    else if(act === 'qty-dec') changeQty(id, -1);
+    else if(act === 'remove-item') removeFromCart(id);
+    else if(act === 'add-rec') addRecommended(id);
+  });
+  nkBindPromoAndTools();
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){ closeCart(); nkLightboxClose(); nkModalCloseAll(); }
+  });
+
+  nkCarouselBind();
+
+  if(!NK_PRODUCTS.length && typeof getAllProductsFallback === 'function'){
+    try{ NK_PRODUCTS = getAllProductsFallback().map(function(p){ return nkNormalize(p, p && p.id); }).filter(Boolean); }catch(e){}
+  }
+  if(typeof firebaseReady !== 'undefined' && firebaseReady){
+    db.ref('products').on('value', function(snap){
+      var list = nkListFromObject(snap.val());
+      if(list.length){ NK_PRODUCTS = list; }
+      renderCart();
+    }, function(err){ console.warn('Cart products sync error — using local data.', err); });
+    nkSyncCartFromFirebase();
+    nkPromoInit();
+  } else {
+    NK_PROMOS = nkClone(NK_PROMO_FALLBACK); NK_PROMOS_LOADED = true;
+  }
+  renderCart();
+}
+
+
+/* ================= PROMO CODES =================
+   Firebase '/promocodes/<CODE>' = { code, type:'percent'|'fixed', value, active, expiresAt? (ms) }.
+   The applied code (just the name) is kept in localStorage 'nikora_promo' and is re-validated
+   against live data on every render. NOTE: this discount is a client-side display; the checkout
+   step must re-validate the code before charging. */
+var NK_PROMO_FALLBACK = { GLOW10: { code:'GLOW10', type:'percent', value:10, active:true } };
+var NK_PROMOS = null, NK_PROMOS_LOADED = false, NK_PROMO_REF = null, NK_PROMO_OPEN = false, NK_PROMO_NOTE = '';
+function nkClone(o){ return JSON.parse(JSON.stringify(o)); }
+function nkPromoKey(s){ return String(s == null ? '' : s).toUpperCase().replace(/[^A-Z0-9_-]/g, ''); }
+function nkPromoMap(obj){
+  var out = {};
+  Object.keys(obj || {}).forEach(function(k){
+    var p = obj[k]; if(!p || typeof p !== 'object') return;
+    var code = nkPromoKey(p.code || k); if(!code) return;
+    out[code] = { code: code, type: p.type === 'fixed' ? 'fixed' : 'percent', value: Number(p.value) || 0,
+                  active: p.active !== false, expiresAt: p.expiresAt ? Number(p.expiresAt) : 0 };
+  });
+  return out;
+}
+function nkPromoStatus(p){
+  if(!p || p.active === false || !(p.value > 0)) return 'invalid';
+  if(p.expiresAt && Date.now() > p.expiresAt) return 'expired';
+  return 'ok';
+}
+function nkPromoDesc(p){ return p.type === 'percent' ? (p.value + '% OFF') : ('$' + Number(p.value).toFixed(2) + ' OFF'); }
+function nkMoney(n){ return '$' + (Math.round(n * 100) / 100).toFixed(2); }
+function nkPromoApplied(){ return nkPromoKey(safeStorage.getItem('nikora_promo')); }
+
+function nkPromoCalc(subtotal){
+  var code = nkPromoApplied();
+  if(!code || !NK_PROMOS_LOADED) return null;
+  var p = NK_PROMOS && NK_PROMOS[code], st = nkPromoStatus(p);
+  if(st !== 'ok'){                                    /* deleted / expired since it was applied */
+    safeStorage.setItem('nikora_promo', '');
+    NK_PROMO_NOTE = 'Code ' + code + (st === 'expired' ? ' has expired' : ' is no longer valid') + ' and was removed.';
+    return null;
+  }
+  var d = p.type === 'percent' ? subtotal * Math.min(100, p.value) / 100 : p.value;
+  d = Math.min(Math.round(d * 100) / 100, subtotal);
+  return { code: code, promo: p, discount: d };
+}
+function nkPromoMsg(text, kind){
+  var m = document.getElementById('promo-msg'); if(!m) return;
+  m.textContent = text || ''; m.className = 'promo-msg' + (kind ? ' ' + kind : '');
+}
+function nkPromoRender(promo, payable){
+  var box = document.getElementById('promo-box'); if(!box) return;
+  var active = document.getElementById('promo-active'), toggle = document.getElementById('promo-toggle');
+  var applied = !!promo;
+  box.classList.toggle('open', NK_PROMO_OPEN && !applied);
+  toggle.setAttribute('aria-expanded', String(NK_PROMO_OPEN && !applied));
+  toggle.style.display = applied ? 'none' : '';
+  active.hidden = !applied;
+  if(applied){
+    active.innerHTML = '<span class="promo-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.4"/></svg><b>' + nkEsc(promo.code) + '</b><em>' + nkEsc(nkPromoDesc(promo.promo)) + '</em></span>' +
+      '<button type="button" class="promo-remove" id="promo-remove" aria-label="Remove promo code ' + nkEsc(promo.code) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Remove</button>';
+  } else { active.innerHTML = ''; }
+  if(NK_PROMO_NOTE){ nkPromoMsg(NK_PROMO_NOTE, 'err'); NK_PROMO_NOTE = ''; }
+  var row = document.getElementById('cart-discount-row'), tot = document.getElementById('cart-total-row');
+  var show = applied && promo.discount > 0;
+  row.hidden = !show; tot.hidden = !show;
+  if(show){
+    document.getElementById('cart-discount-label').textContent = 'Discount (' + promo.code + ')';
+    document.getElementById('cart-discount-amount').textContent = '-' + nkMoney(promo.discount);
+    document.getElementById('cart-total').textContent = nkMoney(payable);
+  }
+}
+function nkPromoApply(){
+  var input = document.getElementById('promo-input'); if(!input) return;
+  var code = nkPromoKey(input.value);
+  if(!code){ nkPromoMsg('Please enter a promo code.', 'err'); return; }
+  function finish(){
+    var p = NK_PROMOS && NK_PROMOS[code], st = nkPromoStatus(p);
+    if(st === 'expired'){ nkPromoMsg('Sorry, code ' + code + ' has expired.', 'err'); return; }
+    if(st !== 'ok'){ nkPromoMsg('That code isn\u2019t valid. Please check it and try again.', 'err'); return; }
+    safeStorage.setItem('nikora_promo', code);
+    input.value = ''; nkPromoMsg('', '');
+    renderCart();
+    showToast('Promo code ' + code + ' applied (' + nkPromoDesc(p) + ').');
+  }
+  if(NK_PROMOS === null && NK_PROMO_REF){                /* codes still loading: fetch once, then validate */
+    NK_PROMO_REF.once('value').then(function(s){ NK_PROMOS = nkPromoMap(s.val()); NK_PROMOS_LOADED = true; finish(); })
+      .catch(function(){ nkPromoMsg('Could not check the code right now. Please try again.', 'err'); });
+  } else { finish(); }
+}
+function nkPromoRemove(){
+  safeStorage.setItem('nikora_promo', ''); nkPromoMsg('', ''); renderCart();
+}
+function nkPromoInit(){
+  try{
+    NK_PROMO_REF = db.ref('promocodes');
+    NK_PROMO_REF.on('value', function(snap){
+      NK_PROMOS = nkPromoMap(snap.val()); NK_PROMOS_LOADED = true;
+      renderCart();
+    }, function(err){
+      console.warn('Promo codes sync error \u2014 using built-in list.', err);
+      if(NK_PROMOS === null){ NK_PROMOS = nkClone(NK_PROMO_FALLBACK); NK_PROMOS_LOADED = true; renderCart(); }
+    });
+    /* Seed GLOW10 once, only if the list has never been seeded and is empty. */
+    db.ref('promoMeta/seeded').once('value').then(function(s){
+      if(s.val() === true) return;
+      return NK_PROMO_REF.once('value').then(function(ps){
+        if(ps.val()){ return db.ref('promoMeta/seeded').set(true); }
+        return NK_PROMO_REF.child('GLOW10').set({ code:'GLOW10', type:'percent', value:10, active:true, createdAt:Date.now() })
+          .then(function(){ return db.ref('promoMeta/seeded').set(true); });
+      });
+    }).catch(function(e){ console.warn('Promo seed skipped', e); });
+  }catch(e){ NK_PROMOS = nkClone(NK_PROMO_FALLBACK); NK_PROMOS_LOADED = true; }
+}
+
+/* ---- shared modal helpers ---- */
+function nkModalOpen(id){
+  var m = document.getElementById(id); if(!m) return;
+  m.classList.add('active'); m.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
+}
+function nkModalClose(id){
+  var m = document.getElementById(id); if(!m) return;
+  m.classList.remove('active'); m.setAttribute('aria-hidden', 'true');
+  if(!document.querySelector('.nk-modal-overlay.active')) document.body.style.overflow = '';
+}
+function nkModalCloseAll(){
+  Array.prototype.forEach.call(document.querySelectorAll('.nk-modal-overlay.active'), function(m){ nkModalClose(m.id); });
+}
+
+
+/* ---- photo lightbox + image compression (shared) ---- */
+function nkLightboxOpen(src){
+  var box = document.getElementById('nk-lightbox');
+  if(!box){
+    box = document.createElement('div'); box.id = 'nk-lightbox';
+    box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', 'Review photo');
+    box.innerHTML = '<button type="button" class="nk-lightbox-close" aria-label="Close photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><img alt="Review photo">';
+    document.body.appendChild(box);
+  }
+  box.querySelector('img').src = src;
+  box.classList.add('active');
+}
+function nkLightboxClose(){ var b = document.getElementById('nk-lightbox'); if(b) b.classList.remove('active'); }
+/* Resizes to max 900px JPEG so Base64 review photos stay small enough for Realtime Database. */
+function nkCompressImage(file, done, fail, maxDim, quality){
+  if(!file || !/^image\//.test(file.type)){ fail('Please choose an image file.'); return; }
+  if(file.size > 12 * 1024 * 1024){ fail('That image is too large (12 MB max).'); return; }
+  var reader = new FileReader();
+  reader.onerror = function(){ fail('Could not read that image.'); };
+  reader.onload = function(){
+    var img = new Image();
+    img.onerror = function(){ fail('That image format isn\u2019t supported.'); };
+    img.onload = function(){
+      var s = Math.min(1, (maxDim || 900) / Math.max(img.width, img.height));
+      var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s));
+      var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+      done(c.toDataURL('image/jpeg', quality || 0.8));
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function nkSafePhoto(s){ return (typeof s === 'string' && /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(s)) ? s : ''; }
+
+function nkBindPromoAndTools(){
+  document.addEventListener('click', function(e){
+    var t = e.target; if(!t || !t.closest) return;
+    var nkc = t.closest('[data-nk-close]'); if(nkc){ var ov = nkc.closest('.nk-modal-overlay'); if(ov) nkModalClose(ov.id); return; }
+    if(t.classList && t.classList.contains('nk-modal-overlay')){ nkModalClose(t.id); return; }
+    if(t.closest('#promo-toggle')){ NK_PROMO_OPEN = !NK_PROMO_OPEN; var b = document.getElementById('promo-box'); b.classList.toggle('open', NK_PROMO_OPEN); document.getElementById('promo-toggle').setAttribute('aria-expanded', String(NK_PROMO_OPEN)); if(NK_PROMO_OPEN){ var i = document.getElementById('promo-input'); if(i) setTimeout(function(){ i.focus(); }, 30); } return; }
+    if(t.closest('#promo-apply')){ nkPromoApply(); return; }
+    if(t.closest('#promo-remove')){ nkPromoRemove(); return; }
+    var ph = t.closest('.rphoto img, .review-photo img'); if(ph && ph.src){ nkLightboxOpen(ph.src); return; }
+    if(t.id === 'nk-lightbox' || t.closest('.nk-lightbox-close')){ nkLightboxClose(); }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Enter') return;
+    if(e.target && e.target.id === 'promo-input'){ e.preventDefault(); nkPromoApply(); }
+  });
+}
+
+
+/* ================= TRUST BADGES ================= */
+function trustBadgesHtml(){
+  return (
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>30-Day Risk-Free Trial</span>' +
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Free Express Shipping</span>' +
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>Loss &amp; Damage Protection</span>'
+  );
+}
+function renderTrustBadges(){
+  var el = document.getElementById('cart-trust-badges');
+  if(el) el.innerHTML = trustBadgesHtml();
+}
+
+
+
+
+/* ======================================================================
+   NIKORA — returns.html page logic
+   (cart, promo codes, Firebase sync and trust badges come from the shared
+   modules above; this block adds the page-specific behaviour)
+   ====================================================================== */
+
+/* ---------------- Toast ---------------- */
+var toastTimer;
+function showToast(msg){
+  var toast = document.getElementById('toast');
+  if(!toast) return;
+  document.getElementById('toast-text').textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2600);
+}
+
+/* ---------------- Theme (called by nav.js theme buttons; nav.js keeps its own buttons in sync) ---------------- */
+function setTheme(mode){
+  mode = (mode === 'dark') ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', mode);
+  try{ localStorage.setItem('theme', mode); }catch(e){}
+  safeStorage.setItem('nikora_theme', mode);
+}
+
+
+
+/* ================= RETURNS PORTAL ================= */
+var R_REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+var R_SUPPORT = 'nikora.support@gmail.com';
+var R_MAX_PHOTOS = 3;
+
+var R_REASONS = {
+  trial: 'Changed my mind (30-Day Guarantee)',
+  defective: 'Defective/Not Working',
+  damaged: 'Damaged on Arrival',
+  wrong: 'Received Wrong Item',
+  sensitivity: 'Skin Sensitivity/Reaction'
+};
+var R_CONDITIONS = {
+  likenew: 'Like New (Original Box & Accessories)',
+  opened: 'Opened / Lightly Used',
+  damagedbox: 'Damaged Box'
+};
+var R_PHOTO_REQUIRED = ['defective', 'damaged', 'wrong'];     /* evidence is mandatory for supplier disputes */
+var R_STATUSES = ['Pending Review', 'Approved - Shipping Label Generated', 'Item Received', 'Refund Processed'];
+var R_STATUS_LABELS = ['Pending Review', 'Approved - Return Instructions Sent', 'Item Received', 'Refund Processed'];   /* what customers see; R_STATUSES stay as the stored keys */
+var R_STATUS_COPY = [
+  ['Pending Review', 'We\u2019ve received your request and our team is reviewing it.'],
+  ['Approved', 'Your return is approved. Follow the return instructions we sent you and pack the unopened, unused item securely. Return shipping for change-of-mind returns is paid by the customer.'],
+  ['Item Received', 'We\u2019ve received your return and are checking it in.'],
+  ['Refund Processed', 'Your refund has been sent to your original payment method.']
+];
+var R_STATUS_CLASS = ['', 'b-approved', 'b-received', 'b-done'];
+var R_ICON_CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+var R = { step: 1, order: '', email: '', reason: '', condition: '', desc: '', photos: [], busy: 0, submitting: false, last: null, watch: null };
+
+/* ----------------------------------------------------------------------------------------
+   ORDER VERIFICATION HOOK
+   Step 1 checks the order number format and the email address. To also confirm the order really
+   exists and belongs to that email, resolve false here when your order data says it doesn't match
+   (e.g. read your own orders store or call your backend). Every request is still reviewed by your
+   team ("Pending Review") before anything is approved or refunded.
+   ---------------------------------------------------------------------------------------- */
+function nkVerifyOrder(orderId, email){ return Promise.resolve(true); }
+
+/* ---------------- helpers ---------------- */
+function rEl(id){ return document.getElementById(id); }
+function rNormOrder(s){ var k = String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); return /^NK\d{3,8}$/.test(k) ? '#NK-' + k.slice(2) : ''; }
+function rNormRet(s){ var k = String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); var m = /^RET(\d{4})$/.exec(k) || /^(\d{4})$/.exec(k); return m ? 'RET-' + m[1] : ''; }
+function rValidEmail(s){ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(s || '').trim()); }
+function rFmtDate(ms){ return new Date(ms).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+function rSafeHttps(u){ return (typeof u === 'string' && /^https:\/\/[^\s"'<>\\]+$/i.test(u)) ? u : ''; }
+function rSetErr(id, msg, fieldId){
+  var e = rEl(id); if(e) e.textContent = msg || '';
+  ['rt-order', 'rt-email', 'rt-reason', 'rt-condition', 'rt-desc', 's-id-in', 's-email-in'].forEach(function(f){
+    var el = rEl(f); if(el) el.setAttribute('aria-invalid', f === fieldId ? 'true' : 'false');
+  });
+  if(fieldId){ var t = rEl(fieldId); if(t) t.focus(); }
+}
+
+/* SHA-256 (hex). Web Crypto when available, compact JS fallback otherwise. Used so the lookup can check
+   an email WITHOUT downloading the customer's email address from the database. */
+function rSha256(str){
+  if(window.crypto && crypto.subtle && window.TextEncoder){
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)).then(function(buf){
+      return Array.prototype.map.call(new Uint8Array(buf), function(b){ return ('0' + b.toString(16)).slice(-2); }).join('');
+    });
+  }
+  return Promise.resolve(rSha256Js(str));
+}
+function rSha256Js(msg){
+  var K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+           0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+           0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+           0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  var H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  function ror(x, n){ return (x >>> n) | (x << (32 - n)); }
+  var bytes = [], s = unescape(encodeURIComponent(msg)), i, j;
+  for(i = 0; i < s.length; i++) bytes.push(s.charCodeAt(i));
+  var bitLen = bytes.length * 8;
+  bytes.push(0x80);
+  while(bytes.length % 64 !== 56) bytes.push(0);
+  var hi = Math.floor(bitLen / 4294967296), lo = bitLen >>> 0;
+  bytes.push((hi >>> 24) & 255, (hi >>> 16) & 255, (hi >>> 8) & 255, hi & 255, (lo >>> 24) & 255, (lo >>> 16) & 255, (lo >>> 8) & 255, lo & 255);
+  for(var off = 0; off < bytes.length; off += 64){
+    var w = new Array(64);
+    for(i = 0; i < 16; i++) w[i] = (bytes[off + i * 4] << 24) | (bytes[off + i * 4 + 1] << 16) | (bytes[off + i * 4 + 2] << 8) | bytes[off + i * 4 + 3];
+    for(i = 16; i < 64; i++){
+      var s0 = ror(w[i - 15], 7) ^ ror(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+      var s1 = ror(w[i - 2], 17) ^ ror(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+      w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+    }
+    var a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+    for(i = 0; i < 64; i++){
+      var S1 = ror(e, 6) ^ ror(e, 11) ^ ror(e, 25), ch = (e & f) ^ (~e & g);
+      var t1 = (h + S1 + ch + K[i] + w[i]) | 0;
+      var S0 = ror(a, 2) ^ ror(a, 13) ^ ror(a, 22), maj = (a & b) ^ (a & c) ^ (b & c);
+      var t2 = (S0 + maj) | 0;
+      h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+    }
+    H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+    H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+  }
+  var out = '';
+  for(i = 0; i < 8; i++) out += ('00000000' + (H[i] >>> 0).toString(16)).slice(-8);
+  return out;
+}
+function rEmailHash(id, email){ return rSha256('nikora:' + id + ':' + String(email).trim().toLowerCase()); }
+
+/* ---------------- tabs ---------------- */
+function rSetTab(name, silent){
+  var isNew = name !== 'status';
+  rEl('tab-new').setAttribute('aria-selected', isNew ? 'true' : 'false'); rEl('tab-new').tabIndex = isNew ? 0 : -1;
+  rEl('tab-status').setAttribute('aria-selected', isNew ? 'false' : 'true'); rEl('tab-status').tabIndex = isNew ? -1 : 0;
+  rEl('panel-new').hidden = !isNew;
+  rEl('panel-status').hidden = isNew;
+  if(isNew) rStopWatch();
+  if(!silent){
+    try{ history.replaceState(null, '', isNew ? location.pathname + location.search : '#status'); }catch(e){}
+  }
+}
+function rInitTabs(){
+  var tabs = [rEl('tab-new'), rEl('tab-status')];
+  tabs.forEach(function(t, i){
+    t.addEventListener('click', function(){ rSetTab(t.getAttribute('data-tab')); });
+    t.addEventListener('keydown', function(e){
+      var n = -1;
+      if(e.key === 'ArrowRight' || e.key === 'ArrowLeft') n = (i + 1) % 2;
+      else if(e.key === 'Home') n = 0; else if(e.key === 'End') n = 1;
+      if(n < 0) return;
+      e.preventDefault(); rSetTab(tabs[n].getAttribute('data-tab')); tabs[n].focus();
+    });
+  });
+  window.addEventListener('hashchange', function(){ if(location.hash === '#status') rSetTab('status', true); });
+}
+
+/* ---------------- wizard ---------------- */
+function rGoStep(n){
+  R.step = n;
+  ['step-1', 'step-2', 'step-3'].forEach(function(id, i){ rEl(id).hidden = (i + 1) !== n; });
+  rEl('step-done').hidden = true;
+  Array.prototype.forEach.call(document.querySelectorAll('#stepper li'), function(li){
+    var s = Number(li.getAttribute('data-s'));
+    li.className = s < n ? 'done' : (s === n ? 'active' : '');
+    if(s === n) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+  });
+  var h = rEl('step-' + n).querySelector('.r-step-title');
+  if(h){ rEl('panel-new').scrollIntoView({ behavior: R_REDUCED ? 'auto' : 'smooth', block: 'start' }); setTimeout(function(){ try{ h.focus({ preventScroll: true }); }catch(e){ h.focus(); } }, R_REDUCED ? 0 : 350); }
+}
+
+function rUpdateStep2Ui(){
+  var reason = rEl('rt-reason').value;
+  var needPhoto = R_PHOTO_REQUIRED.indexOf(reason) > -1;
+  rEl('rt-sens-note').hidden = reason !== 'sensitivity';
+  rEl('rt-ev-opt').textContent = needPhoto ? '(required, up to 3)' : '(recommended, up to 3)';
+  rEl('rt-desc-lbl').textContent = reason === 'trial' ? 'Tell Us More (optional)' : 'Problem Description';
+  rEl('rt-desc-hint').textContent = reason === 'trial' ? 'Your feedback helps us improve. A few words is plenty.' : 'Please include what you noticed and when it started.';
+}
+
+function rStep1(e){
+  e.preventDefault();
+  var order = rNormOrder(rEl('rt-order').value), email = rEl('rt-email').value.trim();
+  if(!order){ rSetErr('err-1', 'Please enter a valid order number, for example #NK-1001.', 'rt-order'); return; }
+  if(!rValidEmail(email)){ rSetErr('err-1', 'Please enter the email address used for the order.', 'rt-email'); return; }
+  rSetErr('err-1', '', null);
+  var btn = rEl('btn-next-1'); btn.disabled = true;
+  nkVerifyOrder(order, email).then(function(ok){
+    btn.disabled = false;
+    if(!ok){ rSetErr('err-1', 'We couldn\u2019t match that order number and email. Please check them, or contact ' + R_SUPPORT + '.', 'rt-order'); return; }
+    R.order = order; R.email = email;
+    rGoStep(2);
+  }).catch(function(){ btn.disabled = false; rSetErr('err-1', 'We couldn\u2019t verify your order right now. Please try again.', null); });
+}
+
+function rStep2(e){
+  e.preventDefault();
+  var reason = rEl('rt-reason').value, cond = rEl('rt-condition').value, desc = rEl('rt-desc').value.trim();
+  if(!reason){ rSetErr('err-2', 'Please select a return reason.', 'rt-reason'); return; }
+  if(!cond){ rSetErr('err-2', 'Please select the condition of the item.', 'rt-condition'); return; }
+  if(reason !== 'trial' && desc.length < 10){ rSetErr('err-2', 'Please describe the problem (at least 10 characters).', 'rt-desc'); return; }
+  if(R.busy > 0){ rSetErr('err-2', 'Your photos are still processing. One moment.', null); return; }
+  if(R_PHOTO_REQUIRED.indexOf(reason) > -1 && R.photos.length < 1){ rSetErr('err-2', 'Please add at least one photo as evidence for this type of request.', null); rEl('rt-drop').scrollIntoView({ block: 'center' }); return; }
+  rSetErr('err-2', '', null);
+  R.reason = reason; R.condition = cond; R.desc = desc;
+  rBuildSummary();
+  rGoStep(3);
+}
+
+function rBuildSummary(){
+  var rows = [
+    ['Order', R.order],
+    ['Email', R.email],
+    ['Reason', R_REASONS[R.reason]],
+    ['Item condition', R_CONDITIONS[R.condition]],
+    ['Description', R.desc || 'No additional details']
+  ];
+  var html = rows.map(function(r){ return '<li><span class="k">' + escapeHtml(r[0]) + '</span><span class="v">' + escapeHtml(r[1]) + '</span></li>'; }).join('');
+  html += '<li><span class="k">Photos</span><span class="v">' + (R.photos.length
+    ? '<span class="sum-thumbs">' + R.photos.map(function(p, i){ return '<img src="' + p + '" alt="Evidence photo ' + (i + 1) + '">'; }).join('') + '</span>'
+    : 'None added') + '</span></li>';
+  rEl('rt-summary').innerHTML = html;
+}
+
+/* ---------------- evidence photos (compressed in the browser) ---------------- */
+function rRenderThumbs(pendingCount){
+  var box = rEl('rt-thumbs'), html = '';
+  R.photos.forEach(function(src, i){
+    html += '<div class="thumb"><img src="' + src + '" alt="Evidence photo ' + (i + 1) + '"><button type="button" data-del="' + i + '" aria-label="Remove photo ' + (i + 1) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
+  });
+  for(var k = 0; k < (pendingCount || 0); k++) html += '<div class="thumb busy" aria-hidden="true"></div>';
+  box.innerHTML = html;
+  var full = R.photos.length + (pendingCount || 0) >= R_MAX_PHOTOS;
+  rEl('rt-drop').setAttribute('aria-disabled', full ? 'true' : 'false');
+}
+function rAddFiles(files){
+  var room = R_MAX_PHOTOS - R.photos.length - R.busy;
+  files = Array.prototype.slice.call(files || []);
+  if(files.length > room) rSetErr('err-2', room > 0 ? 'You can add up to ' + R_MAX_PHOTOS + ' photos. Extra files were skipped.' : 'You\u2019ve reached the ' + R_MAX_PHOTOS + ' photo limit.', null);
+  else rSetErr('err-2', '', null);
+  files.slice(0, Math.max(0, room)).forEach(function(f){
+    R.busy++; rRenderThumbs(R.busy);
+    nkCompressImage(f, function(data){ R.busy--; if(R.photos.length < R_MAX_PHOTOS) R.photos.push(data); rRenderThumbs(R.busy); },
+      function(msg){ R.busy--; rRenderThumbs(R.busy); rSetErr('err-2', msg, null); }, 1000, 0.72);
+  });
+}
+function rInitUpload(){
+  var input = rEl('rt-files'), drop = rEl('rt-drop');
+  input.addEventListener('change', function(){ rAddFiles(this.files); this.value = ''; });
+  ['dragenter', 'dragover'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function(e){ if(e.dataTransfer) rAddFiles(e.dataTransfer.files); });
+  rEl('rt-thumbs').addEventListener('click', function(e){
+    var b = e.target.closest('[data-del]'); if(!b) return;
+    R.photos.splice(Number(b.getAttribute('data-del')), 1); rRenderThumbs(R.busy);
+  });
+}
+
+/* ---------------- submit -> Firebase /returns/{returnId} ---------------- */
+function rNewId(){ return 'RET-' + (1000 + Math.floor(Math.random() * 9000)); }
+function rSetSubmitting(on){
+  R.submitting = on;
+  var b = rEl('btn-submit'); b.disabled = on; b.classList.toggle('loading', on);
+  rEl('btn-submit-text').textContent = on ? 'Submitting\u2026' : 'Submit Return Request';
+}
+function rSubmit(e){
+  e.preventDefault();
+  if(R.submitting) return;
+  if(rEl('rt-website').value){ rShowDone('RET-0000', true); return; }                    /* honeypot */
+  if(!rEl('rt-consent').checked){ rSetErr('err-3', 'Please confirm your details to continue.', 'rt-consent'); return; }
+  var last = 0; try{ last = Number(localStorage.getItem('nk_ret_last') || 0); }catch(err){}
+  if(Date.now() - last < 30000){ rSetErr('err-3', 'Please wait a moment before submitting another request.', null); return; }
+  if(!(typeof firebaseReady !== 'undefined' && firebaseReady)){
+    rSetErr('err-3', 'We can\u2019t reach our returns system right now. Please try again shortly, or email ' + R_SUPPORT + ' with your order number.', null); return;
+  }
+  rSetErr('err-3', '', null);
+  rSetSubmitting(true);
+
+  var attempts = 0;
+  (function attempt(){
+    var id = rNewId();
+    rEmailHash(id, R.email).then(function(hash){
+      var payload = {
+        returnId: id,
+        orderId: R.order,
+        email: R.email.toLowerCase(),
+        reason: R_REASONS[R.reason],
+        condition: R_CONDITIONS[R.condition],
+        description: R.desc,
+        photoUrls: R.photos.slice(),          /* compressed images stored as data URLs */
+        status: 'Pending Review',
+        createdAt: Date.now(),
+        emailHash: hash                       /* lets the status page verify an email without exposing it */
+      };
+      return db.ref('returns/' + id).set(payload).then(function(){ return id; });
+    }).then(function(id){
+      try{ localStorage.setItem('nk_ret_last', String(Date.now())); }catch(err){}
+      rSetSubmitting(false);
+      rShowDone(id, false);
+    }).catch(function(err){
+      attempts++;
+      if(attempts < 3){ attempt(); return; }              /* an ID collision is rejected by create-only rules: pick another */
+      console.warn('Return submit failed', err);
+      rSetSubmitting(false);
+      rSetErr('err-3', 'We couldn\u2019t submit your request just now. Please try again, or email ' + R_SUPPORT + ' with your order number and photos.', null);
+    });
+  })();
+}
+
+function rShowDone(id, fake){
+  var shown = '#' + id;
+  R.last = { id: id, email: R.email };
+  ['step-1', 'step-2', 'step-3'].forEach(function(s){ rEl(s).hidden = true; });
+  rEl('step-done').hidden = false;
+  Array.prototype.forEach.call(document.querySelectorAll('#stepper li'), function(li){ li.className = 'done'; li.removeAttribute('aria-current'); });
+  rEl('done-id').textContent = shown;
+  var subject = 'Return request ' + shown + ' (' + R.order + ')';
+  var body = 'Hello NIKORA team,\n\nI have submitted a return request.\n\nReturn ID: ' + shown + '\nOrder: ' + R.order + '\nEmail: ' + R.email +
+    '\nReason: ' + (R_REASONS[R.reason] || '') + '\nItem condition: ' + (R_CONDITIONS[R.condition] || '') + '\n\nThank you.';
+  rEl('done-mail').href = 'mailto:' + R_SUPPORT + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  var h = rEl('step-done').querySelector('h2');
+  rEl('panel-new').scrollIntoView({ behavior: R_REDUCED ? 'auto' : 'smooth', block: 'start' });
+  setTimeout(function(){ try{ h.focus({ preventScroll: true }); }catch(e){ h.focus(); } }, R_REDUCED ? 0 : 350);
+  /* reset the form for the next request (kept values are in R.last) */
+  ['rt-order', 'rt-email', 'rt-reason', 'rt-condition', 'rt-desc'].forEach(function(f){ rEl(f).value = ''; });
+  rEl('rt-consent').checked = false; R.photos = []; R.busy = 0; rRenderThumbs(0); rUpdateStep2Ui();
+}
+
+function rCopyId(){
+  var txt = rEl('done-id').textContent, note = rEl('done-copied');
+  function ok(){ note.textContent = 'Copied ' + txt + ' to your clipboard. Status: Pending Review'; }
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(ok, function(){}); return; }
+  var t = document.createElement('textarea'); t.value = txt; t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select();
+  try{ document.execCommand('copy'); ok(); }catch(e){} document.body.removeChild(t);
+}
+
+function rInitWizard(){
+  rEl('step-1').addEventListener('submit', rStep1);
+  rEl('step-2').addEventListener('submit', rStep2);
+  rEl('step-3').addEventListener('submit', rSubmit);
+  rEl('btn-back-2').addEventListener('click', function(){ rGoStep(1); });
+  rEl('btn-back-3').addEventListener('click', function(){ rGoStep(2); });
+  rEl('rt-reason').addEventListener('change', rUpdateStep2Ui);
+  ['step-1', 'step-2', 'step-3'].forEach(function(id){ rEl(id).addEventListener('input', function(){ var e = id === 'step-1' ? 'err-1' : (id === 'step-2' ? 'err-2' : 'err-3'); if(rEl(e).textContent) rSetErr(e, '', null); }); });
+  rEl('done-copy').addEventListener('click', rCopyId);
+  rEl('done-status').addEventListener('click', function(){
+    rSetTab('status');
+    if(R.last){ rEl('s-id-in').value = '#' + R.last.id; rEl('s-email-in').value = R.last.email; }
+    rEl('panel-status').scrollIntoView({ behavior: R_REDUCED ? 'auto' : 'smooth', block: 'start' });
+    rEl('s-btn').focus();
+  });
+  rInitUpload(); rUpdateStep2Ui(); rRenderThumbs(0);
+}
+
+/* ---------------- status lookup (reads only the child nodes it needs under /returns/{returnId}) ---------------- */
+function rStopWatch(){
+  if(R.watch){ try{ R.watch.off(); }catch(e){} R.watch = null; }
+}
+function rSetSearching(on){
+  var b = rEl('s-btn'); b.disabled = on; b.classList.toggle('loading', on);
+  rEl('s-btn-text').textContent = on ? 'Checking\u2026' : 'Check Status';
+}
+function rRenderStatus(id, status, createdAt, updatedAt, labelUrl){
+  var idx = R_STATUSES.indexOf(status);
+  if(idx < 0) idx = R_STATUS_LABELS.indexOf(status);          /* accept the customer-facing wording too */
+  rEl('s-id').innerHTML = 'Return <em>#' + escapeHtml(id) + '</em>';
+  var badge = rEl('s-badge');
+  badge.className = 'badge ' + (idx > -1 ? R_STATUS_CLASS[idx] : 'b-other');
+  rEl('s-badge-text').textContent = idx > -1 ? R_STATUS_LABELS[idx] : (status || 'Status unavailable');
+
+  rEl('s-steps').innerHTML = R_STATUS_COPY.map(function(c, i){
+    var state = idx < 0 ? '' : (i < idx || idx === 3 ? 'done' : (i === idx ? 'active' : ''));
+    return '<li class="' + state + '"' + (state === 'active' ? ' aria-current="step"' : '') + '><span class="ss-dot">' + R_ICON_CHECK + '</span><div><div class="ss-t">' + escapeHtml(R_STATUS_LABELS[i]) + '</div><div class="ss-d">' + escapeHtml(c[1]) + '</div></div></li>';
+  }).join('');
+
+  var meta = [];
+  if(Number(createdAt) > 0) meta.push('Submitted ' + rFmtDate(Number(createdAt)));
+  if(Number(updatedAt) > 0) meta.push('Last updated ' + rFmtDate(Number(updatedAt)));
+  rEl('s-meta').textContent = meta.join('  \u00b7  ');
+
+  var lbl = rSafeHttps(labelUrl);
+  rEl('s-label-wrap').hidden = !(lbl && idx >= 1 && idx < 3);
+  if(lbl) rEl('s-label').href = lbl;
+
+}
+
+function rLookup(e){
+  e.preventDefault();
+  var id = rNormRet(rEl('s-id-in').value), email = rEl('s-email-in').value.trim();
+  if(!id){ rSetErr('s-error', 'Please enter your return ID, for example #RET-8492.', 's-id-in'); return; }
+  if(!rValidEmail(email)){ rSetErr('s-error', 'Please enter the email address used for the return.', 's-email-in'); return; }
+  if(!(typeof firebaseReady !== 'undefined' && firebaseReady)){ rSetErr('s-error', 'We can\u2019t reach our returns system right now. Please try again shortly, or email ' + R_SUPPORT + '.', null); return; }
+  rSetErr('s-error', '', null);
+  rStopWatch(); rEl('s-result').hidden = true; rSetSearching(true);
+
+  var base = db.ref('returns/' + id);
+  Promise.all([
+    base.child('emailHash').once('value'), base.child('status').once('value'),
+    base.child('createdAt').once('value'), base.child('updatedAt').once('value'), base.child('labelUrl').once('value'),
+    rEmailHash(id, email)
+  ]).then(function(r){
+    rSetSearching(false);
+    var stored = r[0].val(), expected = r[5];
+    if(!stored || stored !== expected || !r[1].exists()){
+      rSetErr('s-error', 'We couldn\u2019t find a return matching that ID and email. Please check both and try again, or contact ' + R_SUPPORT + '.', 's-id-in');
+      return;
+    }
+    var state = { created: r[2].val(), updated: r[3].val(), label: r[4].val() };
+    rEl('s-result').hidden = false;
+    rRenderStatus(id, r[1].val(), state.created, state.updated, state.label);
+    R.currentId = id;
+    R.watch = base.child('status');                              /* keep the badge live while this page is open */
+    R.watch.on('value', function(s){
+      if(!s.exists()) return;
+      var status = s.val();
+      base.child('updatedAt').once('value').then(function(u){ state.updated = u.val(); rRenderStatus(id, status, state.created, state.updated, state.label); });
+    });
+    var t = rEl('s-id'); setTimeout(function(){ rEl('s-result').scrollIntoView({ behavior: R_REDUCED ? 'auto' : 'smooth', block: 'start' }); try{ t.focus({ preventScroll: true }); }catch(err){} }, 50);
+  }).catch(function(err){
+    console.warn('Return lookup failed', err);
+    rSetSearching(false);
+    rSetErr('s-error', 'We couldn\u2019t look up your return right now. Please try again, or email ' + R_SUPPORT + '.', null);
+  });
+}
+
+function rInitStatus(){
+  rEl('s-form').addEventListener('submit', rLookup);
+  ['s-id-in', 's-email-in'].forEach(function(f){ rEl(f).addEventListener('input', function(){ if(rEl('s-error').textContent) rSetErr('s-error', '', null); }); });
+  /* deep links: #status opens this tab, ?id=RET-1234 pre-fills the ID */
+  try{
+    var q = new URLSearchParams(location.search), qi = q.get('id');
+    if(qi){ rEl('s-id-in').value = qi.slice(0, 16); rSetTab('status', true); }
+  }catch(e){}
+  if(location.hash === '#status') rSetTab('status', true);
+}
+
+/* ---- scroll reveal (staggered inside grids); falls back to showing everything ---- */
+function rInitReveal(){
+  var els = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+  if(!els.length) return;
+
+  function reveal(el, delay){
+    el.style.transitionDelay = delay + 'ms';
+    el.classList.add('in');
+    setTimeout(function(){                          /* hand the element back to its own hover transitions */
+      el.classList.remove('reveal', 'in');
+      el.style.transitionDelay = '';
+    }, delay + 900);
+  }
+  if(!('IntersectionObserver' in window)){ els.forEach(function(el){ reveal(el, 0); }); return; }
+
+  els.forEach(function(el){
+    var sib = el.parentElement ? Array.prototype.indexOf.call(el.parentElement.children, el) : 0;
+    el.setAttribute('data-rd', String(Math.min(sib, 4) * 80));
+  });
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(!en.isIntersecting) return;
+      io.unobserve(en.target);
+      reveal(en.target, Number(en.target.getAttribute('data-rd')) || 0);
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(function(el){ io.observe(el); });
+  setTimeout(function(){ els.forEach(function(el){ if(el.classList.contains('reveal') && !el.classList.contains('in')){ io.unobserve(el); reveal(el, 0); } }); }, 5000);
+}
+
+/* ---------------- Init ---------------- */
+function init(){
+  var saved = safeStorage.getItem('theme') || safeStorage.getItem('nikora_theme');
+  setTheme(saved === 'dark' ? 'dark' : 'light');
+
+  renderCart();
+  renderTrustBadges();
+  initCartSync();
+
+
+  rInitTabs();
+  rInitWizard();
+  rInitStatus();
+  rInitReveal();
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>

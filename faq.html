@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<script>
+/* Anti-flicker: apply the saved theme before first paint ('theme' key, legacy 'nikora_theme' fallback). */
+(function(){
+  try{
+    var saved = localStorage.getItem('theme') || localStorage.getItem('nikora_theme');
+    if(saved === 'light' || saved === 'dark'){ document.documentElement.setAttribute('data-theme', saved); }
+  }catch(e){}
+  /* scroll-reveal is only armed when JS runs, so content is never hidden without it */
+  document.documentElement.classList.add('js-on');
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQ &amp; Help Center — NIKORA</title>
+<meta name="description" content="Answers about NIKORA skincare devices, shipping and tracking (1–3 days processing, 7–15 business days delivery), the 30-day money-back guarantee, loss &amp; damage protection, and safety.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Firebase (compat build — plain <script> globals, no bundler/import needed) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How often should I use the NIKORA SkinGlow Wand Pro?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Most NIKORA routines take about five minutes a day. Start with a few sessions in your first week, then build up to daily use as your skin gets comfortable. Consistency matters more than intensity. Give microcurrents at least 30–45 days of regular use to show real results, and always follow the schedule in your device’s instruction guide."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does microcurrent therapy hurt or feel uncomfortable?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It shouldn’t. Microcurrents are designed to be gentle, and most people feel a light tingle or barely anything at all. Begin on the lowest intensity and increase slowly. Keep the device moving on clean, slightly damp or gel-prepped skin, as your guide describes. If anything feels sharp or painful, turn the intensity down or stop and contact us."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I use NIKORA with my existing skincare creams and serums?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. A simple order works well for most routines: Cleanse your face and pat it dry. Use your device, with a water-based serum or conductive gel if your guide calls for one. Finish with your moisturizer, and sunscreen in the morning. If you use strong actives such as retinol or exfoliating acids and your skin is sensitive, consider using them on different evenings from your device."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How long does processing take before my order ships?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Every order is processed in 1–3 business days at our CJ Dropshipping warehouse, where we run a quality check, assemble your order and package it carefully."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How long does shipping take, and what does it cost?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Shipping is free and takes 7–15 business days once your order is dispatched, with end-to-end real-time tracking. Including processing, most orders arrive within about 8–18 business days of checkout."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I track my order, and when does my tracking number activate?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Enter your order number and the email you ordered with on our tracking page. Tracking numbers typically activate within 1–3 business days after checkout, once the warehouse dispatches your order."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "My order is delayed. What should I do?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Check the tracking page first. If tracking has been inactive for more than 14 days, or your parcel has been in transit for more than 30 days, it counts as lost: email nikora.support@gmail.com and we will send a free reshipment or refund you in full."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What if my order arrives damaged or defective?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You are covered by our Loss & Damage Protection. Email nikora.support@gmail.com with your order number and we will send a 100% free reshipment or a full refund."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does the 30-day money-back guarantee work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "If NIKORA is not right for you, contact us within 30 days for a refund. Our 30-Day Money-Back Guarantee covers unopened and unused items in original packaging upon arrival. Customers are responsible for return shipping costs for change-of-mind returns."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I request a return or refund?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Start in our returns portal or email nikora.support@gmail.com with your order number. Refunds go back to your original payment method once your return is checked in."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is Red Light therapy safe for daily use on sensitive skin?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Red light contains no UV and is generally well tolerated, including by many people with sensitive skin. Used as directed, short daily sessions are what these devices are designed for. If your skin is sensitive, start with fewer, shorter sessions and build up gradually. Stop using the device if you notice lasting redness, irritation or discomfort. Speak to your doctor first if you are pregnant, have an implanted electronic device such as a pacemaker, a skin condition, or take medication that makes skin light-sensitive. This is general guidance, not medical advice. Individual results vary."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are NIKORA devices clinically tested and certified?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Our Science page explains the technologies behind each device and the safety standards we design around, and each product page lists the details that apply to that model. Need documentation for a specific device? Email nikora.support@gmail.com with the model name and we’ll point you to it. Explore the Science"
+      }
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --canvas:#FAF8F5;
+  --canvas-rgb:250,248,245;
+  --card-bg: rgba(255,255,255,0.65);
+  --card-border: rgba(230,220,210,0.6);
+  --text:#1A1615;
+  --text-soft: rgba(26,22,21,0.62);
+  --text-faint: rgba(26,22,21,0.4);
+  --gold:#C59B56;
+  --gold-rgb:197,155,86;
+  --rose:#D81E5B;
+  --rose-rgb:216,30,91;
+  --line: rgba(26,22,21,0.1);
+  --surface-raised: rgba(255,255,255,0.85);
+  --shadow-ambient: 0 20px 60px -20px rgba(60,45,30,0.18);
+  --success:#2E6B4F;
+  color-scheme: light;
+}
+[data-theme="dark"]{
+  --canvas:#0D0B12;
+  --canvas-rgb:13,11,18;
+  --card-bg: rgba(25,20,32,0.55);
+  --card-border: rgba(255,255,255,0.08);
+  --text:#F7F4F0;
+  --text-soft: rgba(247,244,240,0.64);
+  --text-faint: rgba(247,244,240,0.38);
+  --gold:#E5BA73;
+  --gold-rgb:229,186,115;
+  --rose:#FF527B;
+  --rose-rgb:255,82,123;
+  --line: rgba(255,255,255,0.09);
+  --surface-raised: rgba(30,25,38,0.9);
+  --shadow-ambient: 0 20px 70px -20px rgba(0,0,0,0.6);
+  color-scheme: dark;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+
+/* ================= 1. LIVE ANIMATED GRADIENT BACKGROUND ================= */
+body {
+  background: linear-gradient(-45deg, #FAF7F2, #F8F4F0, #F5EFE6, #FAF7F2);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+  margin:0;
+  color:var(--text);
+  font-family:'Montserrat',sans-serif;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  transition:color .4s ease;
+}
+[data-theme="dark"] body {
+  background: linear-gradient(-45deg, #0D0B12, #170E1B, #2A0F1D, #0D0B12);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@media (prefers-reduced-motion: reduce){
+  body{animation:none;}
+  *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+}
+
+img{max-width:100%;display:block;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+.container{
+  width:100%;
+  max-width:1240px;
+  margin:0 auto;
+  padding:0 clamp(20px,4vw,48px);
+}
+:focus-visible{outline:2px solid var(--rose); outline-offset:3px; border-radius:4px;}
+
+
+
+
+
+
+
+
+/* ---------------- LOGO (footer) ----------------
+   The header, "More" dropdown and mobile drawer are rendered and styled entirely by nav.js. */
+.logo{
+  font-family:'Playfair Display',serif;
+  font-size:26px; letter-spacing:.06em; font-weight:600;
+}
+.logo em{font-style:italic; color:var(--gold);}
+
+.btn-primary{
+  background:var(--text); color:var(--canvas);
+  padding:16px 30px; border-radius:100px; border:none;
+  font-size:13.5px; font-weight:600; letter-spacing:.03em;
+  display:inline-flex; align-items:center; gap:10px;
+  transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s ease;
+  box-shadow:0 12px 30px -12px rgba(26,22,21,0.4);
+}
+.btn-primary:hover{transform:translateY(-2px); box-shadow:0 16px 36px -12px rgba(26,22,21,0.5);}
+.btn-primary svg{width:14px;height:14px;stroke:currentColor;fill:none;transition:transform .25s ease;}
+.btn-primary:hover svg{transform:translateX(3px);}
+.btn-ghost{font-size:13.5px; font-weight:600; color:var(--text); padding:16px 8px; border-bottom:1px solid var(--text); display:inline-flex; align-items:center; gap:8px;}
+
+/* ---------------- SECTION HEADERS ---------------- */
+.section{padding:clamp(60px,8vw,100px) 0;}
+.section-head{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:44px; flex-wrap:wrap;}
+.section-head h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(28px,3.4vw,40px); margin:0; letter-spacing:-.01em;}
+.section-head h2 em{font-style:italic;color:var(--gold);}
+.section-head p{margin:8px 0 0; color:var(--text-soft); font-size:14.5px; max-width:440px;}
+.section-link{font-size:13px; font-weight:600; border-bottom:1px solid var(--text); padding-bottom:2px; white-space:nowrap; background:none; border-left:none; border-right:none; border-top:none;}
+
+/* ================= TACTILE 3D CARD SPOTLIGHT ================= */
+.glass-card{
+  --mouse-x:50%; --mouse-y:50%;
+  position:relative;
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  border-radius:22px;
+  backdrop-filter:blur(20px) saturate(180%);
+  transition:transform .12s ease-out, box-shadow .25s ease;
+  box-shadow:var(--shadow-ambient);
+  transform-style:preserve-3d;
+  will-change:transform;
+}
+.glass-card::after{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:radial-gradient(350px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.45), transparent 70%);
+  opacity:0; transition:opacity .3s ease;
+}
+[data-theme="dark"] .glass-card::after{
+  background:radial-gradient(350px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.14), transparent 70%);
+}
+.glass-card:hover::after{opacity:1;}
+
+/* ---------------- FOOTER ---------------- */
+footer.site{border-top:1px solid var(--line); padding:60px 0 30px; margin-top:20px;}
+.footer-grid{display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; margin-bottom:44px;}
+@media (max-width:760px){ .footer-grid{grid-template-columns:1fr 1fr;} }
+.footer-col h5{font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); font-weight:600; margin:0 0 16px;}
+.footer-col a, .footer-col p{display:block; font-size:13.5px; color:var(--text-soft); margin-bottom:11px; line-height:1.5;}
+.footer-col a:hover{color:var(--text);}
+.footer-bottom{display:flex; justify-content:space-between; align-items:center; padding-top:26px; border-top:1px solid var(--line); font-size:12px; color:var(--text-faint); flex-wrap:wrap; gap:12px;}
+
+/* ================= 3. CLICK-LOCK & OVERLAY CSS FIX ================= */
+.modal-overlay, .cart-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 9998;
+  display: flex; align-items: center; justify-content: center;
+  padding:20px;
+}
+.modal-overlay.active, .cart-overlay.active {
+  opacity: 1; visibility: visible; pointer-events: auto;
+}
+.modal-card, .cart-drawer, .modal-box { z-index: 9999; position: relative; }
+#cart-drawer { z-index: 9999; }
+
+.modal-box, .modal-card{
+  background:var(--surface-raised); border:1px solid var(--card-border); border-radius:22px;
+  width:100%; max-width:440px; padding:36px; max-height:88vh; overflow-y:auto;
+  box-shadow:0 40px 90px -20px rgba(0,0,0,0.5);
+}
+.modal-box.wide{max-width:640px;}
+.modal-close, .close-btn{position:absolute; top:18px; right:18px; background:none; border:none; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background .2s ease; font-size:16px; color:var(--text); cursor:pointer;}
+.modal-close:hover, .close-btn:hover{background:var(--line);}
+.modal-close svg{width:16px;height:16px;stroke:var(--text);}
+.modal-box h3, .modal-card h3{font-family:'Playfair Display',serif; font-size:22px; font-weight:500; margin:0 0 20px;}
+.modal-box .modal-sub{font-size:13px; color:var(--text-soft); margin:0 0 24px;}
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:11.5px; font-weight:600; letter-spacing:.03em; text-transform:uppercase; color:var(--text-faint); margin-bottom:7px;}
+.field input, .field select, .field textarea,
+.modal-card input[type="password"]{
+  width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line);
+  background:rgba(var(--canvas-rgb),0.5); color:var(--text); font-family:inherit; font-size:13.5px;
+  margin-bottom:16px;
+}
+.field textarea{resize:vertical; min-height:70px;}
+.field input:focus, .field select:focus, .field textarea:focus,
+.modal-card input:focus{border-color:var(--gold); outline:none;}
+.field-row{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.form-error{font-size:12.5px; color:var(--rose); margin:-4px 0 14px; display:none;}
+.form-error.show{display:block;}
+.modal-submit, .submit-btn, .primary-btn{
+  width:100%; padding:15px; border-radius:100px; border:none; background:var(--text); color:var(--canvas);
+  font-size:13px; font-weight:600; letter-spacing:.03em; margin-top:8px; cursor:pointer;
+}
+
+/* ---------------- CART DRAWER layout (slide-in panel, not centered) ---------------- */
+#cart-drawer{
+  position:fixed; top:0; right:0; bottom:0; left:auto; margin:0; width:min(420px,100%); background:var(--surface-raised);
+  transform:translateX(100%); transition:transform .35s ease;
+  display:flex; flex-direction:column; border-left:1px solid var(--card-border);
+  max-width:none; padding:0; border-radius:0; box-shadow:none;
+  opacity:1; visibility:visible; pointer-events:none;
+}
+#cart-drawer.active{
+  transform:translateX(0) !important;
+  pointer-events:auto;
+  visibility:visible;
+  display:flex;
+}
+.cart-head{padding:24px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); flex-shrink:0;}
+.cart-head h3{font-family:'Playfair Display',serif; font-size:20px; margin:0; font-weight:500;}
+.cart-close-btn{
+  width:38px; height:38px; border-radius:50%; border:1px solid var(--line); background:var(--card-bg);
+  display:flex; align-items:center; justify-content:center; color:var(--text); cursor:pointer;
+  transition:background .2s ease, border-color .2s ease, transform .15s ease;
+}
+.cart-close-btn:hover{background:var(--line); border-color:var(--gold); transform:rotate(90deg);}
+#cart-drawer svg{fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
+.cart-close-btn svg{width:16px; height:16px; stroke-width:2.2;}
+#cart-drawer{overflow:hidden;}
+.ship-progress-wrap{padding:16px 24px; border-bottom:1px solid var(--line); flex-shrink:0;}
+.ship-progress-text{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-soft); margin-bottom:8px; line-height:1.4;}
+.ship-progress-text svg{width:14px; height:14px; stroke:var(--gold);}
+.ship-progress-text.unlocked{color:var(--success); font-weight:600;}
+.ship-progress-text.unlocked svg{stroke:var(--success);}
+.ship-progress-bar{height:6px; border-radius:100px; background:var(--line); overflow:hidden;}
+.ship-progress-fill{height:100%; background:linear-gradient(90deg,var(--gold),var(--rose)); width:0%; transition:width .4s ease;}
+.ship-progress-fill.unlocked{background:linear-gradient(90deg,var(--success),var(--gold));}
+.cart-items{flex:0 1 auto; overflow-y:auto; padding:6px 24px; min-height:0;}
+.cart-item{display:flex; gap:14px; padding:16px 0; border-bottom:1px solid var(--line);}
+.ci-thumb{width:62px; height:62px; border-radius:12px; overflow:hidden; flex-shrink:0; background:var(--surface-tint,var(--card-bg)); border:1px solid var(--line); display:flex; align-items:center; justify-content:center;}
+.ci-thumb img{width:100%; height:100%; object-fit:cover;}
+.ci-thumb svg{width:22px; height:22px; color:var(--text-faint); stroke-width:1.6;}
+.ci-info{flex:1; min-width:0;}
+.ci-top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+.ci-title{font-size:13px; font-weight:600; line-height:1.35;}
+.ci-price{font-size:12px; color:var(--text-soft); margin-top:3px;}
+.ci-bottom{display:flex; align-items:center; justify-content:space-between; margin-top:10px;}
+.qty-ctrl{display:inline-flex; align-items:center; gap:2px; border:1px solid var(--line); border-radius:100px; padding:2px;}
+.qty-ctrl button{width:26px; height:26px; border-radius:50%; border:none; background:none; color:var(--text); display:flex; align-items:center; justify-content:center; transition:background .2s ease;}
+.qty-ctrl button:hover{background:var(--line);}
+.qty-ctrl button svg{width:12px; height:12px; stroke-width:2.4;}
+.qty-ctrl span{font-size:12.5px; font-weight:600; min-width:22px; text-align:center;}
+.ci-line-total{font-size:13px; font-weight:700; color:var(--gold);}
+.ci-remove{width:30px; height:30px; flex-shrink:0; border-radius:50%; border:1px solid var(--line); background:none; color:var(--text-faint); display:flex; align-items:center; justify-content:center; transition:color .2s ease, border-color .2s ease, background .2s ease;}
+.ci-remove svg{width:14px; height:14px;}
+.ci-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5); background:rgba(225,29,72,.08);}
+.cart-empty{padding:28px 24px 22px; text-align:center; color:var(--text-soft); font-size:13.5px; line-height:1.55;}
+.cart-foot{padding:18px 24px 22px; border-top:1px solid var(--line); flex-shrink:0;}
+
+/* ---------------- IN-CART RECOMMENDATIONS: auto-scrolling horizontal carousel ---------------- */
+.cart-recs-section{border-top:1px solid var(--line); padding:16px 24px 4px; flex-shrink:0;}
+.cart-recs-head{display:flex; align-items:center; gap:7px; font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin-bottom:12px;}
+.cart-recs-head svg{width:14px; height:14px; stroke:var(--gold);}
+.cart-recs-grid{
+  display:flex; gap:12px; overflow-x:auto; overflow-y:hidden; padding-bottom:14px;
+  -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;
+  scrollbar-width:thin; scrollbar-color:var(--line) transparent;
+}
+.cart-recs-grid::-webkit-scrollbar{height:5px;}
+.cart-recs-grid::-webkit-scrollbar-track{background:transparent;}
+.cart-recs-grid::-webkit-scrollbar-thumb{background:var(--line); border-radius:100px;}
+.cart-rec-card{
+  flex:0 0 130px; background:var(--card-bg); border:1px solid var(--card-border);
+  border-radius:14px; padding:10px; display:flex; flex-direction:column; gap:7px;
+}
+.cart-rec-thumb{width:100%; aspect-ratio:4/3; border-radius:10px; overflow:hidden; background:var(--surface-tint,var(--card-bg)); display:flex; align-items:center; justify-content:center;}
+.cart-rec-thumb img{width:100%; height:100%; object-fit:cover; pointer-events:none; -webkit-user-drag:none;}
+.cart-rec-thumb svg{width:24px; height:24px; color:var(--text-faint); stroke-width:1.6;}
+.cart-rec-title{
+  font-size:11.5px; font-weight:600; line-height:1.35; color:var(--text); min-height:2.7em;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.cart-rec-price{font-size:12.5px; font-weight:700; color:var(--gold); font-family:'Playfair Display',serif;}
+.cart-rec-add{
+  display:flex; align-items:center; justify-content:center; gap:4px; margin-top:auto;
+  padding:7px 8px; border-radius:100px; border:1px solid var(--gold); background:transparent; color:var(--gold);
+  font-size:10.5px; font-weight:700; letter-spacing:.02em; cursor:pointer; transition:background .2s ease, color .2s ease;
+}
+.cart-rec-add svg{width:11px; height:11px; stroke-width:2.6;}
+.cart-rec-add:hover{background:var(--gold); color:#241c0f;}
+.cart-sub-row{display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:10px; color:var(--text-soft);}
+.cart-sub-row strong{color:var(--text); font-size:17px;}
+.cart-checkout{
+  width:100%; padding:16px; border-radius:100px; border:none; background:var(--gold); color:#241c0f;
+  font-weight:700; font-size:13.5px; margin-bottom:14px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
+}
+.cart-checkout svg{width:15px; height:15px;}
+.cart-recs-done{font-size:12.5px; color:var(--text-soft); line-height:1.5; padding:4px 0 16px;}
+
+/* ---------------- PROMO CODE (cart footer) ---------------- */
+.cart-sub-row[hidden], .promo-active[hidden]{display:none;}
+.promo-box{margin-bottom:12px;}
+.promo-toggle{
+  width:100%; display:flex; align-items:center; gap:8px; background:none; border:none; padding:2px 0 10px;
+  color:var(--text-soft); font-size:12.5px; font-weight:600; cursor:pointer; text-align:left;
+}
+.promo-toggle:hover{color:var(--text);}
+.promo-toggle svg{width:15px; height:15px; stroke:var(--gold);}
+.promo-toggle .promo-chev{margin-left:auto; width:14px; height:14px; stroke:var(--text-faint); transition:transform .25s ease;}
+.promo-box.open .promo-chev{transform:rotate(180deg);}
+.promo-body{display:none; padding-bottom:6px;}
+.promo-box.open .promo-body{display:block;}
+.promo-form{display:flex; gap:8px;}
+.promo-form input{
+  flex:1; min-width:0; padding:11px 16px; border-radius:100px; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); font:inherit; font-size:13px; letter-spacing:.06em; text-transform:uppercase;
+  outline:none; transition:border-color .2s ease;
+}
+.promo-form input::placeholder{text-transform:none; letter-spacing:0; color:var(--text-faint);}
+.promo-form input:focus{border-color:var(--gold);}
+.promo-apply{
+  display:inline-flex; align-items:center; gap:6px; padding:0 18px; border-radius:100px; border:1px solid var(--gold);
+  background:transparent; color:var(--gold); font-size:12.5px; font-weight:700; cursor:pointer; transition:background .2s ease, color .2s ease;
+}
+.promo-apply svg{width:14px; height:14px; stroke-width:2.4;}
+.promo-apply:hover{background:var(--gold); color:#241c0f;}
+.promo-msg{font-size:11.5px; line-height:1.4; min-height:0; margin-top:6px;}
+.promo-msg:empty{display:none;}
+.promo-msg.err{color:#e11d48;}
+.promo-msg.ok{color:var(--success);}
+.promo-active{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 8px 8px 12px; border-radius:100px; border:1px solid var(--success); background:rgba(46,107,79,.08);}
+.promo-chip{display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--text); min-width:0;}
+.promo-chip svg{width:15px; height:15px; stroke:var(--success);}
+.promo-chip b{letter-spacing:.06em;}
+.promo-chip em{font-style:normal; color:var(--success); font-weight:700;}
+.promo-remove{display:inline-flex; align-items:center; gap:4px; padding:5px 10px; border-radius:100px; border:1px solid var(--line); background:var(--card-bg); color:var(--text-soft); font-size:11px; font-weight:700; cursor:pointer; flex-shrink:0;}
+.promo-remove svg{width:11px; height:11px; stroke-width:2.6;}
+.promo-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5);}
+.cart-discount-row span:last-child{color:var(--success); font-weight:700;}
+.cart-total-row{margin-top:-2px; padding-top:8px; border-top:1px dashed var(--line);}
+.cart-total-row span{color:var(--text); font-weight:600;}
+.cart-total-row strong{color:var(--gold);}
+@media (max-height:900px){ #cart-drawer .trust-badges{display:none;} }
+@media (hover:none){ .promo-form input{font-size:16px;} }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ---------------- PHOTO LIGHTBOX ---------------- */
+#nk-lightbox{
+  position:fixed; inset:0; z-index:10050; display:flex; align-items:center; justify-content:center; padding:24px;
+  background:rgba(10,8,12,.88); opacity:0; visibility:hidden; transition:opacity .25s ease, visibility 0s linear .25s;
+}
+#nk-lightbox.active{opacity:1; visibility:visible;}
+#nk-lightbox img{max-width:min(92vw,900px); max-height:86vh; border-radius:14px; box-shadow:0 30px 80px rgba(0,0,0,.6); object-fit:contain; background:#111;}
+#nk-lightbox .nk-lightbox-close{
+  position:absolute; top:18px; right:18px; width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.1); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+#nk-lightbox .nk-lightbox-close svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round;}
+.review-photo img, .rphoto img{cursor:zoom-in;}
+
+/* ---------------- shared modal / form kit (promo manager, hero image) ---------------- */
+[hidden]{display:none !important;}
+.nk-modal-overlay{
+  position:fixed; inset:0; z-index:10020; display:flex; align-items:center; justify-content:center; padding:20px;
+  background:rgba(10,8,12,.6); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+  opacity:0; visibility:hidden; transition:opacity .25s ease, visibility 0s linear .25s;
+}
+.nk-modal-overlay.active{opacity:1; visibility:visible;}
+.nk-modal-card{
+  position:relative; width:100%; max-width:480px; max-height:90vh; overflow-y:auto;
+  background:var(--surface-raised); color:var(--text); border:1px solid var(--card-border);
+  border-radius:24px; padding:30px 26px 26px; box-shadow:0 30px 80px rgba(0,0,0,.35);
+  transform:translateY(12px); transition:transform .25s ease;
+}
+.nk-modal-overlay.active .nk-modal-card{transform:none;}
+.nk-modal-card h3{font-family:'Playfair Display',serif; font-size:22px; font-weight:500; margin:0 0 6px; padding-right:34px;}
+.nk-modal-sub{font-size:12.5px; color:var(--text-soft); margin:0 0 18px; line-height:1.5;}
+.nk-modal-close{
+  position:absolute; top:14px; right:14px; width:36px; height:36px; border-radius:50%; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+.nk-modal-close svg{width:15px; height:15px; stroke:currentColor; fill:none;}
+.nk-modal-close:hover{border-color:var(--gold);}
+.nk-primary, .nk-ghost{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 20px; border-radius:100px;
+  font-weight:700; font-size:13px; cursor:pointer; transition:background .2s ease, color .2s ease, border-color .2s ease;
+}
+.nk-primary{border:none; background:var(--gold); color:#241c0f;}
+.nk-primary:hover{filter:brightness(1.06);}
+.nk-ghost{border:1px solid var(--line); background:transparent; color:var(--text-soft);}
+.nk-ghost:hover{border-color:var(--gold); color:var(--text);}
+.nk-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;}
+.nk-actions .nk-primary{flex:1;}
+.nk-field{margin-bottom:14px;}
+.nk-lbl{display:block; font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin-bottom:6px;}
+.nk-error{font-size:12px; color:#e11d48; margin:0 0 10px; min-height:0;}
+.nk-error:empty{display:none;}
+/* image field: upload a photo (Base64) or paste a URL, with preview + Remove */
+.nk-img-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.nk-img-btn{
+  display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:100px; border:1px dashed var(--line);
+  color:var(--text-soft); font-size:12.5px; font-weight:600; cursor:pointer; margin:0; text-transform:none; letter-spacing:0;
+  transition:border-color .2s ease, color .2s ease;
+}
+.nk-img-btn:hover{border-color:var(--gold); color:var(--gold);}
+.nk-img-btn svg{width:16px; height:16px; stroke:currentColor; fill:none;}
+.nk-img-or{font-size:11px; color:var(--text-faint);}
+.nk-img-row input[type=text]{
+  flex:1; min-width:150px; box-sizing:border-box; padding:10px 14px; border-radius:100px; border:1px solid var(--line);
+  background:var(--card-bg); color:var(--text); font:inherit; font-size:13px; outline:none;
+}
+.nk-img-row input[type=text]:focus{border-color:var(--gold);}
+.nk-img-preview{display:none; align-items:center; gap:12px; margin-top:10px;}
+.nk-img-preview.show{display:flex;}
+.nk-img-preview img{width:84px; height:84px; object-fit:cover; border-radius:12px; border:1px solid var(--card-border); background:var(--surface-tint);}
+.nk-img-remove{display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:100px; border:1px solid var(--line); background:var(--card-bg); color:var(--text-soft); font-size:11.5px; font-weight:700; cursor:pointer;}
+.nk-img-remove svg{width:12px; height:12px; stroke:currentColor; fill:none;}
+.nk-img-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5);}
+
+
+
+
+.nk-modal-overlay.active, #nk-lightbox.active{transition:opacity .25s ease, visibility 0s;}
+.trust-badges{display:flex; flex-wrap:wrap; gap:8px; justify-content:center;}
+.trust-badge{display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:600; color:var(--text-soft); border:1px solid var(--line); border-radius:100px; padding:6px 10px;}
+.trust-badge svg{width:13px; height:13px; stroke:var(--gold); fill:none; flex-shrink:0;}
+.icon-inline{display:inline-flex; align-items:center; gap:8px;}
+.icon-inline svg{width:14px; height:14px; stroke:currentColor; fill:none; flex-shrink:0;}
+.drawer-close-btn svg, .close-btn svg, .modal-close svg{width:16px; height:16px; stroke:currentColor; fill:none;}
+.pc-add{display:flex; align-items:center; justify-content:center; gap:8px;}
+.pc-add svg{width:15px; height:15px; stroke:currentColor; fill:none;}
+
+.toast{
+  position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--text); color:var(--canvas); padding:14px 24px; border-radius:100px; font-size:13px; font-weight:500;
+  z-index:3000; opacity:0; pointer-events:none; transition:all .3s ease; display:flex; align-items:center; gap:10px;
+  box-shadow:0 20px 40px -12px rgba(0,0,0,0.4);
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+.toast svg{width:15px;height:15px;stroke:var(--success);fill:none; flex-shrink:0;}
+.visually-hidden{position:absolute; width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
+
+/* ================= FAQ PAGE ================= */
+html.js-on .reveal{opacity:0; transform:translateY(22px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1);}
+html.js-on .reveal.in{opacity:1; transform:none;}
+.faq-item[hidden], .f-group[hidden], .f-empty[hidden]{display:none !important;}
+
+/* ---------------- HERO + SEARCH ---------------- */
+.f-hero{position:relative; padding:clamp(60px,8vw,100px) 0 clamp(18px,3vw,30px); overflow:hidden; text-align:center;}
+.f-hero::before{
+  content:""; position:absolute; inset:-20% -10% auto -10%; height:560px; pointer-events:none;
+  background: radial-gradient(600px 380px at 30% 15%, rgba(var(--gold-rgb),0.2), transparent 70%),
+              radial-gradient(520px 340px at 80% 10%, rgba(var(--rose-rgb),0.1), transparent 70%);
+}
+.f-hero .container{position:relative; z-index:1;}
+.f-eyebrow{
+  display:inline-flex; align-items:center; gap:8px; margin-bottom:22px;
+  font-size:11.5px; letter-spacing:.08em; font-weight:700; text-transform:uppercase;
+  color:var(--gold); border:1px solid rgba(var(--gold-rgb),.45); border-radius:100px; padding:7px 14px; background:rgba(var(--gold-rgb),.08);
+}
+.f-eyebrow svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+h1.f-title{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(34px,4.8vw,60px); line-height:1.08; letter-spacing:-.01em; margin:0 auto 20px; max-width:820px;}
+h1.f-title em{font-style:italic; color:var(--gold);}
+.f-sub{font-size:clamp(15.5px,1.4vw,17.5px); line-height:1.65; color:var(--text-soft); max-width:640px; margin:0 auto;}
+
+.f-search-wrap{max-width:760px; margin:clamp(28px,4vw,40px) auto 0;}
+.f-search{padding:clamp(14px,2vw,20px); border-radius:100px; display:flex; align-items:center; gap:6px; text-align:left;}
+.f-search:focus-within{border-color:var(--gold); box-shadow:0 0 0 4px rgba(var(--gold-rgb),.16), var(--shadow-ambient);}
+.f-search > svg{flex:none; width:22px; height:22px; margin:0 8px 0 14px; stroke:var(--gold); fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+.f-search input{
+  flex:1; min-width:0; height:48px; background:none; border:none; outline:none; font:inherit; font-size:15.5px; font-weight:500; color:var(--text);
+}
+.f-search input::placeholder{color:var(--text-faint); font-weight:400;}
+.f-search input::-webkit-search-cancel-button{display:none;}
+.f-clear{
+  display:none; flex:none; width:36px; height:36px; border-radius:50%; border:1px solid var(--line); background:var(--card-bg);
+  cursor:pointer; padding:0; place-items:center; color:var(--text-soft);
+}
+.f-clear.show{display:grid;}
+.f-clear:hover{color:var(--text); border-color:var(--gold);}
+.f-clear svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.4; stroke-linecap:round;}
+.f-kbd{flex:none; margin:0 10px 0 6px; font-size:11px; font-weight:700; color:var(--text-faint); border:1px solid var(--line); border-radius:8px; padding:4px 8px;}
+@media (max-width:560px){ .f-kbd{display:none;} .f-search > svg{margin-left:8px;} }
+.f-hint{margin:14px 0 0; font-size:13px; color:var(--text-faint);}
+.f-hint a{color:var(--text); font-weight:600; border-bottom:1px solid rgba(var(--gold-rgb),.6);}
+.f-hint a:hover{color:var(--gold);}
+
+/* ---------------- CHIPS + STATUS ---------------- */
+.f-chips-wrap{margin:clamp(22px,3vw,32px) 0 0; display:flex; justify-content:center;}
+.f-chips{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+.f-chip{
+  display:inline-flex; align-items:center; gap:8px; padding:11px 20px; border-radius:100px; cursor:pointer;
+  font:inherit; font-size:13px; font-weight:600; color:var(--text-soft);
+  background:var(--card-bg); border:1px solid var(--line); transition:border-color .2s ease, background .2s ease, color .2s ease;
+}
+.f-chip svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+.f-chip:hover{border-color:rgba(var(--gold-rgb),.6); color:var(--text);}
+.f-chip[aria-pressed="true"]{background:var(--text); color:var(--canvas); border-color:var(--text);}
+.f-status{text-align:center; font-size:13px; color:var(--text-faint); margin:18px 0 0; min-height:20px;}
+
+/* ---------------- FAQ GROUPS ---------------- */
+.f-groups{display:grid; gap:clamp(30px,4vw,46px); max-width:900px; margin:0 auto;}
+.f-group-head{display:flex; align-items:center; gap:16px; margin:0 0 16px;}
+.f-group-ico{flex:none; width:52px; height:52px; border-radius:16px; display:grid; place-items:center; background:rgba(var(--gold-rgb),.14); color:var(--gold);}
+.f-group-ico svg{width:26px; height:26px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;}
+.f-group-head h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(22px,2.6vw,29px); margin:0; line-height:1.2;}
+.f-group-head p{margin:4px 0 0; font-size:13.5px; color:var(--text-soft);}
+
+.faq{padding:clamp(4px,1vw,10px) clamp(18px,3vw,32px); border-radius:28px;}
+.faq-item{border-bottom:1px solid var(--line); scroll-margin-top:96px;}
+.faq-item:last-of-type{border-bottom:none;}
+.faq-q{
+  width:100%; display:flex; align-items:center; justify-content:space-between; gap:18px; text-align:left;
+  background:none; border:none; color:var(--text); font-family:'Playfair Display',serif; font-weight:500;
+  font-size:clamp(17px,1.8vw,20px); line-height:1.35; padding:22px 0; cursor:pointer;
+}
+.faq-q:hover, .faq-item.open .faq-q{color:var(--gold);}
+.faq-q mark{background:rgba(var(--gold-rgb),.3); color:inherit; border-radius:4px; padding:0 2px;}
+.faq-chev{
+  flex:none; width:36px; height:36px; border-radius:50%; display:grid; place-items:center;
+  border:1px solid var(--line); background:var(--card-bg); transition:transform .3s ease, background .25s ease, border-color .25s ease;
+}
+.faq-chev svg{width:15px; height:15px; stroke:var(--text); fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
+.faq-item.open .faq-chev{transform:rotate(180deg); background:var(--gold); border-color:var(--gold);}
+.faq-item.open .faq-chev svg{stroke:#241c0f;}
+.faq-a{display:grid; grid-template-rows:0fr; transition:grid-template-rows .35s ease;}
+.faq-item.open .faq-a{grid-template-rows:1fr;}
+.faq-a > div{overflow:hidden; visibility:hidden; transition:visibility 0s linear .35s;}
+.faq-item.open .faq-a > div{visibility:visible; transition-delay:0s;}
+.faq-a-inner{padding:0 0 24px; max-width:680px; font-size:14.5px; line-height:1.75; color:var(--text-soft);}
+.faq-a-inner p{margin:0 0 12px;}
+.faq-a-inner p:last-child{margin-bottom:0;}
+.faq-a-inner ul{margin:10px 0 12px; padding:0; list-style:none; display:grid; gap:9px;}
+.faq-a-inner li{display:flex; gap:10px; align-items:flex-start;}
+.faq-a-inner li svg{flex:none; width:18px; height:18px; margin-top:3px; stroke:var(--gold); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+.faq-a-inner a:not(.f-btn){color:var(--text); font-weight:600; border-bottom:1px solid rgba(var(--gold-rgb),.6);}
+.faq-a-inner a:not(.f-btn):hover{color:var(--gold);}
+.f-btn{
+  display:inline-flex; align-items:center; gap:9px; margin-top:6px; padding:12px 22px; border-radius:100px;
+  font-size:12.5px; font-weight:700; letter-spacing:.02em; color:var(--canvas); background:var(--text); border:1px solid var(--text);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.f-btn:hover{transform:translateY(-1px); box-shadow:0 12px 26px -14px rgba(0,0,0,.55);}
+.f-btn svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+.f-btn.ghost{color:var(--text); background:var(--card-bg); border-color:var(--card-border); backdrop-filter:blur(12px);}
+.f-btn.ghost:hover{border-color:var(--gold); box-shadow:none;}
+.f-note{font-size:12.5px; color:var(--text-faint);}
+
+.f-empty{max-width:640px; margin:0 auto; padding:clamp(34px,5vw,52px) 28px; text-align:center; border-radius:28px;}
+.f-empty .ico{width:62px; height:62px; border-radius:50%; display:grid; place-items:center; margin:0 auto 18px; background:rgba(var(--gold-rgb),.14); color:var(--gold);}
+.f-empty .ico svg{width:30px; height:30px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;}
+.f-empty h3{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(21px,2.4vw,26px); margin:0 0 10px; overflow-wrap:anywhere;}
+.f-empty p{margin:0 auto 22px; max-width:440px; font-size:14.5px; line-height:1.65; color:var(--text-soft);}
+.f-empty .row{display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
+
+/* ---------------- SUPPORT CARD ---------------- */
+.support{max-width:900px; margin:0 auto; padding:clamp(28px,4.4vw,52px); border-radius:32px; display:grid; grid-template-columns:1.2fr .8fr; gap:clamp(24px,4vw,48px); align-items:center; position:relative; overflow:hidden;}
+.support::before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background: radial-gradient(420px 260px at 0% 0%, rgba(var(--gold-rgb),.2), transparent 70%);
+}
+.support > *{position:relative;}
+@media (max-width:760px){ .support{grid-template-columns:1fr; text-align:center;} .support .s-email{margin-left:auto; margin-right:auto;} .support .s-actions{align-items:center;} }
+.support .ico{width:58px; height:58px; border-radius:18px; display:grid; place-items:center; background:rgba(var(--gold-rgb),.14); color:var(--gold); margin-bottom:18px;}
+@media (max-width:760px){ .support .ico{margin-left:auto; margin-right:auto;} }
+.support .ico svg{width:30px; height:30px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;}
+.support h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(24px,3vw,34px); line-height:1.2; margin:0 0 12px;}
+.support h2 em{font-style:italic; color:var(--gold);}
+.support p{margin:0; font-size:14.5px; line-height:1.7; color:var(--text-soft); max-width:460px;}
+.s-email{
+  display:flex; flex-direction:column; gap:6px; margin-top:20px; padding:14px 18px; border-radius:18px; max-width:100%; width:fit-content;
+  background:rgba(var(--gold-rgb),.1); border:1px solid rgba(var(--gold-rgb),.35);
+}
+.s-email .k{font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint);}
+.s-email a{font-family:'Playfair Display',serif; font-size:clamp(17px,2vw,21px); font-weight:500; color:var(--text); word-break:break-all; border-bottom:1px solid rgba(var(--gold-rgb),.6); align-self:flex-start; padding-bottom:1px;}
+.s-email a:hover{color:var(--gold);}
+.s-actions{display:flex; flex-direction:column; gap:12px; align-items:stretch;}
+.s-actions .btn-primary{justify-content:center; padding:17px 26px; white-space:nowrap;}
+.s-actions .btn-primary svg{width:17px; height:17px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:none;}
+.s-actions .btn-primary:hover svg{transform:none;}
+.s-actions .f-btn{justify-content:center; margin:0;}
+.s-hours{font-size:12.5px; color:var(--text-faint); text-align:center; margin-top:2px;}
+
+/* ---------------- CLOSING CTA ---------------- */
+.cta-banner{position:relative; overflow:hidden; text-align:center; border-radius:32px; padding:clamp(44px,7vw,84px) clamp(22px,5vw,60px);}
+.cta-banner::before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background: radial-gradient(520px 300px at 20% 0%, rgba(var(--gold-rgb),.28), transparent 70%),
+              radial-gradient(480px 300px at 90% 100%, rgba(var(--rose-rgb),.16), transparent 70%);
+}
+.cta-banner > *{position:relative;}
+.cta-banner h2{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(30px,4.2vw,50px); line-height:1.1; margin:0 0 14px; letter-spacing:-.01em;}
+.cta-banner h2 em{font-style:italic; color:var(--gold);}
+.cta-banner p{margin:0 auto 30px; max-width:500px; font-size:15.5px; line-height:1.6; color:var(--text-soft);}
+.cta-fine{display:block; margin-top:18px; font-size:12px; color:var(--text-faint);}
+.cta-banner .btn-primary{padding:18px 36px;}
+
+@media (prefers-reduced-motion: reduce){
+  html.js-on .reveal{opacity:1; transform:none; transition:none;}
+  .faq-a, .faq-chev{transition:none !important;}
+}
+</style>
+</head>
+<body>
+<script src="nav.js"></script>
+
+
+<main id="top">
+
+  <!-- ================= 1. HERO + LIVE SEARCH ================= -->
+  <section class="f-hero" aria-labelledby="f-h1">
+    <div class="container">
+      <span class="f-eyebrow reveal"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 015 .9c0 1.7-2.5 2.2-2.5 3.8M12 17.2v.1"/></svg>Help Center</span>
+      <h1 class="f-title reveal" id="f-h1">How Can We <em>Help You</em> Today?</h1>
+      <p class="f-sub reveal">Find clear answers about NIKORA skincare technology, shipping and tracking, our 30-day money-back guarantee, and loss &amp; damage protection.</p>
+
+      <div class="f-search-wrap reveal">
+        <form class="glass-card f-search" id="f-search-form" role="search" aria-label="Search the FAQ" onsubmit="return false;">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5L16 16"/></svg>
+          <input type="search" id="f-search" placeholder="Search by question, keyword, e.g. 'shipping', 'microcurrent'..." autocomplete="off" spellcheck="false" maxlength="80" aria-label="Search frequently asked questions" aria-controls="f-groups">
+          <button type="button" class="f-clear" id="f-clear" aria-label="Clear search"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          <span class="f-kbd" aria-hidden="true">/</span>
+        </form>
+        <p class="f-hint">Can&rsquo;t find it? Email <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 2. CATEGORY CHIPS ================= -->
+  <section class="section" style="padding-top:clamp(10px,2vw,18px); padding-bottom:0;" aria-label="FAQ categories">
+    <div class="container">
+      <div class="f-chips-wrap reveal">
+        <div class="f-chips" role="group" aria-label="Filter questions by category">
+          <button type="button" class="f-chip" data-cat="all" aria-pressed="true">All Questions</button>
+          <button type="button" class="f-chip" data-cat="devices" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="20" rx="4"/><circle cx="12" cy="8" r="2"/></svg>Devices &amp; Technology</button>
+          <button type="button" class="f-chip" data-cat="shipping" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Shipping &amp; Protection</button>
+          <button type="button" class="f-chip" data-cat="trial" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 109-9 9.7 9.7 0 00-6.7 2.8L3 8"/><path d="M3 3v5h5"/></svg>30-Day Guarantee &amp; Returns</button>
+          <button type="button" class="f-chip" data-cat="safety" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg>Safety &amp; Results</button>
+        </div>
+      </div>
+      <p class="f-status" id="f-status" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <!-- ================= 3. ACCORDION FAQ ================= -->
+  <section class="section" id="questions" aria-label="Frequently asked questions" style="padding-top:clamp(14px,2vw,22px);">
+    <div class="container">
+      <div class="f-groups" id="f-groups">
+
+        <!-- Category 1 -->
+        <section class="f-group reveal" data-cat="devices" aria-labelledby="g-devices">
+          <div class="f-group-head">
+            <span class="f-group-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="20" rx="4"/><circle cx="12" cy="8" r="2"/><path d="M12 14v3"/></svg></span>
+            <div><h2 id="g-devices">Devices &amp; Microcurrent Skincare</h2><p>Using your NIKORA device with confidence.</p></div>
+          </div>
+          <div class="glass-card faq">
+
+            <div class="faq-item" id="faq-devices-usage" data-cat="devices" data-kw="frequency routine daily schedule how often session minutes wand pro results weeks">
+              <h3 style="margin:0;"><button type="button" class="faq-q" id="faq-devices-usage-q" aria-expanded="false" aria-controls="faq-devices-usage-a"><span class="q-text">How often should I use the NIKORA SkinGlow Wand Pro?</span><span class="faq-chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></button></h3>
+              <div class="faq-a" id="faq-devices-usage-a" role="region" aria-labelledby="faq-devices-usage-q"><div><div class="faq-a-inner">
+                <p>Most NIKORA routines take about five minutes a day. Start with a few sessions in your first week, then build up to daily use as your skin gets comfortable.</p>
+                <p>Consistency matters more than intensity. Give microcurrents at least 30&ndash;45 days of regular use to show real results, and always follow the schedule in your device&rsquo;s instruction guide.</p>
+              </div></div></div>
+            </div>
+
+            <div class="faq-item" id="faq-devices-feel" data-cat="devices" data-kw="pain hurt uncomfortable sensation tingling feel intensity level comfortable microcurrent ems">
+              <h3 style="margin:0;"><button type="button" class="faq-q" id="faq-devices-feel-q" aria-expanded="false" aria-controls="faq-devices-feel-a"><span class="q-text">Does microcurrent therapy hurt or feel uncomfortable?</span><span class="faq-chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></button></h3>
+              <div class="faq-a" id="faq-devices-feel-a" role="region" aria-labelledby="faq-devices-feel-q"><div><div class="faq-a-inner">
+                <p>It shouldn&rsquo;t. Microcurrents are designed to be gentle, and most people feel a light tingle or barely anything at all.</p>
+                <ul>
+                  <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Begin on the lowest intensity and increase slowly.</li>
+                  <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Keep the device moving on clean, slightly damp or gel-prepped skin, as your guide describes.</li>
+                  <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>If anything feels sharp or painful, turn the intensity down or stop and <a href="mailto:nikora.support@gmail.com">contact us</a>.</li>
+                </ul>
+              </div></div></div>
+            </div>
+
+            <div class="faq-item" id="faq-devices-layering" data-cat="devices" data-kw="serum cream moisturizer skincare routine products layering retinol acid spf gel apply before after">
+              <h3 style="margin:0;"><button type="button" class="faq-q" id="faq-devices-layering-q" aria-expanded="false" aria-controls="faq-devices-layering-a"><span class="q-text">Can I use NIKORA with my existing skincare creams and serums?</span><span class="faq-chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></button></h3>
+              <div class="faq-a" id="faq-devices-layering-a" role="region" aria-labelledby="faq-devices-layering-q"><div><div class="faq-a-inner">
+                <p>Yes. A simple order works well for most routines:</p>
+                <ul>
+                  <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Cleanse your face and pat it dry.</li>
+                  <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Use your device, with a water-based serum or conductive gel if your guide calls for one.</li>
+                  <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Finish with your moisturizer, and sunscreen in the morning.</li>
+                </ul>
+                <p>If you use strong actives such as retinol or exfoliating acids and your skin is sensitive, consider using them on different evenings from your device.</p>
+              </div></div></div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Category 2 -->
+        <section class="f-group reveal" data-cat="shipping" aria-labelledby="g-shipping">
+          <div class="f-group-head">
+            <span class="f-group-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
+            <div><h2 id="g-shipping">Shipping, Tracking &amp; Protection</h2><p>When your order ships, where it is, and what happens if something goes wrong.</p></div>
+          </div>
+          <div class="glass-card faq">
+
+            <div class="faq-item" id="faq-ship-process" data-cat="shipping" data-kw="processing time quality check assembly packaging warehouse cj dropshipping dispatch 1-3 business days how long before shipped">
+              <h3 style="margin:0;"><button type="button" class="faq-q" id="faq-ship-process-q" aria-expanded="false" aria-controls="faq-ship-process-a"><span class="q-text">How long does processing take before my order ships?</span><span class="faq-chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></button></h3>
+              <div class="faq-a" id="faq-ship-process-a" role="region" aria-labelledby="faq-ship-process-q"><div><div class="faq-a-inner">
+                <p>Every order is processed in <strong>1&ndash;3 business days</strong> at our CJ Dropshipping warehouse. During that time we run a quality check, assemble your order and package it carefully for its journey.</p>
+                <p>Business days exclude weekends and public holidays.</p>
+              </div></div></div>
+            </div>
+
+            <div class="faq-item" id="faq-ship-time" data-cat="shipping" data-kw="shipping delivery time days express free arrive how long cost price 7-15 business days international">
+              <h3 style="margin:0;"><button type="button" class="faq-q" id="faq-ship-time-q" aria-expanded="false" aria-controls="faq-ship-time-a"><span class="q-text">How long does shipping take, and what does it cost?</span><span class="faq-chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></button></h3>
+              <div class="faq-a" id="faq-ship-time-a" role="region" aria-labelledby="faq-ship-time-q"><div><div class="faq-a-inner">
+                <p>Shipping is <strong>free</strong> and takes <strong>7&ndash;15 business days</strong> once your order is dispatched, with end-to-end real-time tracking. Adding the 1&ndash;3 business days of processing, most orders arrive within about <strong>8&ndash;18 business days</strong> of checkout.</p>
+                <p>Delivery times can vary with your location and customs, so check your latest status any time on the tracking page.</p>
+              </div></div></div>
+            </div>
+
+            <div class="faq-item" id="faq-ship-track" data-cat="shipping" data-kw="track tracking activate activation order status real-time where is my order package parcel carrier order id number not working inactive">
+              <h3 style="margin:0;"><button type="button" class="faq-q" id="faq-ship-track-q" aria-expanded="false" aria-controls="faq-ship-track-a"><span class="q-text">How do I track my order, and when does my tracking number activate?</span><span class="faq-chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></button></h3>
+              <div class="faq-a" id="faq-ship-track-a" role="region" aria-labelledby="faq-ship-track-q"><div><div class="faq-a-inner">
+                <p>Enter your order number (it starts with <strong>#NK-</strong> and is in your confirmation email) and the email you ordered with on our tracking page. You&rsquo;ll also get a shipping email with your tracking number as soon as the warehouse dispatches your parcel.</p>
+                <p>Tracking numbers typically <strong>activate within 1&ndash;3 business days after checkout</strong>, once the warehouse dispatches your order. If a number shows no updates right after dispatch, give the carrier a day or two to scan the parcel.</p>
+                <a class="f-btn" href="track-order.html">Track My Order <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+              </div></div></div>
+            </div>
+
+            <div class="faq-item" id="faq-ship-delay" data-cat="shipping" data-kw="delayed order late delay taking too long lost missing package tracking not updating stuck 14 days 30 days reshipment refund">
+              <h3 style="margin:0;"><button type="button" class="faq-q" id="faq-ship-delay-q" aria-expanded="false" aria-controls="faq-ship-delay-a"><span class="q-text">My order is delayed. What should I do?</span><span class="faq-chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></button></h3>
+              <div class="faq-a" id="faq-ship-delay-a" role="region" aria-labelledby="faq-ship-delay-q"><div><div class="faq-a-inner">
+                <p>First check the tracking page for the latest scan, since parcels can pause for a few days at customs or between carriers.</p>
+                <p>If your tracking has been <strong>inactive for more than 14 days</strong>, or your parcel has been <strong>in transit for more than 30 days</strong>, it counts as lost. Email <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a> with your order number and we&rsquo;ll send a <strong>free reshipment or give you a full refund</strong>.</p>
+              </div></div></div>
+            </div>
+
+            <div class="faq-item" id="faq-ship-damage" data-cat="shipping" data-kw="damaged defective broken faulty arrived damaged shipping damage free reshipment full refund protection loss damage">
+              <h3 style="margin:0;"><button type="button" class="faq-q" id="faq-ship-damage-q" aria-expanded="false" aria-controls="faq-ship-damage-a"><span class="q-text">What if my order arrives damaged or defective?</span><span class="faq-chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></button></h3>
+              <div class="faq-a" id="faq-ship-damage-a" role="region" aria-labelledby="faq-ship-damage-q"><div><div class="faq-a-inner">
+                <p>You&rsquo;re covered by our <strong>Loss &amp; Damage Protection</strong>. If your item is defective or was damaged in shipping, email <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a> with your order number (a photo of the problem helps us move faster) and we&rsquo;ll send a <strong>100% free reshipment or a full refund</strong>.</p>
+                <a class="f-btn" href="guarantee.html">See What&rsquo;s Covered <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+              </div></div></div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Category 3 -->
+        <section class="f-group reveal" data-cat="trial" aria-labelledby="g-trial">
+          <div class="f-group-head">
+            <span class="f-group-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 109-9 9.7 9.7 0 00-6.7 2.8L3 8"/><path d="M3 3v5h5"/></svg></span>
+            <div><h2 id="g-trial">30-Day Guarantee &amp; Returns</h2><p>Order risk-free, with our money-back promise.</p></div>
+          </div>
+          <div class="glass-card faq">
+
+            <div class="faq-item" id="faq-trial-how" data-cat="trial" data-kw="30 day money-back guarantee refund policy risk-free unopened unused condition full refund return">
+              <h3 style="margin:0;"><button type="button" class="faq-q" id="faq-trial-how-q" aria-expanded="false" aria-controls="faq-trial-how-a"><span class="q-text">How does the 30-day money-back guarantee work?</span><span class="faq-chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></button></h3>
+              <div class="faq-a" id="faq-trial-how-a" role="region" aria-labelledby="faq-trial-how-q"><div><div class="faq-a-inner">
+                <p>If NIKORA isn&rsquo;t right for you, contact us within <strong>30 days</strong> and we&rsquo;ll refund your purchase. Our 30-Day Money-Back Guarantee covers <strong>unopened and unused items in original packaging upon arrival</strong>. Customers are responsible for return shipping costs for change-of-mind returns. Returns apply to unopened/unused items within 30 days.</p>
+                <a class="f-btn" href="guarantee.html">See How the Guarantee Works <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+              </div></div></div>
+            </div>
+
+            <div class="faq-item" id="faq-trial-return" data-cat="trial" data-kw="return request submit refund process portal send back exchange how to">
+              <h3 style="margin:0;"><button type="button" class="faq-q" id="faq-trial-return-q" aria-expanded="false" aria-controls="faq-trial-return-a"><span class="q-text">How do I request a return or refund?</span><span class="faq-chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></button></h3>
+              <div class="faq-a" id="faq-trial-return-a" role="region" aria-labelledby="faq-trial-return-q"><div><div class="faq-a-inner">
+                <p>Start in our <a href="returns.html">returns portal</a>, or email <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a> with your order number and we&rsquo;ll walk you through it. Refunds go back to your original payment method once your return is checked in.</p>
+                <a class="f-btn" href="returns.html">Start a Return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+              </div></div></div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Category 4 -->
+        <section class="f-group reveal" data-cat="safety" aria-labelledby="g-safety">
+          <div class="f-group-head">
+            <span class="f-group-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg></span>
+            <div><h2 id="g-safety">Safety &amp; Certifications</h2><p>What to know before you start.</p></div>
+          </div>
+          <div class="glass-card faq">
+
+            <div class="faq-item" id="faq-safety-sensitive" data-cat="safety" data-kw="red light safe sensitive skin daily use irritation redness patch test uv pregnant pacemaker medical doctor results">
+              <h3 style="margin:0;"><button type="button" class="faq-q" id="faq-safety-sensitive-q" aria-expanded="false" aria-controls="faq-safety-sensitive-a"><span class="q-text">Is Red Light therapy safe for daily use on sensitive skin?</span><span class="faq-chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></button></h3>
+              <div class="faq-a" id="faq-safety-sensitive-a" role="region" aria-labelledby="faq-safety-sensitive-q"><div><div class="faq-a-inner">
+                <p>Red light contains no UV and is generally well tolerated, including by many people with sensitive skin. Used as directed, short daily sessions are what these devices are designed for.</p>
+                <ul>
+                  <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>If your skin is sensitive, start with fewer, shorter sessions and build up gradually.</li>
+                  <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Stop using the device if you notice lasting redness, irritation or discomfort.</li>
+                  <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Speak to your doctor first if you are pregnant, have an implanted electronic device such as a pacemaker, a skin condition, or take medication that makes skin light-sensitive.</li>
+                </ul>
+                <p class="f-note">This is general guidance, not medical advice. Individual results vary.</p>
+              </div></div></div>
+            </div>
+
+            <div class="faq-item" id="faq-safety-cert" data-cat="safety" data-kw="clinically tested certified certification fda ce approved standards safety documentation dermatologist science technology">
+              <h3 style="margin:0;"><button type="button" class="faq-q" id="faq-safety-cert-q" aria-expanded="false" aria-controls="faq-safety-cert-a"><span class="q-text">Are NIKORA devices clinically tested and certified?</span><span class="faq-chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></button></h3>
+              <div class="faq-a" id="faq-safety-cert-a" role="region" aria-labelledby="faq-safety-cert-q"><div><div class="faq-a-inner">
+                <p>Our <a href="science.html">Science page</a> explains the technologies behind each device and the safety standards we design around, and each product page lists the details that apply to that model.</p>
+                <p>Need documentation for a specific device? Email <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a> with the model name and we&rsquo;ll point you to it.</p>
+                <a class="f-btn ghost" href="science.html">Explore the Science <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+              </div></div></div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+
+      <!-- no results -->
+      <div class="glass-card f-empty" id="f-empty" hidden>
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5L16 16"/></svg></div>
+        <h3 id="f-empty-title">No answers found</h3>
+        <p>Try a different keyword, or ask our team directly and we&rsquo;ll get back to you.</p>
+        <div class="row">
+          <button type="button" class="f-btn ghost" id="f-reset" style="margin:0;">Clear search</button>
+          <a class="f-btn" href="mailto:nikora.support@gmail.com" style="margin:0;">Email Customer Support</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 4. SUPPORT CARD ================= -->
+  <section class="section" id="contact" style="padding-top:clamp(20px,3vw,36px);" aria-labelledby="sup-h2">
+    <div class="container">
+      <div class="glass-card support reveal">
+        <div>
+          <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0116 0v2"/><rect x="2.5" y="14" width="4.5" height="6.5" rx="2"/><rect x="17" y="14" width="4.5" height="6.5" rx="2"/><path d="M19.5 20.5c0 1.1-1.6 2-3.5 2h-2"/></svg></span>
+          <h2 id="sup-h2">Still have questions or need <em>personalized guidance?</em></h2>
+          <p>Our concierge team is happy to help with your routine, your order or anything else. Send us a message and a real person will reply.</p>
+          <div class="s-email">
+            <span class="k">Customer Support</span>
+            <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a>
+          </div>
+        </div>
+        <div class="s-actions">
+          <a class="btn-primary" href="mailto:nikora.support@gmail.com?subject=NIKORA%20support%20question"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>Email Customer Support</a>
+          <a class="f-btn ghost" href="track-order.html">Track My Order</a>
+          <span class="s-hours">Mon&ndash;Sun, 8am&ndash;10pm EST</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 5. CLOSING CTA ================= -->
+  <section class="section" style="padding-top:clamp(20px,3vw,36px);" aria-labelledby="cta-h2">
+    <div class="container">
+      <div class="glass-card cta-banner reveal">
+        <h2 id="cta-h2">Ready to Upgrade Your <em>Daily Skincare Routine?</em></h2>
+        <p>Red light, EMS microcurrents and warmth, in a five-minute daily ritual, backed by a 30-day money-back guarantee.</p>
+        <a class="btn-primary" href="catalog.html">Shop Collection <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <span class="cta-fine">Free Express Shipping &middot; 7&ndash;15 business days &middot; Real-time tracking</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="site">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <a href="index.html" class="logo" style="font-size:22px;">NIK<em>ora</em></a>
+        <p style="margin-top:14px;">Smart care. Instant glow. Beauty tech designed around the routine you actually have time for.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Shop</h5>
+        <a href="catalog.html">Full Catalog</a>
+        <a href="index.html">Home</a>
+        <a href="reviews.html">Verified Reviews</a>
+      </div>
+      <div class="footer-col">
+        <h5>Support</h5>
+        <a href="track-order.html">Track Order</a>
+        <a href="guarantee.html">Guarantee</a>
+        <a href="returns.html">Start a Return</a>
+        <a href="faq.html">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <a href="science.html">Science</a>
+        <a href="mailto:nikora.support@gmail.com">Contact Support</a>
+        <p>nikora.support@gmail.com</p>
+        <p>Mon&ndash;Sun, 8am&ndash;10pm EST</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 NIKORA. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ================= CART DRAWER ================= -->
+<div class="cart-overlay" id="cart-overlay"></div>
+<div id="cart-drawer" aria-label="Shopping cart">
+  <div class="cart-head">
+    <h3>Your Bag</h3>
+    <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="ship-progress-wrap">
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on every order (7&ndash;15 business days)</div>
+    <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
+  </div>
+  <div class="cart-items" id="cart-items-list"></div>
+  <div class="cart-recs-section" id="cart-recs-section">
+    <div class="cart-recs-head">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-9M14 17H5M17 3l3 4-3 4M7 21l-3-4 3-4"/></svg>
+      Frequently Bought Together
+    </div>
+    <div class="cart-recs-grid" id="cart-recs-grid"></div>
+  </div>
+  <div class="cart-foot">
+    <div class="promo-box" id="promo-box">
+      <button type="button" class="promo-toggle" id="promo-toggle" aria-expanded="false" aria-controls="promo-body"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.4"/></svg><span>Have a promo code?</span><svg class="promo-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="promo-body" id="promo-body">
+        <div class="promo-form">
+          <input type="text" id="promo-input" placeholder="Enter code" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" aria-label="Promo code">
+          <button type="button" class="promo-apply" id="promo-apply"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Apply</button>
+        </div>
+      </div>
+      <div class="promo-msg" id="promo-msg" role="status" aria-live="polite"></div>
+      <div class="promo-active" id="promo-active" hidden></div>
+    </div>
+    <div class="cart-sub-row"><span>Subtotal</span><strong id="cart-subtotal">$0.00</strong></div>
+    <div class="cart-sub-row cart-discount-row" id="cart-discount-row" hidden><span id="cart-discount-label"></span><span id="cart-discount-amount"></span></div>
+    <div class="cart-sub-row cart-total-row" id="cart-total-row" hidden><span>Total</span><strong id="cart-total">$0.00</strong></div>
+    <button type="button" class="cart-checkout" id="checkout-btn" onclick="window.location.href='checkout.html'">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+      Secure Checkout
+    </button>
+    <div class="trust-badges" id="cart-trust-badges"></div>
+  </div>
+</div>
+
+
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span id="toast-text"></span></div>
+
+<script>
+/* ---------------- Safe storage (falls back to memory if blocked) ---------------- */
+/* ================= 1. SAFE STORAGE WRAPPER (iframe-safe) =================
+   Every localStorage/sessionStorage call is wrapped in try/catch so a
+   SecurityError thrown inside a sandboxed preview iframe never halts
+   script execution — it falls back to an in-memory object instead. */
+var safeStorage = {
+  getItem: function(key){
+    try { return localStorage.getItem(key); }
+    catch(e) { return window['_mem_' + key] || null; }
+  },
+  setItem: function(key, val){
+    try { localStorage.setItem(key, val); }
+    catch(e) { window['_mem_' + key] = val; }
+  },
+  removeItem: function(key){
+    try { localStorage.removeItem(key); }
+    catch(e) { delete window['_mem_' + key]; }
+  }
+};
+var safeSession = {
+  getItem: function(key){
+    try { return sessionStorage.getItem(key); }
+    catch(e) { return window['_smem_' + key] || null; }
+  },
+  setItem: function(key, val){
+    try { sessionStorage.setItem(key, val); }
+    catch(e) { window['_smem_' + key] = val; }
+  },
+  removeItem: function(key){
+    try { sessionStorage.removeItem(key); }
+    catch(e) { delete window['_smem_' + key]; }
+  }
+};
+
+/* ================= FIREBASE REALTIME SYNC =================
+   '/products' is shared with catalog.html / product.html. This page's
+   card overrides are keyed by their static slug (e.g. "wand"), which
+   never collides with the numeric ids ("1".."11") those two pages use
+   in the same object. '/reviews/home' holds this page's general
+   testimonials — they aren't tied to one product id, so "home" is used
+   as a stand-in productId for this shared path. Firebase is the source
+   of truth when reachable; 'nikora_products' / 'nikora_reviews' remain
+   local caches so the page still works fully offline or if Firebase
+   fails to load. */
+var firebaseConfig = {
+  apiKey: "AIzaSyCCHdCGRQCiKdeHRkC4e6bnvrMwUIq80TY",
+  authDomain: "nikora-store.firebaseapp.com",
+  databaseURL: "https://nikora-store-default-rtdb.firebaseio.com",
+  projectId: "nikora-store",
+  storageBucket: "nikora-store.firebasestorage.app",
+  messagingSenderId: "840991674151",
+  appId: "1:840991674151:web:f656f83210d412684ee302",
+  measurementId: "G-EDM84G1JPG"
+};
+var firebaseReady = false;
+var db = null;
+try{
+  if(typeof firebase !== 'undefined'){
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    firebaseReady = true;
+  }
+}catch(e){
+  console.warn('Firebase unavailable — continuing on local data only.', e);
+  firebaseReady = false;
+}
+
+
+var FREE_SHIP_THRESHOLD = 50;
+var SHIP_COST = 4.99;
+
+function escapeHtml(str){
+  var div = document.createElement('div');
+  div.textContent = str == null ? '' : str;
+  return div.innerHTML;
+}
+
+/* ================= UNIFIED CART MODULE (identical on index / catalog / product) =================
+   - Cart lives in localStorage 'nikora_cart' as [{id,title,price,qty}] and is mirrored to
+     Firebase '/carts/<cartId>' (last-write-wins by timestamp) so every page and tab stays in sync.
+   - Thumbnails + "Frequently Bought Together" come live from Firebase '/products'.
+   - Drawer close (X button, overlay, Escape) uses delegated listeners so it can never be lost
+     when the drawer's contents are re-rendered. */
+var NK_FREE_SHIP = 50;
+var NK_MAX_RECS = 8;
+var NK_SCROLL_SPEED = 28;   /* carousel auto-scroll, px per second */
+var NK_ICONS = {
+  minus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>',
+  plus:  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>',
+  image: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg>',
+  truck: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>'
+};
+
+/* Fallback pool so the recommendations strip is NEVER empty (used until Firebase '/products' answers, or if it fails/is empty). */
+var NK_FALLBACK = [
+  { id:'1',  name:'NIKORA RED Light & EMS Facial Wand 4-in-1', price:34.99, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
+  { id:'2',  name:'3D EMS Gua Sha Sculptor', price:24.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400' },
+  { id:'3',  name:'Hydro-Vacuum Pore Cleaner', price:29.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
+  { id:'4',  name:'LED Therapy Mask 7-in-1 Pro', price:49.99, category:'LED Therapy', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
+  { id:'5',  name:'EMS Body Sculptor RF', price:59.99, category:'Body Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'6',  name:'Sonic Eye Massager', price:19.99, category:'Eye Care', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
+  { id:'7',  name:'Ultrasonic Skin Scrubber', price:24.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
+  { id:'8',  name:'Thermal Neck & Face Massager', price:39.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' }
+];
+
+function nkEsc(str){
+  var d = document.createElement('div');
+  d.textContent = str == null ? '' : str;
+  return d.innerHTML;
+}
+
+/* ---- product data (normalises catalog {name,img}, index overrides {title,imgUrl}, product {images[]}) ---- */
+function nkNormalize(p, key){
+  if(!p || typeof p !== 'object' || p._deleted) return null;
+  var name = p.name || p.title;
+  var price = Number(p.price);
+  if(!name || !(price > 0)) return null;
+  var img = (Array.isArray(p.images) && p.images[0]) || p.img || p.imgUrl || '';
+  return { id: String(p.id != null ? p.id : key), name: String(name), price: price, img: String(img || ''), category: p.category || '' };
+}
+function nkListFromObject(obj){
+  var out = [];
+  Object.keys(obj || {}).forEach(function(k){ var n = nkNormalize(obj[k], k); if(n) out.push(n); });
+  return out;
+}
+var NK_PRODUCTS = (typeof ALL_PRODUCTS !== 'undefined' && ALL_PRODUCTS)
+  ? ALL_PRODUCTS.map(function(p){ return nkNormalize(p, p && p.id); }).filter(Boolean)
+  : [];
+function nkFind(id){
+  for(var i=0;i<NK_PRODUCTS.length;i++){ if(NK_PRODUCTS[i].id === String(id)) return NK_PRODUCTS[i]; }
+  if(typeof resolveProduct === 'function'){ try{ var rp = nkNormalize(resolveProduct(id), id); if(rp) return rp; }catch(e){} }
+  for(var j=0;j<NK_FALLBACK.length;j++){ if(NK_FALLBACK[j].id === String(id)) return NK_FALLBACK[j]; }
+  return null;
+}
+function nkThumb(img, alt){
+  return img ? '<img src="' + nkEsc(img) + '" alt="' + nkEsc(alt) + '" loading="lazy" draggable="false">' : NK_ICONS.image;
+}
+
+/* ---- cart storage + Firebase mirror ---- */
+var NK_CART_REF = null;
+function nkCartId(){
+  var id = safeStorage.getItem('nikora_cart_id');
+  if(!id){
+    id = 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    safeStorage.setItem('nikora_cart_id', id);
+  }
+  return id;
+}
+function getCart(){
+  try{ var c = JSON.parse(safeStorage.getItem('nikora_cart')); return Array.isArray(c) ? c : []; }
+  catch(e){ return []; }
+}
+function nkPushCart(cart, ts){
+  if(!NK_CART_REF) return;
+  try{
+    NK_CART_REF.set({ items: cart, updatedAt: ts }).catch(function(err){ console.warn('Firebase cart write failed', err); });
+  }catch(e){ console.warn('Firebase cart write failed', e); }
+}
+function saveCart(cart){
+  var ts = Date.now();
+  safeStorage.setItem('nikora_cart', JSON.stringify(cart));
+  safeStorage.setItem('nikora_cart_ts', String(ts));
+  nkPushCart(cart, ts);
+}
+function nkCleanItems(raw){
+  var arr = Array.isArray(raw) ? raw : (raw && typeof raw === 'object' ? Object.keys(raw).map(function(k){ return raw[k]; }) : []);
+  return arr.filter(function(i){ return i && i.id != null && i.title && Number(i.price) >= 0 && Number(i.qty) > 0; })
+            .map(function(i){ return { id: String(i.id), title: String(i.title), price: Number(i.price), qty: Math.floor(Number(i.qty)) }; });
+}
+function nkSyncCartFromFirebase(){
+  if(typeof firebaseReady === 'undefined' || !firebaseReady) return;
+  try{
+    NK_CART_REF = db.ref('carts/' + nkCartId());
+    NK_CART_REF.on('value', function(snap){
+      var v = snap.val();
+      var localTs = Number(safeStorage.getItem('nikora_cart_ts')) || 0;
+      if(!v){                                   /* nothing in the cloud yet: publish what we have */
+        var lc = getCart();
+        if(lc.length) nkPushCart(lc, localTs || Date.now());
+        return;
+      }
+      var remoteTs = Number(v.updatedAt) || 0;
+      if(remoteTs > localTs){                   /* newer cloud copy (other tab / page): adopt it */
+        safeStorage.setItem('nikora_cart', JSON.stringify(nkCleanItems(v.items)));
+        safeStorage.setItem('nikora_cart_ts', String(remoteTs));
+        renderCart();
+      } else if(localTs > remoteTs){            /* local copy is newer: publish it */
+        nkPushCart(getCart(), localTs);
+      }
+    }, function(err){ console.warn('Firebase cart sync error — using local cart.', err); });
+  }catch(e){ console.warn('Firebase cart sync unavailable', e); }
+}
+
+/* ---- cart actions ---- */
+function bumpCartBadge(){
+  var badge = document.getElementById('cart-count');
+  if(!badge) return;
+  badge.classList.remove('bump');
+  void badge.offsetWidth;
+  badge.classList.add('bump');
+}
+/* Silent add: no drawer, no toast. */
+function cartAdd(id, title, price, qty){
+  id = String(id);
+  var cart = getCart(), found = null;
+  for(var i=0;i<cart.length;i++){ if(String(cart[i].id) === id){ found = cart[i]; break; } }
+  if(found){ found.qty += (qty || 1); } else { cart.push({ id: id, title: title, price: Number(price), qty: qty || 1 }); }
+  saveCart(cart);
+  renderCart();
+}
+/* Card / CTA add: adds, confirms, and opens the drawer. */
+window.addToCart = function(id, title, price){
+  cartAdd(id, title, price, 1);
+  bumpCartBadge();
+  showToast(title + ' added to your bag.');
+  openCart();
+};
+/* Recommendation add: adds WITHOUT closing or re-opening the drawer. */
+function addRecommended(id){
+  var p = nkFind(id);
+  if(!p) return;
+  cartAdd(p.id, p.name, p.price, 1);
+  bumpCartBadge();
+  showToast(p.name + ' added to your bag.');
+}
+function changeQty(id, delta){
+  var cart = getCart(), item = null;
+  for(var i=0;i<cart.length;i++){ if(String(cart[i].id) === String(id)){ item = cart[i]; break; } }
+  if(!item) return;
+  item.qty += delta;
+  if(item.qty <= 0){ cart = cart.filter(function(c){ return String(c.id) !== String(id); }); }
+  saveCart(cart);
+  renderCart();
+}
+function removeFromCart(id){
+  saveCart(getCart().filter(function(c){ return String(c.id) !== String(id); }));
+  renderCart();
+}
+
+/* ---- recommendations carousel ---- */
+var NK_CAR = { raf: 0, pos: 0, last: 0, hover: false, touching: false, resumeAt: 0, bound: false };
+var NK_REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+function nkCarouselPeriod(g){
+  if(g.getAttribute('data-loop') !== '1') return 0;
+  var gap = parseFloat(getComputedStyle(g).columnGap) || 12;
+  return (g.scrollWidth + gap) / 2;      /* the card set is rendered twice; one set = one loop */
+}
+function nkCarouselStep(ts){
+  var drawer = document.getElementById('cart-drawer');
+  var g = document.getElementById('cart-recs-grid');
+  if(!drawer || !g || !drawer.classList.contains('active') || NK_REDUCED){ NK_CAR.raf = 0; return; }
+  var dt = NK_CAR.last ? Math.min(64, ts - NK_CAR.last) : 16;
+  NK_CAR.last = ts;
+  var period = nkCarouselPeriod(g);
+  if(period > 0){
+    var busy = NK_CAR.hover || NK_CAR.touching || Date.now() < NK_CAR.resumeAt || g.contains(document.activeElement);
+    if(busy){ NK_CAR.pos = g.scrollLeft; }                        /* user is in control: just track */
+    else{
+      NK_CAR.pos += NK_SCROLL_SPEED * dt / 1000;
+      if(NK_CAR.pos >= period) NK_CAR.pos -= period;              /* seamless wrap */
+      g.scrollLeft = NK_CAR.pos;
+    }
+  }
+  NK_CAR.raf = requestAnimationFrame(nkCarouselStep);
+}
+function nkCarouselStart(){
+  if(NK_CAR.raf || NK_REDUCED) return;
+  NK_CAR.last = 0;
+  NK_CAR.raf = requestAnimationFrame(nkCarouselStep);
+}
+function nkCarouselBind(){
+  var g = document.getElementById('cart-recs-grid');
+  if(!g || NK_CAR.bound) return;
+  NK_CAR.bound = true;
+  function hold(ms){ NK_CAR.resumeAt = Date.now() + ms; }
+  g.addEventListener('mouseenter', function(){ NK_CAR.hover = true; });
+  g.addEventListener('mouseleave', function(){ NK_CAR.hover = false; hold(400); });
+  g.addEventListener('touchstart', function(){ NK_CAR.touching = true; }, { passive: true });
+  g.addEventListener('touchend', function(){ NK_CAR.touching = false; hold(2500); }, { passive: true });
+  g.addEventListener('touchcancel', function(){ NK_CAR.touching = false; hold(2500); }, { passive: true });
+  g.addEventListener('wheel', function(){ hold(2500); }, { passive: true });
+  g.addEventListener('pointerdown', function(){ hold(2500); });
+  g.addEventListener('scroll', function(){                        /* manual swipes also loop seamlessly */
+    var period = nkCarouselPeriod(g);
+    if(period > 0 && g.scrollLeft >= period){ g.scrollLeft -= period; }
+  }, { passive: true });
+}
+
+function renderCartRecs(cart){
+  var section = document.getElementById('cart-recs-section');
+  var grid = document.getElementById('cart-recs-grid');
+  if(!section || !grid) return;
+
+  var excluded = {};
+  cart.forEach(function(c){ excluded[String(c.id)] = true; });
+  var current = (typeof CURRENT_PRODUCT !== 'undefined' && CURRENT_PRODUCT) ? CURRENT_PRODUCT : null;
+  if(current) excluded[String(current.id)] = true;               /* product page: skip the item being viewed */
+
+  var pool = NK_PRODUCTS.length ? NK_PRODUCTS : NK_FALLBACK;
+  var candidates = pool.filter(function(p){ return !excluded[p.id]; });
+  if(current && current.category){
+    candidates = candidates.filter(function(p){ return p.category === current.category; })
+      .concat(candidates.filter(function(p){ return p.category !== current.category; }));
+  }
+  var picks = candidates.slice(0, NK_MAX_RECS);
+
+  section.style.display = 'block';                               /* the recommendations section is NEVER hidden */
+  if(!picks.length){
+    grid.removeAttribute('data-loop');
+    grid.scrollLeft = 0;
+    grid.innerHTML = '<div class="cart-recs-done">You\u2019ve added everything in the collection \u2014 a complete routine.</div>';
+    return;
+  }
+
+  function card(p, clone){
+    return '<div class="cart-rec-card"' + (clone ? ' aria-hidden="true"' : '') + '>' +
+      '<div class="cart-rec-thumb">' + nkThumb(p.img, p.name) + '</div>' +
+      '<div class="cart-rec-title">' + nkEsc(p.name) + '</div>' +
+      '<div class="cart-rec-price">$' + p.price.toFixed(2) + '</div>' +
+      '<button type="button" class="cart-rec-add" data-action="add-rec" data-id="' + nkEsc(p.id) + '"' + (clone ? ' tabindex="-1"' : '') + ' aria-label="Add ' + nkEsc(p.name) + ' to bag">' + NK_ICONS.plus + 'Add</button>' +
+    '</div>';
+  }
+  var first = picks.map(function(p){ return card(p, false); }).join('');
+  var viewW = grid.clientWidth || 372;
+  var loops = !NK_REDUCED && picks.length * 142 > viewW;         /* only loop when the strip actually overflows */
+  var prev = grid.scrollLeft;
+  grid.innerHTML = loops ? first + picks.map(function(p){ return card(p, true); }).join('') : first;
+  if(loops) grid.setAttribute('data-loop', '1'); else grid.removeAttribute('data-loop');
+  grid.scrollLeft = loops ? prev : 0;                            /* adding an item must not snap the strip back */
+  NK_CAR.pos = grid.scrollLeft;
+  nkCarouselStart();
+}
+
+function renderCart(){
+  var cart = getCart();
+  var wrap = document.getElementById('cart-items-list');
+  var subtotal = 0, count = 0;
+
+  if(!cart.length){
+    wrap.innerHTML = '<div class="cart-empty">Your bag is empty. Add a favorite below to start your routine:</div>';
+  } else {
+    wrap.innerHTML = cart.map(function(item){
+      var price = Number(item.price) || 0;
+      subtotal += price * item.qty;
+      count += item.qty;
+      var prod = nkFind(item.id);
+      var id = nkEsc(item.id);
+      return '<div class="cart-item">' +
+        '<div class="ci-thumb">' + nkThumb(prod && prod.img, item.title) + '</div>' +
+        '<div class="ci-info">' +
+          '<div class="ci-top">' +
+            '<div><div class="ci-title">' + nkEsc(item.title) + '</div><div class="ci-price">$' + price.toFixed(2) + ' each</div></div>' +
+            '<button type="button" class="ci-remove" data-action="remove-item" data-id="' + id + '" aria-label="Remove ' + nkEsc(item.title) + '">' + NK_ICONS.trash + '</button>' +
+          '</div>' +
+          '<div class="ci-bottom">' +
+            '<div class="qty-ctrl">' +
+              '<button type="button" data-action="qty-dec" data-id="' + id + '" aria-label="Decrease quantity">' + NK_ICONS.minus + '</button>' +
+              '<span>' + item.qty + '</span>' +
+              '<button type="button" data-action="qty-inc" data-id="' + id + '" aria-label="Increase quantity">' + NK_ICONS.plus + '</button>' +
+            '</div>' +
+            '<div class="ci-line-total">$' + (price * item.qty).toFixed(2) + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  document.getElementById('cart-subtotal').textContent = '$' + subtotal.toFixed(2);
+  var promo = nkPromoCalc(subtotal);
+  var discount = promo ? promo.discount : 0;
+  var payable = Math.max(0, subtotal - discount);
+  nkPromoRender(promo, payable);
+  var badge = document.getElementById('cart-count');
+  if(badge) badge.textContent = count;
+
+  var text = document.getElementById('ship-progress-text');
+  var fill = document.getElementById('ship-progress-fill');
+  var unlocked = true;   /* Express shipping is free on every order */
+  fill.style.width = '100%';
+  text.classList.toggle('unlocked', unlocked);
+  fill.classList.toggle('unlocked', unlocked);
+  text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
+    ? 'FREE Express Shipping on every order (7\u201315 business days)'
+    : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
+
+  renderCartRecs(cart);
+}
+
+/* ---- open / close (single source of truth for every page) ---- */
+window.openCart = function(){
+  document.getElementById('cart-drawer').classList.add('active');
+  document.getElementById('cart-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  var g = document.getElementById('cart-recs-grid');
+  if(g){ NK_CAR.pos = g.scrollLeft; }
+  nkCarouselStart();
+};
+window.closeCart = function(){
+  var drawer = document.getElementById('cart-drawer');
+  var overlay = document.getElementById('cart-overlay');
+  if(drawer){ drawer.classList.remove('active'); drawer.classList.remove('open'); }
+  if(overlay){ overlay.classList.remove('active'); overlay.classList.remove('open'); }
+  document.body.style.overflow = '';
+};
+
+/* Called once on page load. Everything is delegated, so re-rendering the drawer never breaks it. */
+var NK_CART_READY = false;
+function initCartSync(){
+  if(NK_CART_READY) return;
+  NK_CART_READY = true;
+
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    if(t.closest('.cart-close-btn')){ closeCart(); return; }                              /* X button */
+    if(t.classList && t.classList.contains('cart-overlay')){ closeCart(); return; }       /* dark background */
+    var a = t.closest('#cart-drawer [data-action]');
+    if(!a) return;
+    var act = a.getAttribute('data-action'), id = a.getAttribute('data-id');
+    if(act === 'qty-inc') changeQty(id, 1);
+    else if(act === 'qty-dec') changeQty(id, -1);
+    else if(act === 'remove-item') removeFromCart(id);
+    else if(act === 'add-rec') addRecommended(id);
+  });
+  nkBindPromoAndTools();
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){ closeCart(); nkLightboxClose(); nkModalCloseAll(); }
+  });
+
+  nkCarouselBind();
+
+  if(!NK_PRODUCTS.length && typeof getAllProductsFallback === 'function'){
+    try{ NK_PRODUCTS = getAllProductsFallback().map(function(p){ return nkNormalize(p, p && p.id); }).filter(Boolean); }catch(e){}
+  }
+  if(typeof firebaseReady !== 'undefined' && firebaseReady){
+    db.ref('products').on('value', function(snap){
+      var list = nkListFromObject(snap.val());
+      if(list.length){ NK_PRODUCTS = list; }
+      renderCart();
+    }, function(err){ console.warn('Cart products sync error — using local data.', err); });
+    nkSyncCartFromFirebase();
+    nkPromoInit();
+  } else {
+    NK_PROMOS = nkClone(NK_PROMO_FALLBACK); NK_PROMOS_LOADED = true;
+  }
+  renderCart();
+}
+
+
+/* ================= PROMO CODES =================
+   Firebase '/promocodes/<CODE>' = { code, type:'percent'|'fixed', value, active, expiresAt? (ms) }.
+   The applied code (just the name) is kept in localStorage 'nikora_promo' and is re-validated
+   against live data on every render. NOTE: this discount is a client-side display; the checkout
+   step must re-validate the code before charging. */
+var NK_PROMO_FALLBACK = { GLOW10: { code:'GLOW10', type:'percent', value:10, active:true } };
+var NK_PROMOS = null, NK_PROMOS_LOADED = false, NK_PROMO_REF = null, NK_PROMO_OPEN = false, NK_PROMO_NOTE = '';
+function nkClone(o){ return JSON.parse(JSON.stringify(o)); }
+function nkPromoKey(s){ return String(s == null ? '' : s).toUpperCase().replace(/[^A-Z0-9_-]/g, ''); }
+function nkPromoMap(obj){
+  var out = {};
+  Object.keys(obj || {}).forEach(function(k){
+    var p = obj[k]; if(!p || typeof p !== 'object') return;
+    var code = nkPromoKey(p.code || k); if(!code) return;
+    out[code] = { code: code, type: p.type === 'fixed' ? 'fixed' : 'percent', value: Number(p.value) || 0,
+                  active: p.active !== false, expiresAt: p.expiresAt ? Number(p.expiresAt) : 0 };
+  });
+  return out;
+}
+function nkPromoStatus(p){
+  if(!p || p.active === false || !(p.value > 0)) return 'invalid';
+  if(p.expiresAt && Date.now() > p.expiresAt) return 'expired';
+  return 'ok';
+}
+function nkPromoDesc(p){ return p.type === 'percent' ? (p.value + '% OFF') : ('$' + Number(p.value).toFixed(2) + ' OFF'); }
+function nkMoney(n){ return '$' + (Math.round(n * 100) / 100).toFixed(2); }
+function nkPromoApplied(){ return nkPromoKey(safeStorage.getItem('nikora_promo')); }
+
+function nkPromoCalc(subtotal){
+  var code = nkPromoApplied();
+  if(!code || !NK_PROMOS_LOADED) return null;
+  var p = NK_PROMOS && NK_PROMOS[code], st = nkPromoStatus(p);
+  if(st !== 'ok'){                                    /* deleted / expired since it was applied */
+    safeStorage.setItem('nikora_promo', '');
+    NK_PROMO_NOTE = 'Code ' + code + (st === 'expired' ? ' has expired' : ' is no longer valid') + ' and was removed.';
+    return null;
+  }
+  var d = p.type === 'percent' ? subtotal * Math.min(100, p.value) / 100 : p.value;
+  d = Math.min(Math.round(d * 100) / 100, subtotal);
+  return { code: code, promo: p, discount: d };
+}
+function nkPromoMsg(text, kind){
+  var m = document.getElementById('promo-msg'); if(!m) return;
+  m.textContent = text || ''; m.className = 'promo-msg' + (kind ? ' ' + kind : '');
+}
+function nkPromoRender(promo, payable){
+  var box = document.getElementById('promo-box'); if(!box) return;
+  var active = document.getElementById('promo-active'), toggle = document.getElementById('promo-toggle');
+  var applied = !!promo;
+  box.classList.toggle('open', NK_PROMO_OPEN && !applied);
+  toggle.setAttribute('aria-expanded', String(NK_PROMO_OPEN && !applied));
+  toggle.style.display = applied ? 'none' : '';
+  active.hidden = !applied;
+  if(applied){
+    active.innerHTML = '<span class="promo-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.4"/></svg><b>' + nkEsc(promo.code) + '</b><em>' + nkEsc(nkPromoDesc(promo.promo)) + '</em></span>' +
+      '<button type="button" class="promo-remove" id="promo-remove" aria-label="Remove promo code ' + nkEsc(promo.code) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Remove</button>';
+  } else { active.innerHTML = ''; }
+  if(NK_PROMO_NOTE){ nkPromoMsg(NK_PROMO_NOTE, 'err'); NK_PROMO_NOTE = ''; }
+  var row = document.getElementById('cart-discount-row'), tot = document.getElementById('cart-total-row');
+  var show = applied && promo.discount > 0;
+  row.hidden = !show; tot.hidden = !show;
+  if(show){
+    document.getElementById('cart-discount-label').textContent = 'Discount (' + promo.code + ')';
+    document.getElementById('cart-discount-amount').textContent = '-' + nkMoney(promo.discount);
+    document.getElementById('cart-total').textContent = nkMoney(payable);
+  }
+}
+function nkPromoApply(){
+  var input = document.getElementById('promo-input'); if(!input) return;
+  var code = nkPromoKey(input.value);
+  if(!code){ nkPromoMsg('Please enter a promo code.', 'err'); return; }
+  function finish(){
+    var p = NK_PROMOS && NK_PROMOS[code], st = nkPromoStatus(p);
+    if(st === 'expired'){ nkPromoMsg('Sorry, code ' + code + ' has expired.', 'err'); return; }
+    if(st !== 'ok'){ nkPromoMsg('That code isn\u2019t valid. Please check it and try again.', 'err'); return; }
+    safeStorage.setItem('nikora_promo', code);
+    input.value = ''; nkPromoMsg('', '');
+    renderCart();
+    showToast('Promo code ' + code + ' applied (' + nkPromoDesc(p) + ').');
+  }
+  if(NK_PROMOS === null && NK_PROMO_REF){                /* codes still loading: fetch once, then validate */
+    NK_PROMO_REF.once('value').then(function(s){ NK_PROMOS = nkPromoMap(s.val()); NK_PROMOS_LOADED = true; finish(); })
+      .catch(function(){ nkPromoMsg('Could not check the code right now. Please try again.', 'err'); });
+  } else { finish(); }
+}
+function nkPromoRemove(){
+  safeStorage.setItem('nikora_promo', ''); nkPromoMsg('', ''); renderCart();
+}
+function nkPromoInit(){
+  try{
+    NK_PROMO_REF = db.ref('promocodes');
+    NK_PROMO_REF.on('value', function(snap){
+      NK_PROMOS = nkPromoMap(snap.val()); NK_PROMOS_LOADED = true;
+      renderCart();
+    }, function(err){
+      console.warn('Promo codes sync error \u2014 using built-in list.', err);
+      if(NK_PROMOS === null){ NK_PROMOS = nkClone(NK_PROMO_FALLBACK); NK_PROMOS_LOADED = true; renderCart(); }
+    });
+    /* Seed GLOW10 once, only if the list has never been seeded and is empty. */
+    db.ref('promoMeta/seeded').once('value').then(function(s){
+      if(s.val() === true) return;
+      return NK_PROMO_REF.once('value').then(function(ps){
+        if(ps.val()){ return db.ref('promoMeta/seeded').set(true); }
+        return NK_PROMO_REF.child('GLOW10').set({ code:'GLOW10', type:'percent', value:10, active:true, createdAt:Date.now() })
+          .then(function(){ return db.ref('promoMeta/seeded').set(true); });
+      });
+    }).catch(function(e){ console.warn('Promo seed skipped', e); });
+  }catch(e){ NK_PROMOS = nkClone(NK_PROMO_FALLBACK); NK_PROMOS_LOADED = true; }
+}
+
+/* ---- shared modal helpers ---- */
+function nkModalOpen(id){
+  var m = document.getElementById(id); if(!m) return;
+  m.classList.add('active'); m.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
+}
+function nkModalClose(id){
+  var m = document.getElementById(id); if(!m) return;
+  m.classList.remove('active'); m.setAttribute('aria-hidden', 'true');
+  if(!document.querySelector('.nk-modal-overlay.active')) document.body.style.overflow = '';
+}
+function nkModalCloseAll(){
+  Array.prototype.forEach.call(document.querySelectorAll('.nk-modal-overlay.active'), function(m){ nkModalClose(m.id); });
+}
+
+
+/* ---- photo lightbox + image compression (shared) ---- */
+function nkLightboxOpen(src){
+  var box = document.getElementById('nk-lightbox');
+  if(!box){
+    box = document.createElement('div'); box.id = 'nk-lightbox';
+    box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', 'Review photo');
+    box.innerHTML = '<button type="button" class="nk-lightbox-close" aria-label="Close photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><img alt="Review photo">';
+    document.body.appendChild(box);
+  }
+  box.querySelector('img').src = src;
+  box.classList.add('active');
+}
+function nkLightboxClose(){ var b = document.getElementById('nk-lightbox'); if(b) b.classList.remove('active'); }
+/* Resizes to max 900px JPEG so Base64 review photos stay small enough for Realtime Database. */
+function nkCompressImage(file, done, fail, maxDim, quality){
+  if(!file || !/^image\//.test(file.type)){ fail('Please choose an image file.'); return; }
+  if(file.size > 12 * 1024 * 1024){ fail('That image is too large (12 MB max).'); return; }
+  var reader = new FileReader();
+  reader.onerror = function(){ fail('Could not read that image.'); };
+  reader.onload = function(){
+    var img = new Image();
+    img.onerror = function(){ fail('That image format isn\u2019t supported.'); };
+    img.onload = function(){
+      var s = Math.min(1, (maxDim || 900) / Math.max(img.width, img.height));
+      var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s));
+      var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+      done(c.toDataURL('image/jpeg', quality || 0.8));
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function nkSafePhoto(s){ return (typeof s === 'string' && /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(s)) ? s : ''; }
+
+function nkBindPromoAndTools(){
+  document.addEventListener('click', function(e){
+    var t = e.target; if(!t || !t.closest) return;
+    var nkc = t.closest('[data-nk-close]'); if(nkc){ var ov = nkc.closest('.nk-modal-overlay'); if(ov) nkModalClose(ov.id); return; }
+    if(t.classList && t.classList.contains('nk-modal-overlay')){ nkModalClose(t.id); return; }
+    if(t.closest('#promo-toggle')){ NK_PROMO_OPEN = !NK_PROMO_OPEN; var b = document.getElementById('promo-box'); b.classList.toggle('open', NK_PROMO_OPEN); document.getElementById('promo-toggle').setAttribute('aria-expanded', String(NK_PROMO_OPEN)); if(NK_PROMO_OPEN){ var i = document.getElementById('promo-input'); if(i) setTimeout(function(){ i.focus(); }, 30); } return; }
+    if(t.closest('#promo-apply')){ nkPromoApply(); return; }
+    if(t.closest('#promo-remove')){ nkPromoRemove(); return; }
+    var ph = t.closest('.rphoto img, .review-photo img'); if(ph && ph.src){ nkLightboxOpen(ph.src); return; }
+    if(t.id === 'nk-lightbox' || t.closest('.nk-lightbox-close')){ nkLightboxClose(); }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Enter') return;
+    if(e.target && e.target.id === 'promo-input'){ e.preventDefault(); nkPromoApply(); }
+  });
+}
+
+
+/* ================= TRUST BADGES ================= */
+function trustBadgesHtml(){
+  return (
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>30-Day Risk-Free Trial</span>' +
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Free Express Shipping</span>' +
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>Loss &amp; Damage Protection</span>'
+  );
+}
+function renderTrustBadges(){
+  var el = document.getElementById('cart-trust-badges');
+  if(el) el.innerHTML = trustBadgesHtml();
+}
+
+
+
+
+/* ======================================================================
+   NIKORA — faq.html page logic
+   (cart, promo codes, Firebase sync and trust badges come from the shared
+   modules above; this block adds the page-specific behaviour)
+   ====================================================================== */
+
+/* ---------------- Toast ---------------- */
+var toastTimer;
+function showToast(msg){
+  var toast = document.getElementById('toast');
+  if(!toast) return;
+  document.getElementById('toast-text').textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2600);
+}
+
+/* ---------------- Theme (called by nav.js theme buttons; nav.js keeps its own buttons in sync) ---------------- */
+function setTheme(mode){
+  mode = (mode === 'dark') ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', mode);
+  try{ localStorage.setItem('theme', mode); }catch(e){}
+  safeStorage.setItem('nikora_theme', mode);
+}
+
+
+
+/* ================= FAQ PAGE ================= */
+var F_REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+function fEsc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+function fRegex(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+function fInitFaq(){
+  var input = document.getElementById('f-search');
+  if(!input) return;
+  var clearBtn = document.getElementById('f-clear');
+  var status = document.getElementById('f-status');
+  var emptyBox = document.getElementById('f-empty');
+  var groupsBox = document.getElementById('f-groups');
+  var items = Array.prototype.slice.call(document.querySelectorAll('.faq-item'));
+  var groups = Array.prototype.slice.call(document.querySelectorAll('.f-group'));
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.f-chip'));
+  var state = { cat: 'all' };
+
+  /* searchable text per question: question + answer + keywords */
+  items.forEach(function(it){
+    var q = it.querySelector('.q-text');
+    it._orig = q.textContent;
+    it._hay = (q.textContent + ' ' + it.querySelector('.faq-a-inner').textContent + ' ' + (it.getAttribute('data-kw') || '')).toLowerCase();
+  });
+
+  function setOpen(it, open){
+    it.classList.toggle('open', open);
+    it.querySelector('.faq-q').setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  function highlight(it, tokens){
+    var q = it.querySelector('.q-text');
+    if(!tokens.length){ q.textContent = it._orig; return; }
+    var html = fEsc(it._orig);
+    tokens.forEach(function(t){
+      var re = new RegExp('(' + fRegex(fEsc(t)) + ')', 'ig');
+      html = html.replace(re, '<mark>$1</mark>');
+    });
+    q.innerHTML = html;
+  }
+
+  function apply(openMatches){
+    var raw = input.value.trim();
+    var tokens = raw.toLowerCase().split(/\s+/).filter(Boolean);
+    var shown = [];
+    items.forEach(function(it){
+      var okCat = state.cat === 'all' || it.getAttribute('data-cat') === state.cat;
+      var okQ = tokens.every(function(t){ return it._hay.indexOf(t) > -1; });
+      var vis = okCat && okQ;
+      it.hidden = !vis;
+      if(vis) shown.push(it);
+      highlight(it, vis ? tokens : []);
+    });
+    groups.forEach(function(g){ g.hidden = !g.querySelector('.faq-item:not([hidden])'); });
+    clearBtn.classList.toggle('show', raw.length > 0);
+
+    var none = shown.length === 0;
+    emptyBox.hidden = !none;
+    groupsBox.hidden = none;
+    if(none){ document.getElementById('f-empty-title').textContent = raw ? 'No answers found for \u201c' + raw + '\u201d' : 'No questions in this category'; }
+
+    if(openMatches && tokens.length && shown.length <= 3){ shown.forEach(function(it){ setOpen(it, true); }); }
+
+    var total = items.length;
+    if(none) status.textContent = '';
+    else if(raw || state.cat !== 'all') status.textContent = 'Showing ' + shown.length + ' of ' + total + ' questions';
+    else status.textContent = '';
+  }
+
+  /* live search */
+  input.addEventListener('input', function(){ apply(true); });
+  input.addEventListener('keydown', function(e){ if(e.key === 'Escape' && input.value){ input.value = ''; apply(false); } });
+  clearBtn.addEventListener('click', function(){ input.value = ''; apply(false); input.focus(); });
+  document.getElementById('f-reset').addEventListener('click', function(){
+    input.value = ''; state.cat = 'all'; paintChips(); apply(false); input.focus();
+  });
+  document.addEventListener('keydown', function(e){          /* "/" jumps to the search box */
+    if(e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+    var t = e.target, tag = t && t.tagName;
+    if(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
+    e.preventDefault(); input.focus(); input.select();
+  });
+
+  /* category chips */
+  function paintChips(){
+    chips.forEach(function(c){ c.setAttribute('aria-pressed', c.getAttribute('data-cat') === state.cat ? 'true' : 'false'); });
+  }
+  chips.forEach(function(chip){
+    chip.addEventListener('click', function(){ state.cat = chip.getAttribute('data-cat'); paintChips(); apply(true); });
+  });
+
+  /* accordion (each question toggles on its own; closed answers are removed from the tab order) */
+  items.forEach(function(it, i){
+    var btn = it.querySelector('.faq-q');
+    btn.addEventListener('click', function(){ setOpen(it, !it.classList.contains('open')); });
+    btn.addEventListener('keydown', function(e){
+      var vis = items.filter(function(x){ return !x.hidden; }), at = vis.indexOf(it), n = -1;
+      if(e.key === 'ArrowDown') n = (at + 1) % vis.length;
+      else if(e.key === 'ArrowUp') n = (at - 1 + vis.length) % vis.length;
+      else if(e.key === 'Home') n = 0;
+      else if(e.key === 'End') n = vis.length - 1;
+      if(n < 0) return;
+      e.preventDefault(); vis[n].querySelector('.faq-q').focus();
+    });
+  });
+
+  /* deep links: faq.html#faq-ship-track opens that answer; faq.html?q=shipping pre-fills the search */
+  function openFromHash(){
+    var id = (location.hash || '').replace('#', '');
+    if(!/^faq-[\w-]+$/.test(id)) return;
+    var it = document.getElementById(id);
+    if(!it || !it.classList.contains('faq-item')) return;
+    input.value = ''; state.cat = 'all'; paintChips(); apply(false);
+    setOpen(it, true);
+    setTimeout(function(){ it.scrollIntoView({ behavior: F_REDUCED ? 'auto' : 'smooth', block: 'start' }); }, 120);
+  }
+  try{
+    var q = new URLSearchParams(location.search).get('q');
+    if(q){ input.value = q.slice(0, 80); }
+  }catch(e){}
+  apply(true);
+  openFromHash();
+  window.addEventListener('hashchange', openFromHash);
+}
+
+/* ---- scroll reveal (staggered inside grids); falls back to showing everything ---- */
+function fInitReveal(){
+  var els = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+  if(!els.length) return;
+
+  function reveal(el, delay){
+    el.style.transitionDelay = delay + 'ms';
+    el.classList.add('in');
+    setTimeout(function(){                          /* hand the element back to its own hover transitions */
+      el.classList.remove('reveal', 'in');
+      el.style.transitionDelay = '';
+    }, delay + 900);
+  }
+  if(!('IntersectionObserver' in window)){ els.forEach(function(el){ reveal(el, 0); }); return; }
+
+  els.forEach(function(el){
+    var sib = el.parentElement ? Array.prototype.indexOf.call(el.parentElement.children, el) : 0;
+    el.setAttribute('data-rd', String(Math.min(sib, 4) * 80));
+  });
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(!en.isIntersecting) return;
+      io.unobserve(en.target);
+      reveal(en.target, Number(en.target.getAttribute('data-rd')) || 0);
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(function(el){ io.observe(el); });
+  setTimeout(function(){ els.forEach(function(el){ if(el.classList.contains('reveal') && !el.classList.contains('in')){ io.unobserve(el); reveal(el, 0); } }); }, 5000);
+}
+
+/* ---------------- Init ---------------- */
+function init(){
+  var saved = safeStorage.getItem('theme') || safeStorage.getItem('nikora_theme');
+  setTheme(saved === 'dark' ? 'dark' : 'light');
+
+  renderCart();
+  renderTrustBadges();
+  initCartSync();
+
+
+  fInitFaq();
+  fInitReveal();
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
