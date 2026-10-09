@@ -682,6 +682,9 @@ h1.t-title em{font-style:italic; color:var(--gold);}
 
 /* ---------------- LIVE TRACKING ADDITIONS ---------------- */
 @media (min-width:761px){ .tl{grid-template-columns:repeat(3,1fr);} }
+.t-trk-note{display:flex; align-items:flex-start; gap:10px; margin:18px 0 0; padding:12px 16px; border-radius:16px; font-size:13px; line-height:1.55; color:var(--text-soft);
+  background:rgba(var(--gold-rgb),.07); border:1px solid rgba(var(--gold-rgb),.28); backdrop-filter:blur(12px); text-align:left;}
+.t-trk-note svg{flex:none; width:18px; height:18px; margin-top:1px; stroke:var(--gold); fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
 .tf-note{margin:14px 4px 0; font-size:13px; line-height:1.5; color:var(--text-soft);}
 .tf-note:empty{display:none;}
 .t-banner{
@@ -760,6 +763,7 @@ h1.t-title em{font-style:italic; color:var(--gold);}
               <span id="tf-btn-text">Track Order</span>
             </button>
           </div>
+          <p class="t-trk-note" id="t-trk-note"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.2M12 7.7v.1"/></svg><span>Tracking numbers activate within 1&ndash;3 business days after dispatch from warehouse.</span></p>
           <div class="tf-error" id="tf-error" role="alert" aria-live="assertive"></div>
           <div class="tf-note" id="tf-note" aria-live="polite"></div>
           <div class="t-banner" id="tf-banner" role="alert" hidden>
@@ -815,7 +819,7 @@ h1.t-title em{font-style:italic; color:var(--gold);}
       <!-- processing notice -->
       <div class="glass-card notice-card" id="notice-card" hidden>
         <span class="notice-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span>
-        <div><h3>Order confirmed</h3><p>Order confirmed and being prepared at our fulfillment hub. Estimated dispatch: 24&ndash;48 hours.</p></div>
+        <div><h3>Order confirmed</h3><p>Order confirmed and being prepared at our fulfillment hub. Processing takes 1&ndash;3 business days (quality check, assembly and packaging), then your tracking number appears here and in your shipping email.</p></div>
       </div>
 
       <!-- shipment details (shipped / delivered) -->
@@ -849,6 +853,7 @@ h1.t-title em{font-style:italic; color:var(--gold);}
           <div><ul class="recap-items" id="recap-items"></ul><div class="recap-total"><span>Order total</span><b id="recap-total"></b></div></div>
           <div class="recap-side">
             <div class="sum-k">Shipping destination</div><p id="recap-dest"></p>
+            <div class="sum-k">Loss &amp; damage protection</div><p>Defective, damaged in shipping, or lost (tracking inactive for 14+ days, or transit over 30 days)? We reship for free or refund you in full. <a class="rs-mail" href="guarantee.html">How it works</a></p>
             <div class="sum-k">Questions about this order?</div><p><a class="rs-mail" id="recap-mail" href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a></p>
           </div>
         </div>
@@ -888,8 +893,8 @@ h1.t-title em{font-style:italic; color:var(--gold);}
             <p>Your Order ID starts with <b>#NK-</b> and appears in your order confirmation email, right under the subject line. Can&rsquo;t find it? Search your inbox for &ldquo;NIKORA&rdquo; and check your spam folder.</p>
           </div>
           <div class="glass-card faq-mini reveal">
-            <h3 class="q"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 015 .9c0 1.7-2.5 2.2-2.5 3.8M12 17.2v.1"/></svg>How long does standard shipping take?</h3>
-            <p>Standard shipping typically takes <b>5&ndash;10 business days</b> after dispatch. Orders over $50 ship Express for free and usually arrive sooner.</p>
+            <h3 class="q"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 015 .9c0 1.7-2.5 2.2-2.5 3.8M12 17.2v.1"/></svg>How long does delivery take?</h3>
+            <p>Orders are processed in <b>1&ndash;3 business days</b>, then ship free in <b>7&ndash;15 business days</b> with real-time tracking. If your tracking is inactive for more than 14 days, or transit passes 30 days, we reship or refund you.</p>
           </div>
         </div>
       </div>
@@ -903,7 +908,7 @@ h1.t-title em{font-style:italic; color:var(--gold);}
         <h2 id="cta-h2">Haven&rsquo;t Ordered Yet? Experience <em>Deep Skincare Technology</em> Today.</h2>
         <p>Red light, EMS microcurrents and warmth, in a five-minute daily ritual.</p>
         <a class="btn-primary" href="catalog.html">Shop Collection <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <span class="cta-fine">Free Express Shipping on orders over $50</span>
+        <span class="cta-fine">Free Express Shipping &middot; 7&ndash;15 business days &middot; Real-time tracking</span>
       </div>
     </div>
   </section>
@@ -954,7 +959,7 @@ h1.t-title em{font-style:italic; color:var(--gold);}
     <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="ship-progress-wrap">
-    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Add $50.00 more to unlock FREE Express Shipping</div>
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on every order (7&ndash;15 business days)</div>
     <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
   </div>
   <div class="cart-items" id="cart-items-list"></div>
@@ -1372,12 +1377,12 @@ function renderCart(){
 
   var text = document.getElementById('ship-progress-text');
   var fill = document.getElementById('ship-progress-fill');
-  var unlocked = payable >= NK_FREE_SHIP;
-  fill.style.width = Math.min(100, (payable / NK_FREE_SHIP) * 100) + '%';
+  var unlocked = true;   /* Express shipping is free on every order */
+  fill.style.width = '100%';
   text.classList.toggle('unlocked', unlocked);
   fill.classList.toggle('unlocked', unlocked);
   text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
-    ? 'You\u2019ve unlocked FREE Express Shipping!'
+    ? 'FREE Express Shipping on every order (7\u201315 business days)'
     : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
 
   renderCartRecs(cart);
@@ -1625,8 +1630,8 @@ function nkBindPromoAndTools(){
 function trustBadgesHtml(){
   return (
     '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>30-Day Risk-Free Trial</span>' +
-    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Free Shipping over $50</span>' +
-    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>2-Year Warranty</span>'
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Free Express Shipping</span>' +
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>Loss &amp; Damage Protection</span>'
   );
 }
 function renderTrustBadges(){
@@ -1741,7 +1746,7 @@ function tOrderFromRecord(r){
     placed: new Date(Number(r.createdAt) || Date.now()),
     shippedAt: r.shippedAt ? new Date(Number(r.shippedAt)) : null,
     deliveredAt: r.deliveredAt ? new Date(Number(r.deliveredAt)) : null,
-    eta: r.eta ? new Date(Number(r.eta)) : null,
+    eta: r.eta ? new Date(Number(r.eta)) : null, etaFrom: r.etaFrom ? new Date(Number(r.etaFrom)) : null,
     carrier: r.carrier || '', trackingNumber: r.trackingNumber || '',
     items: items, destination: r.destination || '', total: r.total
   };
@@ -1785,9 +1790,8 @@ function tRender(o){
 
   if(delivered){ tSet('sum-eta', 'Delivered'); tSet('sum-eta-sub', o.deliveredAt ? tFmtFull(o.deliveredAt) : ''); }
   else if(o.eta){
-    var days = Math.ceil((o.eta.getTime() - Date.now()) / 86400000);
-    tSet('sum-eta', tFmtDate(o.eta));
-    tSet('sum-eta-sub', days <= 0 ? 'Arriving soon' : days === 1 ? 'Tomorrow' : 'In ' + days + ' days');
+    tSet('sum-eta', o.etaFrom ? tFmtDate(o.etaFrom) + ' \u2013 ' + tFmtDate(o.eta) : tFmtDate(o.eta));
+    tSet('sum-eta-sub', '8\u201318 business days from checkout');
   } else { tSet('sum-eta', '\u2014'); tSet('sum-eta-sub', ''); }
   tSet('sum-carrier', shipped && o.carrier ? o.carrier : 'Assigned at dispatch');
   tSet('sum-carrier-sub', shipped && o.trackingNumber ? 'Tracking ' + o.trackingNumber : 'Shown here once shipped');
