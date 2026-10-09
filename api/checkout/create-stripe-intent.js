@@ -1,8 +1,9 @@
 /**
  * POST /api/checkout/create-stripe-intent
  * Called by checkout.html when the customer presses Pay (card) or confirms Apple Pay / Google Pay.
- * Body: { customer, items, pricing: { promoCode }, total, notes }
- *   1. validates the customer + cart and calculates the total ON THE SERVER (product prices, promo code, tax)
+ * Body: { customer, items: [{ id, variant?, quantity }], pricing: { promoCode }, total, notes }
+ *   1. validates the customer + cart and calculates the total ON THE SERVER: prices come from lib/products.js
+ *      (PRODUCTS_CATALOG), never from the browser; then promo code and tax
  *   2. creates a Stripe PaymentIntent for exactly that amount
  *   3. saves the validated cart as a pending checkout (the Stripe webhook turns it into an order once paid)
  * Returns { success: true, clientSecret, paymentIntentId, amount }.
