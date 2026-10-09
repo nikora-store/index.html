@@ -3,7 +3,7 @@
  * Event: payment_intent.succeeded
  *   1. verifies the Stripe signature with STRIPE_WEBHOOK_SECRET (raw request body is required)
  *   2. saves the order to Firebase (/orders + /tracking)
- *   3. forwards it to CJ Dropshipping (lib/supplier.js)
+ *   3. forwards it to CJ Dropshipping: createCJOrder() in lib/supplier.js (bundles expanded by lib/products.js)
  *   4. sends the confirmation email (Resend, via /api/send-email)
  * Steps 2-4 live in lib/orders.js and are idempotent, so Stripe retries and the browser's own
  * /api/checkout/stripe-complete call can never create a second order.
