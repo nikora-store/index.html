@@ -1,7 +1,7 @@
 /**
  * POST /api/checkout/paypal-capture   { orderID }
  * Called from the PayPal button's onApprove(). Captures the money, checks it against the cart we saved,
- * then runs the same pipeline as Stripe: Firebase -> CJ Dropshipping -> Resend email.
+ * then runs the same pipeline as Stripe: Firebase -> createCJOrder() (CJ Dropshipping) -> Resend email.
  * Safe to call twice (PayPal returns ORDER_ALREADY_CAPTURED, and the order pipeline is idempotent), so the
  * browser can simply retry if the connection drops.
  * Returns the order, or { success: false, restart: true } when PayPal declined the funding source (the button restarts).
