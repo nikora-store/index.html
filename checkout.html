@@ -77,9 +77,10 @@ body {
   transition:color .4s ease;
 }
 [data-theme="dark"] body {
-  background: linear-gradient(-45deg, #0D0B12, #170E1B, #2A0F1D, #0D0B12);
+  /* live gradient: Obsidian Black #0B0B0E <-> Dark Rose #3B1224 / #8B1E4A */
+  background: linear-gradient(-45deg, #0B0B0E 0%, #3B1224 34%, #8B1E4A 62%, #3B1224 82%, #0B0B0E 100%);
   background-size: 400% 400%;
-  animation: gradientShift 12s ease infinite;
+  animation: gradientShift 16s ease-in-out infinite;
 }
 @keyframes gradientShift {
   0% { background-position: 0% 50%; }
@@ -859,29 +860,34 @@ details[open] > .ck-sum-toggle svg{transform:rotate(180deg);}
 .ck-policy li b{color:var(--text); font-weight:650;}
 .ck-policy li::before{content:""; flex:none; width:6px; height:6px; margin-top:7px; border-radius:50%; background:var(--gold);}
 
-/* ---- trust micro-badges (glass cards, custom inline SVG) ---- */
+/* ---- NIKORA trust micro-badges: frosted glass cards, gradient-stroke inline SVG, neon rose hover ---- */
 .ck-badges{display:grid; gap:12px; margin:22px 0 0; padding:0; list-style:none;}
 .ck-badges.row{grid-template-columns:repeat(3,1fr); margin:18px 0 0;}
 @media (max-width:760px){ .ck-badges.row{grid-template-columns:1fr;} }
 .ck-badge{
-  position:relative; display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:18px; overflow:hidden;
-  background:linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
-  border:1px solid rgba(var(--gold-rgb),.28);
-  -webkit-backdrop-filter:blur(16px) saturate(170%); backdrop-filter:blur(16px) saturate(170%);
-  box-shadow:0 14px 34px -22px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.14);
-  transition:transform .35s cubic-bezier(.2,.8,.2,1), border-color .3s, box-shadow .35s;
+  position:relative; display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:18px; overflow:hidden; isolation:isolate;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.18);
+  -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+  box-shadow:0 14px 34px -22px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.10);
+  transition:transform .35s cubic-bezier(.2,.8,.2,1), border-color .3s ease, box-shadow .35s ease;
 }
-.ck-badge::after{content:""; position:absolute; inset:-40% -20% auto auto; width:120px; height:120px; border-radius:50%; background:radial-gradient(circle, rgba(var(--gold-rgb),.30), transparent 68%); opacity:0; transition:opacity .4s; pointer-events:none;}
-.ck-badge:hover{transform:translateY(-3px); border-color:rgba(var(--gold-rgb),.7); box-shadow:0 20px 40px -20px rgba(var(--gold-rgb),.5), 0 0 0 1px rgba(var(--gold-rgb),.25), inset 0 1px 0 rgba(255,255,255,.2);}
+.ck-badge::after{content:""; position:absolute; inset:0; z-index:-1; border-radius:inherit; opacity:0; transition:opacity .35s ease;
+  background:radial-gradient(120% 140% at 0% 0%, rgba(255,82,123,.22), transparent 62%);}
+.ck-badge:hover{transform:scale(1.04); border-color:rgba(255,82,123,.78);
+  box-shadow:0 0 0 1px rgba(255,82,123,.38), 0 0 30px -2px rgba(255,82,123,.55), 0 18px 40px -20px rgba(139,30,74,.8), inset 0 1px 0 rgba(255,255,255,.16);}
 .ck-badge:hover::after{opacity:1;}
-.ck-badge .bi{flex:none; width:46px; height:46px; display:grid; place-items:center; border-radius:14px; color:var(--gold); background:rgba(var(--gold-rgb),.12); border:1px solid rgba(var(--gold-rgb),.25); transition:transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s;}
-.ck-badge:hover .bi{transform:scale(1.08) rotate(-4deg); box-shadow:0 0 22px -2px rgba(var(--gold-rgb),.55);}
-.ck-badge .bi svg{width:28px; height:28px; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round;}
-.ck-badge .bi svg .fill{fill:rgba(var(--gold-rgb),.20); stroke:none;}
-.ck-badge .bi svg .dot{fill:currentColor; stroke:none;}
+.ck-badge .bi{flex:none; width:48px; height:48px; display:grid; place-items:center; border-radius:15px;
+  background:linear-gradient(135deg,#0B0B0E 0%,#3B1224 58%,#8B1E4A 100%); border:1px solid rgba(255,255,255,.14);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 0 18px -6px rgba(255,82,123,.55);}
+.ck-badge .bi svg{width:30px; height:30px; fill:none; stroke:url(#nk-rose-grad); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 0 5px rgba(255,82,123,.7)); transition:filter .35s ease;}
+.ck-badge:hover .bi svg{filter:drop-shadow(0 0 9px rgba(255,120,160,.95));}
+.ck-badge .bi svg .fill{fill:rgba(255,82,123,.18); stroke:none;}
+.ck-badge .bi svg .dot{fill:#FF8FB1; stroke:none;}
 .ck-badge .bt{display:block; font-size:13.5px; font-weight:650; line-height:1.3; color:var(--text);}
 .ck-badge .bs{display:block; margin-top:2px; font-size:12px; line-height:1.4; color:var(--text-soft);}
-@media (prefers-reduced-motion:reduce){ .ck-badge, .ck-badge .bi{transition:none;} .ck-badge:hover, .ck-badge:hover .bi{transform:none;} .ck-pay-load i{animation:none;} }
+:root:not([data-theme="dark"]) .ck-badge{background:rgba(255,255,255,0.62); border-color:rgba(139,30,74,0.22); box-shadow:0 14px 30px -22px rgba(59,18,36,.45), inset 0 1px 0 rgba(255,255,255,.7);}
+@media (prefers-reduced-motion:reduce){ .ck-badge, .ck-badge .bi svg{transition:none;} .ck-badge:hover{transform:none;} .ck-pay-load i{animation:none;} }
 </style>
 <script src="https://js.stripe.com/v3/"></script>
 <script>
@@ -894,6 +900,13 @@ window.NK_CONFIG = fetch('/api/checkout/config', { cache: 'no-store' }).then(fun
 <script src="nav.js"></script>
 
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="nk-rose-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFB3C9"/><stop offset=".5" stop-color="#FF527B"/><stop offset="1" stop-color="#8B1E4A"/>
+    </linearGradient>
+  </defs>
+</svg>
 <main id="top">
 
   <!-- ================= HEADER ================= -->
@@ -2105,7 +2118,7 @@ function ckCollect(items, t){
     },
     items: items.map(function(i){
       var p = Number(i.price) || 0;
-      return { id: String(i.id), title: String(i.title), price: p, qty: i.qty, lineTotal: Math.round(p * i.qty * 100) / 100 };
+      return { id: String(i.id), variant: String(i.variant || 'default'), title: String(i.title), price: p, qty: i.qty, quantity: i.qty, lineTotal: Math.round(p * i.qty * 100) / 100 };
     }),
     pricing: { subtotal: t.subtotal, discount: t.discount, promoCode: t.promoCode, shipping: 0, shippingLabel: 'Express Insured Shipping', tax: t.tax, taxRate: t.taxRate },
     total: t.total, currency: 'USD',
@@ -2460,11 +2473,11 @@ function ckSteps(n){
 
 /* ---------------- trust micro-badges (custom inline SVG, glass cards) ---------------- */
 var CK_BADGES = [
-  { t: 'Secure 256-bit SSL Encryption', s: 'Every payment is encrypted end to end',
+  { t: '256-Bit SSL Encrypted Checkout', s: 'Every payment is encrypted end to end',
     svg: '<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path class="fill" d="M16 3.5l9.5 3.7v7.3c0 6.2-4 10.7-9.5 13.6-5.5-2.9-9.5-7.4-9.5-13.6V7.2L16 3.5z"/><path d="M16 3.5l9.5 3.7v7.3c0 6.2-4 10.7-9.5 13.6-5.5-2.9-9.5-7.4-9.5-13.6V7.2L16 3.5z"/><rect x="11.5" y="14" width="9" height="6.8" rx="1.8"/><path d="M13.3 14v-1.8a2.7 2.7 0 015.4 0V14"/><circle class="dot" cx="16" cy="17.4" r="1"/></svg>' },
-  { t: 'Free Express Shipping', s: '7\u201315 business days, fully tracked',
+  { t: 'Express Shipping', s: '7\u201315 business days, fully tracked',
     svg: '<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path class="fill" d="M3.5 9.5h14.5v11.5H3.5z"/><path d="M3.5 9.5h14.5v11.5H3.5zM18 13h5.2l3.8 3.9V21H18"/><circle cx="9" cy="22.2" r="2.4"/><circle cx="22.2" cy="22.2" r="2.4"/><path d="M1.5 13H0M2.5 16.5H.5" opacity=".55"/><path d="M8 15.2l1.6 1.6 3-3.2"/></svg>' },
-  { t: '30-Day Risk-Free Guarantee', s: 'Money back, easy returns',
+  { t: '30-Day Risk-Free Guarantee &amp; Easy Returns', s: 'Money back on unopened, unused items',
     svg: '<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="fill" cx="16" cy="16" r="11.5"/><path d="M26.2 11.2A11.5 11.5 0 105.8 21"/><path d="M26.7 5.8v5.7h-5.7"/><path d="M11.2 16.4l3.3 3.3 6.3-6.6"/></svg>' }
 ];
 function ckBadgesHtml(){
