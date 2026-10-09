@@ -182,7 +182,7 @@
 
     { id: 'tracking',
       k: [['track', 3], ['package', 3], ['parcel', 3], ['where is my', 4], ['order status', 4], ['delivery status', 4], ['tracking number', 4], ['shipment', 3], ['when will my', 3], ['has my order', 3], ['not arrived', 4], ['hasn t arrived', 4], ['late', 2], ['delayed', 3], ['order number', 3]],
-      text: "You can follow your order on our tracking page. You'll need your **order number** (it starts with **#NK-** and is in your confirmation email) and the **email** you ordered with.\n\nOrders are processed in **1\u20133 business days**, then ship in **7\u201315 business days** with real-time tracking. Tracking numbers typically activate within 1\u20133 business days after checkout, once the warehouse dispatches your order. If tracking is inactive for more than 14 days, or transit exceeds 30 days, we'll reship for free or refund you in full.",
+      text: "You can follow your order on our tracking page. You'll need your **order number** (it starts with **#NK-** and is in your confirmation email) and the **email** you ordered with.\n\nOrders are processed in **1\u20133 business days**, then ship in **7\u201315 business days** with real-time tracking. Tracking numbers activate within 1\\u20133 business days after dispatch from the warehouse. If tracking is inactive for more than 14 days, or transit exceeds 30 days, we'll reship for free or refund you in full.",
       buttons: [B.track, B.email('Order tracking help')], chips: ['How long does shipping take?', 'Start a return', 'Talk to support'] },
 
     { id: 'shipping',
