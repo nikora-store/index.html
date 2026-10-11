@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* Anti-flicker: apply the saved theme to <html> before CSS paints.
-   Checks 'theme' first, then the legacy 'nikora_theme' key shared with
-   index.html / catalog.html, defaulting to 'light' (index.html's
-   default) when nothing is stored yet. */
+/* Anti-flicker: apply the saved theme before CSS paints, so there is no
+   dark->light (or light->dark) flash on load. Checks the new 'theme' key
+   first, falling back to the legacy 'nikora_theme' key (shared with
+   index.html) for anyone who saved a preference before this change. */
 (function(){
   try{
     var saved = localStorage.getItem('theme') || localStorage.getItem('nikora_theme');
@@ -17,8 +17,8 @@
 })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Product — NIKORA</title>
-<meta name="description" content="Shop NIKORA beauty devices — facial wands, sculptors, LED therapy masks, body devices and glow ritual bundles.">
+<title>Catalog — NIKORA</title>
+<meta name="description" content="Shop the full NIKORA collection: facial wands, sculptors, LED therapy masks, body devices and glow ritual bundles.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -27,29 +27,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <style>
 :root{
-  --canvas:#FAF8F5;
-  --canvas-rgb:250,248,245;
-  --card-bg: rgba(255,255,255,0.65);
-  --card-border: rgba(230,220,210,0.6);
-  --text:#1A1615;
-  --text-soft: rgba(26,22,21,0.62);
-  --text-faint: rgba(26,22,21,0.4);
-  --gold:#C59B56;
-  --gold-rgb:197,155,86;
-  --rose:#D81E5B;
-  --rose-rgb:216,30,91;
-  --line: rgba(26,22,21,0.1);
-  --surface-raised: rgba(255,255,255,0.85);
-  --surface-tint: rgba(26,22,21,0.04);
-  --shadow-ambient: 0 20px 60px -20px rgba(60,45,30,0.18);
-  --success:#2E6B4F;
-  color-scheme: light;
-}
-[data-theme="dark"]{
-  --canvas:#0D0B12;
-  --canvas-rgb:13,11,18;
-  --card-bg: rgba(25,20,32,0.55);
-  --card-border: rgba(255,255,255,0.08);
+  --canvas-a:#0D0B12; --canvas-b:#170E1B; --canvas-c:#2A0F1D;
+  --canvas-solid:#0D0B12;
   --text:#F7F4F0;
   --text-soft: rgba(247,244,240,0.64);
   --text-faint: rgba(247,244,240,0.38);
@@ -57,37 +36,60 @@
   --gold-rgb:229,186,115;
   --rose:#FF527B;
   --rose-rgb:255,82,123;
-  --line: rgba(255,255,255,0.09);
+  --card-bg: rgba(25,20,32,0.55);
+  --card-border: rgba(255,255,255,0.08);
   --surface-raised: rgba(30,25,38,0.9);
   --surface-tint: rgba(255,255,255,0.05);
-  --shadow-ambient: 0 20px 70px -20px rgba(0,0,0,0.6);
+  --line: rgba(255,255,255,0.09);
+  --header-bg: rgba(13,11,18,0.72);
+  --toast-bg: var(--text);
+  --toast-text: #0D0B12;
   --success:#3CB878;
+  --shadow-ambient: 0 20px 70px -20px rgba(0,0,0,0.6);
+  --card-glow: rgba(255,255,255,0.14);
   color-scheme: dark;
+}
+[data-theme="light"]{
+  --canvas-a:#FAF7F2; --canvas-b:#F8F4F0; --canvas-c:#F5EFE6;
+  --canvas-solid:#FAF7F2;
+  --text:#1A1615;
+  --text-soft: rgba(26,22,21,0.62);
+  --text-faint: rgba(26,22,21,0.4);
+  --gold:#C59B56;
+  --gold-rgb:197,155,86;
+  --rose:#D81E5B;
+  --rose-rgb:216,30,91;
+  --card-bg: rgba(255,255,255,0.65);
+  --card-border: rgba(230,220,210,0.6);
+  --surface-raised: rgba(255,255,255,0.85);
+  --surface-tint: rgba(26,22,21,0.04);
+  --line: rgba(26,22,21,0.1);
+  --header-bg: rgba(250,247,242,0.78);
+  --toast-bg: #1A1615;
+  --toast-text: #FAF7F2;
+  --success:#2E6B4F;
+  --shadow-ambient: 0 20px 60px -20px rgba(60,45,30,0.18);
+  --card-glow: rgba(255,255,255,0.45);
+  color-scheme: light;
 }
 *{box-sizing:border-box;}
 html{scroll-behavior:smooth;}
 
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 body{
-  background: linear-gradient(-45deg, #FAF7F2, #F8F4F0, #F5EFE6, #FAF7F2);
+  margin:0;
+  background: linear-gradient(-45deg, var(--canvas-a), var(--canvas-b), var(--canvas-c), var(--canvas-a));
   background-size: 400% 400%;
   animation: gradientShift 12s ease infinite;
-  margin:0;
   color:var(--text);
   font-family:'Montserrat',sans-serif;
   font-weight:400;
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
-  transition:color .4s ease;
-}
-[data-theme="dark"] body{
-  background: linear-gradient(-45deg, #0D0B12, #170E1B, #2A0F1D, #0D0B12);
-  background-size: 400% 400%;
-  animation: gradientShift 12s ease infinite;
-}
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }
 @media (prefers-reduced-motion: reduce){
   body{animation:none;}
@@ -96,285 +98,153 @@ body{
 img{max-width:100%;display:block;}
 a{color:inherit;text-decoration:none;}
 button{font-family:inherit;cursor:pointer;}
-.container{width:100%; max-width:1240px; margin:0 auto; padding:0 clamp(20px,4vw,48px);}
-:focus-visible{outline:2px solid var(--rose); outline-offset:3px; border-radius:4px;}
-
-
-
-
-
-
+.container{width:100%; max-width:1320px; margin:0 auto; padding:0 clamp(20px,4vw,48px);}
+:focus-visible{outline:2px solid var(--gold); outline-offset:3px; border-radius:4px;}
 
 /* ---------------- LOGO (footer) ----------------
    Header, "More" dropdown and mobile drawer are rendered and styled entirely by nav.js. */
 .logo{font-family:'Playfair Display',serif; font-size:24px; letter-spacing:.06em; font-weight:600;}
 .logo em{font-style:italic; color:var(--gold);}
-/* Anchor jumps (e.g. "see reviews") must clear the 73px sticky nav.js header */
-#reviews{scroll-margin-top:96px;}
+/* ---------------- PAGE HEAD ---------------- */
+.page-head{padding-top:clamp(40px,6vw,64px); padding-bottom:clamp(24px,3vw,32px);}
+.page-head h1{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(32px,4.2vw,52px); margin:0 0 10px; letter-spacing:-.01em;}
+.page-head h1 em{font-style:italic; color:var(--gold);}
+.page-head p{margin:0; color:var(--text-soft); font-size:14.5px; max-width:520px;}
 
-/* ---------------- BREADCRUMB ---------------- */
-.breadcrumb{padding:18px 0 0; font-size:12px; color:var(--text-soft);}
-.breadcrumb a{color:var(--text-soft);}
-.breadcrumb a:hover{color:var(--gold);}
-.breadcrumb .sep{margin:0 6px; opacity:.5;}
-.breadcrumb .current{color:var(--text); font-weight:600;}
+/* ---------------- TOOLBAR ---------------- */
+.toolbar-wrap{position:sticky; top:73px; z-index:300; padding-top:14px; padding-bottom:14px;}
+.toolbar{
+  background:var(--card-bg); backdrop-filter:blur(12px); border:1px solid var(--card-border);
+  border-radius:20px; padding:16px 20px; box-shadow:var(--shadow-ambient);
+  display:flex; flex-direction:column; gap:14px;
+}
+.toolbar-row{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+.search-field{
+  flex:1; min-width:220px; display:flex; align-items:center; gap:10px;
+  background:var(--surface-tint); border:1px solid var(--line); border-radius:100px;
+  padding:10px 16px;
+}
+.search-field svg{width:16px;height:16px; stroke:var(--text-faint); fill:none; flex-shrink:0;}
+.search-field input{
+  flex:1; background:none; border:none; outline:none; color:var(--text); font-family:inherit; font-size:13.5px;
+}
+.search-field input::placeholder{color:var(--text-faint);}
+.sort-select{
+  background:var(--surface-tint); border:1px solid var(--line); border-radius:100px;
+  padding:10px 16px; color:var(--text); font-family:inherit; font-size:13px; font-weight:500; cursor:pointer;
+}
+.sort-select option{background:var(--canvas-solid); color:var(--text);}
+.price-filter{display:flex; align-items:center; gap:12px; min-width:220px;}
+.price-filter label{font-size:12px; color:var(--text-soft); white-space:nowrap; font-weight:600;}
+.price-filter input[type="range"]{
+  flex:1; accent-color:var(--gold); cursor:pointer;
+}
+#price-filter-value{font-size:12.5px; font-weight:700; color:var(--gold); white-space:nowrap; min-width:64px;}
+.category-tabs{display:flex; gap:8px; flex-wrap:wrap;}
+.cat-tab{
+  padding:8px 16px; border-radius:100px; border:1px solid var(--line); background:transparent;
+  color:var(--text-soft); font-size:12.5px; font-weight:600; letter-spacing:.02em; transition:all .2s ease;
+}
+.cat-tab:hover{border-color:var(--gold); color:var(--text);}
+.cat-tab.active{background:var(--gold); border-color:var(--gold); color:#241c0f;}
+.result-count{font-size:12px; color:var(--text-faint); padding:0 2px;}
 
-/* ---------------- PRODUCT HERO ---------------- */
-/* Gallery | Key Benefits card | Buy box — the benefits card sits directly to the right of the photo gallery */
-.product-hero{display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,.72fr) minmax(0,1fr); gap:28px; align-items:start; padding:20px 0 20px;}
-@media (max-width:1179px){
-  .product-hero{grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr); gap:24px;}
-  .product-hero .product-info{grid-column:1 / -1; max-width:760px;}
-}
-@media (max-width:719px){
-  .product-hero{grid-template-columns:minmax(0,1fr); gap:22px;}
+/* ---------------- MOBILE: search/filter bar scrolls with page, never sticks/floats ---------------- */
+@media (max-width:768px){
+  .toolbar-wrap, .search-filter-container, .catalog-controls, .filter-bar{
+    position:static !important;
+    top:auto !important;
+    z-index:auto !important;
+  }
 }
 
-.gallery-main{
-  position:relative; aspect-ratio:1/1; border-radius:20px; overflow:hidden;
-  background:var(--surface-tint); border:1px solid var(--card-border); box-shadow:var(--shadow-ambient);
+/* ---------------- PRODUCT GRID ---------------- */
+.grid-section{padding:20px 0 clamp(60px,8vw,90px);}
+.product-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:22px;}
+@media (max-width:1180px){ .product-grid{grid-template-columns:repeat(3,1fr);} }
+@media (max-width:860px){ .product-grid{grid-template-columns:repeat(2,1fr);} }
+@media (max-width:520px){ .product-grid{grid-template-columns:1fr;} }
+
+.glass-card{
+  --mouse-x:50%; --mouse-y:50%;
+  position:relative;
+  background:var(--card-bg); border:1px solid var(--card-border); border-radius:18px;
+  backdrop-filter:blur(12px);
+  transition:transform .12s ease-out, box-shadow .25s ease;
+  box-shadow:var(--shadow-ambient);
+  overflow:hidden;
+  will-change:transform;
 }
-.gallery-main{touch-action:pan-y; -webkit-user-select:none; user-select:none;}   /* vertical page scroll still works; horizontal drags become swipes */
-.gallery-main img{width:100%; height:100%; object-fit:cover; display:block; opacity:1; transition:opacity .25s ease; -webkit-user-drag:none; pointer-events:none;}
-.gallery-main img.is-fading{opacity:.1; transition:none;}   /* dims instantly when the image changes, then fades back in */
-.gallery-count{
-  position:absolute; right:12px; bottom:12px; z-index:2; font-size:11px; font-weight:700; letter-spacing:.04em;
-  padding:4px 10px; border-radius:100px; background:rgba(20,16,12,.55); color:#fff; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+.glass-card::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(300px circle at var(--mouse-x) var(--mouse-y), var(--card-glow), transparent 70%);
+  opacity:0; transition:opacity .3s ease;
 }
-@media (prefers-reduced-motion: reduce){ .gallery-main img, .gallery-thumb{transition:none;} }
-.gallery-badges{position:absolute; top:14px; left:14px; display:flex; flex-direction:column; gap:6px; z-index:2;}
+.glass-card:hover::after{opacity:1;}
+
+.product-card{display:flex; flex-direction:column; height:100%;}
+.card-media{position:relative; aspect-ratio:1/1; overflow:hidden; background:var(--surface-tint);}
+.card-media img{width:100%; height:100%; object-fit:cover; transition:transform .5s cubic-bezier(.2,.8,.2,1);}
+.product-card:hover .card-media img{transform:scale(1.08);}
+.card-badges{position:absolute; top:10px; left:10px; display:flex; flex-direction:column; gap:6px; z-index:2;}
 .badge-bestseller, .badge-sale, .badge-lowstock{
   font-size:10px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
   padding:5px 10px; border-radius:100px; white-space:nowrap;
 }
 .badge-bestseller{background:var(--gold); color:#241c0f;}
+/* gallery thumbnails (bestsellers.js) */
+.bs-thumbs{display:flex; gap:6px; padding:10px 14px 0;}
+.bs-thumb{width:38px; height:38px; padding:0; border-radius:9px; overflow:hidden; background:none; cursor:pointer; opacity:.7; border:1px solid var(--card-border); transition:opacity .15s ease, border-color .15s ease;}
+.bs-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+.bs-thumb:hover, .bs-thumb:focus-visible, .bs-thumb.is-active{opacity:1; border-color:var(--gold);}
+.bs-thumb:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
 .badge-sale{background:var(--rose); color:#fff;}
 @keyframes badgeFlash{ 0%,100%{opacity:1;} 50%{opacity:0.45;} }
 .badge-lowstock{background:#e11d48; color:#fff; animation:badgeFlash 1.2s ease-in-out infinite;}
-/* Gallery thumbnails: one per image, a single scrollable row (swipe / drag / scroll on phones) */
-.gallery-thumbs{
-  position:relative; display:flex; flex-wrap:nowrap; gap:10px; margin-top:14px; padding:3px 2px;
-  overflow-x:auto; overflow-y:hidden; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch;
-  overscroll-behavior-x:contain; scrollbar-width:thin;
+.card-body{padding:16px 18px 18px; display:flex; flex-direction:column; flex:1;}
+.card-cat{font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); font-weight:600; margin-bottom:6px;}
+.card-title{font-family:'Playfair Display',serif; font-size:16px; font-weight:500; margin:0 0 6px; line-height:1.3; color:var(--text); transition:color .2s ease;}
+.card-title:hover{color:var(--gold);}
+.card-desc{
+  font-size:12.5px; color:var(--text-soft); line-height:1.55; margin:0 0 12px; flex-grow:1;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
 }
-.gallery-thumb{
-  flex:0 0 auto; scroll-snap-align:start; width:76px; height:76px; padding:0; border-radius:12px; overflow:hidden;
-  border:2px solid transparent; cursor:pointer; opacity:.65; background:var(--surface-tint);
-  transition:opacity .2s ease, border-color .2s ease, transform .2s ease;
+.card-price-row{display:flex; align-items:baseline; gap:8px; margin-bottom:14px;}
+.card-price-now{font-size:17px; font-weight:700; color:var(--gold);}
+.card-price-old{font-size:12.5px; opacity:0.5; text-decoration:line-through; color:var(--text-soft);}
+.card-add-btn{
+  width:100%; padding:11px; border-radius:100px; border:1px solid var(--gold);
+  background:transparent; color:var(--gold); font-size:12px; font-weight:700; letter-spacing:.03em;
+  transition:background .2s ease, color .2s ease;
 }
-.gallery-thumb img{width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; -webkit-user-drag:none;}
-.gallery-thumb:hover{opacity:1;}
-.gallery-thumb.active{opacity:1; border-color:var(--gold, #C89B54);}
-.gallery-thumb:focus-visible{outline:2px solid var(--gold, #C89B54); outline-offset:2px; opacity:1;}
-@media (max-width:719px){ .gallery-thumb{width:64px; height:64px;} }
+.card-add-btn:hover{background:var(--gold); color:#241c0f;}
 
-/* ---------------- PRODUCT INFO / BUY BOX ---------------- */
-.product-info{padding-top:4px;}
-.p-category{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint); font-weight:700; margin-bottom:10px;}
-.product-info h1{font-family:'Playfair Display',serif; font-size:clamp(28px,3.4vw,40px); font-weight:500; margin:0 0 8px; line-height:1.22;}
-.p-subtitle{font-size:14px; color:var(--text-soft); margin:0 0 12px; line-height:1.65; max-width:480px;}
 
-.p-rating-row{display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap;}
-.p-stars{color:var(--gold); font-size:15px; letter-spacing:1px;}
-.p-rating-score{font-size:13px; font-weight:700; color:var(--text);}
-.p-review-link{font-size:12.5px; color:var(--text-soft); text-decoration:underline; cursor:pointer; background:none; border:none; padding:0; font-family:inherit;}
-.p-review-link:hover{color:var(--gold);}
 
-.p-price-row{display:flex; align-items:baseline; gap:12px; margin-bottom:14px; flex-wrap:wrap;}
-.p-price-now{font-size:32px; font-weight:700; color:var(--gold); font-family:'Playfair Display',serif;}
-.p-price-old{font-size:16px; text-decoration:line-through; opacity:.5; color:var(--text-soft);}
-.p-save-badge{background:var(--rose); color:#fff; font-size:11px; font-weight:700; padding:5px 10px; border-radius:100px; letter-spacing:.02em;}
 
-/* Key Benefits card (right of the gallery) */
-.benefits-card{
-  position:relative; align-self:start; background:var(--card-bg); border:1px solid var(--card-border);
-  border-radius:20px; padding:22px 20px 8px; box-shadow:var(--shadow-ambient); backdrop-filter:blur(14px);
+
+
+
+
+.toolbar-end{display:flex; align-items:center; gap:14px; flex-wrap:wrap; justify-content:flex-end;}
+
+
+
+
+
+
+
+
+
+.no-results{
+  grid-column:1/-1; text-align:center; padding:70px 30px; color:var(--text-soft); font-size:14px;
 }
-.benefits-card::before{
-  content:""; position:absolute; left:20px; right:20px; top:0; height:2px; border-radius:0 0 2px 2px;
-  background:linear-gradient(90deg,var(--gold),transparent);
-}
-.benefits-title{display:flex; align-items:center; gap:8px; font-family:'Playfair Display',serif; font-size:17px; font-weight:500; margin:0 0 4px;}
-.benefits-title svg{width:15px; height:15px; fill:var(--gold); flex-shrink:0;}
-.benefit-bullets{list-style:none; margin:0; padding:0;}
-.benefit-bullets li{
-  display:flex; align-items:flex-start; gap:12px; padding:13px 0; font-size:13.5px; font-weight:600;
-  line-height:1.45; color:var(--text); border-bottom:1px solid var(--line);
-}
-.benefit-bullets li:last-child{border-bottom:none;}
-.benefit-check{
-  width:22px; height:22px; flex-shrink:0; margin-top:1px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  background:rgba(var(--gold-rgb),0.14); border:1px solid rgba(var(--gold-rgb),0.45);
-}
-.benefit-check svg{width:12px; height:12px; stroke:var(--gold); stroke-width:2.6; fill:none; stroke-linecap:round; stroke-linejoin:round;}
-
-/* Dispatch cutoff timer */
-.cutoff-bar{
-  display:flex; align-items:center; gap:10px; background:rgba(var(--gold-rgb),0.1);
-  border:1px solid rgba(var(--gold-rgb),0.35); border-radius:14px; padding:12px 16px;
-  margin-bottom:16px; font-size:12.5px; font-weight:600; color:var(--gold);
-}
-.cutoff-bar svg{width:16px;height:16px; flex-shrink:0;}
-.cutoff-bar .js-cutoff-timer{font-variant-numeric:tabular-nums; font-weight:700; margin-left:auto; white-space:nowrap;}
-
-
-.urgency-bar{
-  display:flex; align-items:center; gap:10px; background:rgba(225,29,72,0.08);
-  border:1px solid rgba(225,29,72,0.25); border-radius:14px; padding:12px 16px;
-  margin-bottom:20px; font-size:12.5px; font-weight:600; color:#e11d48;
-}
-.urgency-bar svg{width:16px;height:16px; flex-shrink:0;}
-.urgency-bar.instock{background:rgba(46,107,79,0.08); border-color:rgba(46,107,79,0.3); color:var(--success);}
-
-.qty-row{display:flex; align-items:center; gap:16px; margin-bottom:18px;}
-.qty-row-label{font-size:12px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--text-faint);}
-.qty-selector{display:flex; align-items:center; border:1px solid var(--line); border-radius:100px; overflow:hidden;}
-.qty-selector button{width:42px; height:42px; background:var(--card-bg); border:none; color:var(--text); font-size:16px;}
-.qty-selector button:hover{background:var(--line);}
-.qty-selector span{width:44px; text-align:center; font-weight:700; font-size:14px;}
-
-.p-cta-row{display:flex; gap:12px; margin-bottom:18px;}
-.btn-add-cart, .btn-buy-now{
-  flex:1; padding:16px; border-radius:100px; font-weight:700; font-size:13px; letter-spacing:.02em;
-  transition:background .2s ease, color .2s ease, filter .2s ease;
-}
-.btn-add-cart{border:1px solid var(--gold); background:transparent; color:var(--gold);}
-.btn-add-cart:hover{background:var(--gold); color:#241c0f;}
-.btn-buy-now{border:none; background:var(--gold); color:#241c0f;}
-.btn-buy-now:hover{filter:brightness(1.08);}
-
-/* Trust badges */
-.trust-badges{display:flex; flex-wrap:wrap; gap:10px;}
-.trust-badge{
-  display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--text-soft);
-  background:var(--surface-tint); border:1px solid var(--line); border-radius:100px; padding:7px 12px;
-}
-.trust-badge svg{width:14px;height:14px; stroke:var(--gold); fill:none; flex-shrink:0;}
-.footer-trust{margin:0 0 28px; justify-content:center;}
 
 
 
 
 
 
-
-/* ---------------- ACCORDION ---------------- */
-.accordion{margin-top:20px; border-top:1px solid var(--line); max-width:820px;}
-.accordion-item{border-bottom:1px solid var(--line);}
-.accordion-head{
-  width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px;
-  padding:20px 2px; background:none; border:none; color:var(--text); font-size:15.5px; font-weight:600;
-  font-family:'Playfair Display',serif; text-align:left;
-}
-.accordion-head svg{width:16px;height:16px; stroke:var(--text-soft); transition:transform .25s ease; flex-shrink:0;}
-.accordion-item.open .accordion-head svg{transform:rotate(45deg);}
-.accordion-item.open .accordion-head{color:var(--gold);}
-.accordion-panel{max-height:0; overflow:hidden; transition:max-height .35s ease;}
-.accordion-panel-inner{padding:0 2px 22px; font-size:13.5px; color:var(--text-soft); line-height:1.75;}
-.accordion-panel-inner ul, .accordion-panel-inner ol{margin:0; padding-left:20px;}
-.accordion-panel-inner li{margin-bottom:8px;}
-.accordion-panel-inner p{margin:0 0 12px;}
-.accordion-panel-inner p:last-child{margin-bottom:0;}
-
-/* ---------------- STICKY MOBILE CTA ---------------- */
-.mobile-cta-bar{
-  display:none; position:fixed; left:0; right:0; bottom:0; z-index:500;
-  background:var(--surface-raised); backdrop-filter:blur(20px); border-top:1px solid var(--card-border);
-  padding:12px clamp(16px,4vw,20px); align-items:center; justify-content:space-between; gap:14px;
-  transform:translateY(100%); transition:transform .3s ease;
-  box-shadow:0 -10px 30px -10px rgba(0,0,0,0.35);
-}
-@media (max-width:768px){ .mobile-cta-bar{display:flex;} }
-.mobile-cta-bar.show{transform:translateY(0);}
-.mcta-price{font-weight:700; font-size:17px; color:var(--gold); font-family:'Playfair Display',serif; white-space:nowrap;}
-.mcta-price small{display:block; font-size:10px; font-weight:500; color:var(--text-faint); font-family:'Montserrat',sans-serif;}
-.mcta-btn{flex:1; max-width:220px; padding:14px; border-radius:100px; border:none; background:var(--gold); color:#241c0f; font-weight:700; font-size:12.5px;}
-
-/* ---------------- REVIEWS SYSTEM ---------------- */
-.reviews-section{margin-top:56px; max-width:820px;}
-.reviews-heading{font-family:'Playfair Display',serif; font-size:24px; font-weight:500; margin:0 0 22px;}
-
-.review-stats{display:grid; grid-template-columns:auto 1fr; gap:32px; margin-bottom:32px; padding:24px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:18px;}
-@media (max-width:600px){ .review-stats{grid-template-columns:1fr;} }
-.rs-score-block{text-align:center; min-width:120px;}
-.rs-score{font-family:'Playfair Display',serif; font-size:44px; font-weight:600; color:var(--gold); line-height:1;}
-.rs-stars{color:var(--gold); font-size:16px; margin:8px 0 6px;}
-.rs-count{font-size:12px; color:var(--text-soft);}
-.rs-bars{display:flex; flex-direction:column; gap:7px; justify-content:center;}
-.rs-bar-row{display:flex; align-items:center; gap:10px; font-size:11.5px; color:var(--text-soft);}
-.rs-bar-row .rs-label{width:38px; flex-shrink:0;}
-.rs-bar-track{flex:1; height:7px; border-radius:100px; background:var(--line); overflow:hidden;}
-.rs-bar-fill{height:100%; background:var(--gold); border-radius:100px; transition:width .4s ease;}
-.rs-bar-row .rs-pct{width:34px; text-align:right; flex-shrink:0;}
-.rs-recommend{margin-top:14px; font-size:12.5px; color:var(--text-soft); grid-column:1/-1; border-top:1px solid var(--line); padding-top:14px;}
-.rs-recommend strong{color:var(--success);}
-
-.review-list{display:flex; flex-direction:column; gap:18px; margin-bottom:32px;}
-.review-card{background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; padding:20px;}
-.review-card-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; flex-wrap:wrap;}
-.review-author{font-weight:700; font-size:13.5px;}
-.review-stars{color:var(--gold); font-size:13px; letter-spacing:1px;}
-.review-date{font-size:11px; color:var(--text-faint);}
-.review-text{font-size:13.5px; color:var(--text-soft); line-height:1.65; margin:8px 0 0;}
-.review-photo{margin-top:12px; width:96px; height:96px; border-radius:12px; overflow:hidden; border:1px solid var(--card-border);}
-.review-photo img{width:100%; height:100%; object-fit:cover;}
-
-
-
-.review-empty{font-size:13px; color:var(--text-soft); padding:20px; text-align:center; background:var(--card-bg); border:1px dashed var(--card-border); border-radius:16px; margin-bottom:32px;}
-
-.review-form{background:var(--card-bg); border:1px solid var(--card-border); border-radius:18px; padding:26px;}
-.review-form h4{font-family:'Playfair Display',serif; font-size:17px; font-weight:500; margin:0 0 18px;}
-.rf-field{margin-bottom:16px;}
-.rf-field label{display:block; font-size:11px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--text-faint); margin-bottom:7px;}
-.rf-field input[type="text"], .rf-field textarea{
-  width:100%; padding:11px 14px; border-radius:10px; border:1px solid var(--line);
-  background:var(--surface-tint); color:var(--text); font-family:inherit; font-size:13px;
-}
-.rf-field textarea{resize:vertical; min-height:80px; line-height:1.5;}
-.rf-field input:focus, .rf-field textarea:focus{outline:none; border-color:var(--gold);}
-.rf-star-picker{display:flex; gap:6px; font-size:26px;}
-.rf-star-picker button{background:none; border:none; padding:0; color:var(--line); line-height:1; transition:color .15s ease, transform .1s ease;}
-.rf-star-picker button.filled{color:var(--gold);}
-.rf-star-picker button:hover{transform:scale(1.12);}
-.rf-photo-row{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
-.rf-photo-input-label{
-  display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:100px;
-  border:1px dashed var(--card-border); font-size:12px; font-weight:600; color:var(--text-soft); cursor:pointer;
-}
-.rf-photo-input-label:hover{border-color:var(--gold); color:var(--gold);}
-.rf-photo-input-label input{display:none;}
-.rf-photo-preview{width:60px; height:60px; border-radius:10px; overflow:hidden; border:1px solid var(--card-border); display:none;}
-.rf-photo-preview.show{display:block;}
-.rf-photo-preview img{width:100%; height:100%; object-fit:cover;}
-.rf-photo-remove{display:none; align-items:center; gap:5px; padding:6px 12px; border-radius:100px; border:1px solid var(--line); background:var(--card-bg); color:var(--text-soft); font-size:11.5px; font-weight:700; cursor:pointer;}
-.rf-photo-remove svg{width:12px; height:12px; stroke:currentColor; fill:none;}
-.rf-photo-remove:hover{color:#e11d48; border-color:rgba(225,29,72,.5);}
-.rf-photo-preview.show ~ .rf-photo-remove{display:inline-flex;}
-.rf-submit-btn{
-  margin-top:6px; padding:14px 26px; border-radius:100px; border:none; background:var(--gold); color:#241c0f;
-  font-weight:700; font-size:13px; letter-spacing:.02em;
-}
-.rf-submit-btn:hover{filter:brightness(1.08);}
-.rf-error{font-size:12px; color:var(--rose); margin:-6px 0 12px; display:none;}
-.rf-error.show{display:block;}
-
-/* ---------------- NOT FOUND ---------------- */
-.not-found{padding:110px 20px; text-align:center;}
-.not-found h1{font-family:'Playfair Display',serif; font-size:28px; margin-bottom:12px;}
-.not-found p{color:var(--text-soft); margin-bottom:20px;}
-.not-found a{color:var(--gold); text-decoration:underline;}
-#product-state{display:none;}
-body.pdp-pending #product-state, body.pdp-missing #product-state{display:block;}
-body.pdp-pending main > *:not(#product-state), body.pdp-missing main > *:not(#product-state){display:none;}
-body.pdp-pending #mobile-cta-bar, body.pdp-missing #mobile-cta-bar{display:none !important;}
-.pdp-spinner{width:34px; height:34px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--gold); margin:0 auto 18px; animation:pdpspin .8s linear infinite;}
-body.pdp-missing .pdp-spinner{display:none;}
-body.pdp-pending #product-state a{display:none;}
-@keyframes pdpspin{to{transform:rotate(360deg);}}
-
-main{padding-bottom:clamp(60px,8vw,90px);}
 
 /* ---------------- FOOTER ---------------- */
 footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20px;}
@@ -387,8 +257,16 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
 
 
 
+/* ---------------- TRUST BADGES ---------------- */
+.trust-badges{display:flex; flex-wrap:wrap; gap:10px; justify-content:center;}
+.trust-badge{
+  display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--text-soft);
+  background:var(--surface-tint); border:1px solid var(--line); border-radius:100px; padding:7px 12px;
+}
+.trust-badge svg{width:14px;height:14px; stroke:var(--gold); fill:none; flex-shrink:0;}
+.footer-trust{margin:0 0 28px;}
 
-/* ---------------- CART DRAWER ---------------- */
+/* ---------------- CART DRAWER (shared visual language + pointer-events fix) ---------------- */
 .cart-overlay{
   position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1900;
   opacity:0; visibility:hidden; pointer-events:none; transition:all 0.3s ease;
@@ -633,7 +511,7 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
 
 .toast{
   position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px);
-  background:var(--text); color:var(--canvas); padding:14px 24px; border-radius:100px; font-size:13px; font-weight:600;
+  background:var(--toast-bg); color:var(--toast-text); padding:14px 24px; border-radius:100px; font-size:13px; font-weight:600;
   z-index:3000; opacity:0; pointer-events:none; transition:all .3s ease; display:flex; align-items:center; gap:10px;
   box-shadow:0 20px 40px -12px rgba(0,0,0,0.5);
 }
@@ -662,12 +540,12 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
 }
 .modal-field{margin-bottom:14px;}
 .modal-field label{display:block; font-size:11px; font-weight:600; letter-spacing:.03em; text-transform:uppercase; color:var(--text-faint); margin-bottom:6px;}
-.modal-field input, .modal-field textarea{
+.modal-field input, .modal-field select, .modal-field textarea{
   width:100%; padding:11px 14px; border-radius:10px; border:1px solid var(--line);
   background:var(--surface-tint); color:var(--text); font-family:inherit; font-size:13px;
 }
-.modal-field textarea{resize:vertical; min-height:70px; line-height:1.5;}
-.modal-field input:focus, .modal-field textarea:focus{outline:none; border-color:var(--gold);}
+.modal-field textarea{resize:vertical; min-height:74px; line-height:1.5;}
+.modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus{outline:none; border-color:var(--gold);}
 .modal-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
 .modal-primary-btn{
   width:100%; padding:14px; border-radius:100px; border:none; background:var(--gold); color:#241c0f;
@@ -679,269 +557,55 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
 
 
 
-
-
-
-
-/* ---------------- LIVE VIEWING BADGE (real Firebase presence) ---------------- */
-.activity-pill{
-  display:none; align-items:center; gap:8px; background:var(--card-bg); border:1px solid var(--card-border);
-  backdrop-filter:blur(10px); border-radius:100px; padding:8px 16px; font-size:12px; font-weight:600;
-  color:var(--text-soft); margin-bottom:16px;
-}
-.activity-pill.show{display:inline-flex;}
-.activity-dot{width:7px; height:7px; border-radius:50%; background:var(--success); flex-shrink:0; position:relative;}
-.activity-dot::after{content:""; position:absolute; inset:-4px; border-radius:50%; border:1px solid var(--success); animation:activityPulse 1.8s ease-out infinite;}
-@keyframes activityPulse{ 0%{opacity:.8; transform:scale(0.6);} 100%{opacity:0; transform:scale(1.8);} }
-
-/* ---------------- DISABLED (sold out) CTAs ---------------- */
-.btn-add-cart:disabled, .btn-buy-now:disabled, .mcta-btn:disabled{opacity:.5; cursor:not-allowed;}
-.btn-add-cart:disabled:hover{background:transparent; color:var(--gold);}
-.btn-buy-now:disabled:hover{filter:none;}
-
-/* ---------------- EDIT MODAL EXTRAS ---------------- */
-.modal-card.wide{max-width:640px;}
-.modal-field select{
-  width:100%; padding:11px 14px; border-radius:10px; border:1px solid var(--line);
-  background:var(--surface-tint); color:var(--text); font-family:inherit; font-size:13px;
-}
-.modal-field select:focus{outline:none; border-color:var(--gold);}
-.modal-field .hint{font-size:11px; color:var(--text-faint); margin-top:5px; line-height:1.4;}
-.modal-group-title{
-  font-family:'Playfair Display',serif; font-size:14px; color:var(--gold); margin:20px 0 10px;
-  padding-top:14px; border-top:1px solid var(--line);
-}
-.modal-group-title:first-of-type{margin-top:4px; padding-top:0; border-top:none;}
-.modal-note{
-  font-size:12px; line-height:1.5; color:var(--text-soft); background:rgba(var(--gold-rgb),0.1);
-  border:1px solid rgba(var(--gold-rgb),0.35); border-radius:10px; padding:10px 12px; margin:0 0 16px; display:none;
-}
-
-/* ---------------- EDIT MODAL: 4 IMAGE ROWS ---------------- */
-.edit-img-row{display:flex; gap:12px; align-items:flex-start; margin-bottom:14px;}
-.edit-img-row .modal-field{flex:1; margin-bottom:0; min-width:0;}
-.edit-img-preview{
-  width:46px; height:46px; margin-top:22px; flex-shrink:0; border-radius:10px; overflow:hidden;
-  border:1px solid var(--line); background:var(--surface-tint);
-}
-.edit-img-preview img{width:100%; height:100%; object-fit:cover; display:none;}
-.edit-img-preview.has-img img{display:block;}
-
-/* ---------------- VECTOR ICONS (no OS emojis anywhere) ---------------- */
-.ico{width:1em; height:1em; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; vertical-align:-0.14em;}
-.btn-ico{display:inline-flex; align-items:center; justify-content:center; gap:7px;}
-.btn-ico .ico{width:14px; height:14px;}
-
-
-
-
-.cart-close-btn .ico, .modal-close-btn .ico{width:16px; height:16px; stroke-width:2.2;}
-
-.rf-photo-input-label .ico{width:15px; height:15px;}
-.ship-progress-text .ico{width:14px; height:14px; margin-right:5px;}
-
-/* Star ratings: outline row + gold filled row clipped to the exact percentage */
-.stars{position:relative; display:inline-block; line-height:0; white-space:nowrap; vertical-align:middle;}
-.stars-row{display:inline-flex; gap:2px;}
-.stars-row svg{width:1em; height:1em; display:block; flex-shrink:0; stroke-width:1.4; stroke-linejoin:round;}
-.stars-empty svg{fill:none; stroke:var(--gold); opacity:.55;}
-.stars-fill{position:absolute; left:0; top:0; height:100%; overflow:hidden;}
-.stars-fill .stars-row{flex-wrap:nowrap;}
-.stars-fill svg{fill:var(--gold); stroke:var(--gold);}
-.star-mini{width:11px; height:11px; fill:var(--gold); stroke:none; margin-left:3px; vertical-align:-1px;}
-.rf-star-picker button svg{width:28px; height:28px; display:block; fill:none; stroke:var(--text-faint); stroke-width:1.5; stroke-linejoin:round;}
-.rf-star-picker button.filled svg{fill:var(--gold); stroke:var(--gold);}
-.cutoff-bar svg, .urgency-bar svg{stroke:currentColor; fill:none;}
+.modal-close-btn svg{width:16px; height:16px; stroke:currentColor; fill:none;}
+.card-add-btn{display:flex; align-items:center; justify-content:center; gap:8px;}
+.card-add-btn svg{width:15px; height:15px; stroke:currentColor; fill:none;}
 </style>
 </head>
 <body>
 <script src="nav.js"></script>
 
-
 <main>
-  <div id="product-state" class="not-found" role="status" aria-live="polite">
-    <div class="pdp-spinner" aria-hidden="true"></div>
-    <h1 id="pdp-state-title">Loading product…</h1>
-    <p id="pdp-state-text"></p>
-    <a href="catalog.html">Browse the catalog</a>
-  </div>
-  <div class="container">
-    <div class="breadcrumb" id="breadcrumb">
-      <a href="index.html">Home</a><span class="sep">/</span><a href="catalog.html">Catalog</a><span class="sep">/</span><span class="current" id="breadcrumb-current">Product</span>
-    </div>
+  <div class="container page-head">
+    <h1>The full <em>collection</em></h1>
+    <p>Every NIKORA device in one place — search, filter by category or price, and sort to find your next ritual essential.</p>
   </div>
 
-  <div class="container">
-    <div class="product-hero" id="product-hero">
-      <!-- ============ GALLERY ============ -->
-      <div class="gallery-col">
-        <div class="gallery-main" id="gallery-main">
-          <div class="gallery-badges" id="gallery-badges"></div>
-          <img id="main-image" src="" alt="">
-          <span class="gallery-count" id="gallery-count" aria-live="polite" hidden></span>
+  <div class="container toolbar-wrap">
+    <div class="toolbar">
+      <div class="toolbar-row">
+        <div class="search-field">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="search-input" placeholder="Search devices...">
         </div>
-        <!-- one thumbnail per image, created by renderGallery(); hidden when the product has a single image -->
-        <div class="gallery-thumbs product-gallery-thumbs" id="gallery-thumbs" role="group" aria-label="Product images" style="display:none"></div>
+        <div class="price-filter">
+          <label for="price-range">Up to</label>
+          <input type="range" id="price-range" min="0" max="200" step="5" value="200">
+          <span id="price-filter-value">$200</span>
+        </div>
+        <select class="sort-select" id="sort-select">
+          <option value="featured">Featured</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="sale">On Sale (Discounts Only)</option>
+          <option value="bestsellers">Bestsellers</option>
+        </select>
       </div>
-
-      <!-- ============ KEY BENEFITS (directly right of the gallery) ============ -->
-      <aside class="benefits-card" aria-label="Key benefits">
-        <div class="benefits-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>Key Benefits</div>
-        <ul class="benefit-bullets" id="benefit-bullets"></ul>
-      </aside>
-
-      <!-- ============ INFO / BUY BOX ============ -->
-      <div class="product-info">
-        <div class="activity-pill" id="viewing-pill"><span class="activity-dot"></span><span id="viewing-text">1 person viewing this right now</span></div>
-        <div class="p-category" id="p-category">Category</div>
-        <h1 id="p-title">Product title</h1>
-        <p class="p-subtitle" id="p-subtitle">Subtitle line.</p>
-
-        <div class="p-rating-row" id="p-rating-row">
-          <span class="p-stars" id="p-stars"></span>
-          <span class="p-rating-score" id="p-rating-score">No ratings yet</span>
-          <button type="button" class="p-review-link" id="p-review-link">See reviews</button>
+      <div class="toolbar-row" style="justify-content:space-between;">
+        <div class="category-tabs" id="category-tabs"></div>
+        <div class="toolbar-end">
+          <div class="result-count" id="result-count"></div>
         </div>
-
-
-        <div class="p-price-row">
-          <span class="p-price-now" id="p-price-now">$0.00</span>
-          <span class="p-price-old" id="p-price-old"></span>
-          <span class="p-save-badge" id="p-save-badge" style="display:none;"></span>
-        </div>
-
-        <div class="cutoff-bar">
-          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"><circle cx="12" cy="13" r="7"/><path d="M12 10v3l2 2M9 3h6"/></svg>
-          <span>Processed in 1&ndash;3 business days &middot; Free Express delivery in 7&ndash;15 business days</span>
-        </div>
-
-        <div class="urgency-bar" id="urgency-bar">
-          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
-          <span id="urgency-text">In stock</span>
-        </div>
-
-        <div class="qty-row">
-          <span class="qty-row-label">Quantity</span>
-          <div class="qty-selector">
-            <button type="button" id="qty-dec" aria-label="Decrease quantity">−</button>
-            <span id="qty-value">1</span>
-            <button type="button" id="qty-inc" aria-label="Increase quantity">+</button>
-          </div>
-        </div>
-
-        <div class="p-cta-row" id="main-cta-row">
-          <button type="button" class="btn-add-cart" id="add-to-cart-btn">Add to Cart</button>
-          <button type="button" class="btn-buy-now" id="buy-now-btn">Buy Now</button>
-        </div>
-
-        <div class="trust-badges" id="product-trust-badges"></div>
-      </div>
-    </div>
-
-    <!-- sentinel: when this scrolls out of view, show the sticky mobile CTA -->
-    <div id="cta-sentinel" style="height:1px;"></div>
-
-    <!-- ============ ACCORDION ============ -->
-    <div class="accordion" id="accordion">
-      <div class="accordion-item open" data-panel="science">
-        <button type="button" class="accordion-head">
-          <span>Clinical Science &amp; How It Works</span>
-          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        </button>
-        <div class="accordion-panel">
-          <div class="accordion-panel-inner" id="panel-science"></div>
-        </div>
-      </div>
-      <div class="accordion-item" data-panel="howto">
-        <button type="button" class="accordion-head">
-          <span>How to Use</span>
-          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        </button>
-        <div class="accordion-panel">
-          <div class="accordion-panel-inner" id="panel-howto">
-            <ol>
-              <li>Cleanse skin thoroughly and pat dry before use.</li>
-              <li>Apply your favorite serum or a conductive gel for a smooth glide.</li>
-              <li>Glide the device in slow, upward, outward motions for 5–10 minutes.</li>
-              <li>Use 3–5 times per week for best results, and wipe the device clean after each use.</li>
-            </ol>
-          </div>
-        </div>
-      </div>
-      <div class="accordion-item" data-panel="shipping">
-        <button type="button" class="accordion-head">
-          <span>Shipping Details</span>
-          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        </button>
-        <div class="accordion-panel">
-          <div class="accordion-panel-inner" id="panel-shipping">
-            <p>Orders are processed in 1–3 business days (quality check, assembly and packaging), then ship FREE in 7–15 business days with real-time tracking.</p>
-            <p>Visible lifting results usually appear within 30–45 days of consistent daily use. Our 30-Day Money-Back Guarantee covers unopened and unused items in original packaging upon arrival.</p>
-            <p>Customers are responsible for return shipping costs for change-of-mind returns. Defective, damaged or lost orders are covered by a free reshipment or a full refund.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ============ REVIEWS SYSTEM ============ -->
-    <div class="reviews-section" id="reviews">
-      <h3 class="reviews-heading">Customer Reviews</h3>
-
-      <div class="review-stats" id="review-stats">
-        <div class="rs-score-block">
-          <div class="rs-score" id="rs-score">—</div>
-          <div class="rs-stars" id="rs-stars"></div>
-          <div class="rs-count" id="rs-count">0 reviews</div>
-        </div>
-        <div class="rs-bars" id="rs-bars"></div>
-        <div class="rs-recommend" id="rs-recommend"></div>
-      </div>
-
-      <div class="review-list" id="review-list"></div>
-
-      <div class="review-form">
-        <h4>Write a Review</h4>
-        <div class="rf-field">
-          <label for="rf-name">Name</label>
-          <input type="text" id="rf-name" placeholder="Your name">
-        </div>
-        <div class="rf-field">
-          <label>Your Rating</label>
-          <div class="rf-star-picker" id="rf-star-picker">
-            <button type="button" data-star="1" aria-label="1 star"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.94 5.96 6.58.96-4.76 4.64 1.12 6.55L12 17.52 6.12 20.6l1.12-6.55L2.48 9.42l6.58-.96L12 2.5z"/></svg></button>
-            <button type="button" data-star="2" aria-label="2 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.94 5.96 6.58.96-4.76 4.64 1.12 6.55L12 17.52 6.12 20.6l1.12-6.55L2.48 9.42l6.58-.96L12 2.5z"/></svg></button>
-            <button type="button" data-star="3" aria-label="3 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.94 5.96 6.58.96-4.76 4.64 1.12 6.55L12 17.52 6.12 20.6l1.12-6.55L2.48 9.42l6.58-.96L12 2.5z"/></svg></button>
-            <button type="button" data-star="4" aria-label="4 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.94 5.96 6.58.96-4.76 4.64 1.12 6.55L12 17.52 6.12 20.6l1.12-6.55L2.48 9.42l6.58-.96L12 2.5z"/></svg></button>
-            <button type="button" data-star="5" aria-label="5 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.94 5.96 6.58.96-4.76 4.64 1.12 6.55L12 17.52 6.12 20.6l1.12-6.55L2.48 9.42l6.58-.96L12 2.5z"/></svg></button>
-          </div>
-        </div>
-        <div class="rf-field">
-          <label for="rf-text">Your Review</label>
-          <textarea id="rf-text" rows="4" placeholder="Share how this worked for you..."></textarea>
-        </div>
-        <div class="rf-field">
-          <label>Add a Photo (optional)</label>
-          <div class="rf-photo-row">
-            <label class="rf-photo-input-label">
-              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>Upload Photo
-              <input type="file" id="rf-photo" accept="image/*">
-            </label>
-            <div class="rf-photo-preview" id="rf-photo-preview"><img id="rf-photo-preview-img" src="" alt="Preview"></div>
-            <button type="button" class="rf-photo-remove" id="rf-photo-remove"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Remove</button>
-          </div>
-        </div>
-        <div class="rf-error" id="rf-error">Please add your name, a star rating, and a short review.</div>
-        <button type="button" class="rf-submit-btn" id="rf-submit-btn">Submit Review</button>
       </div>
     </div>
   </div>
+
+  <section class="grid-section">
+    <div class="container">
+      <div class="product-grid" id="product-grid"></div>
+    </div>
+  </section>
 </main>
-
-<!-- ================= STICKY MOBILE CTA ================= -->
-<div class="mobile-cta-bar" id="mobile-cta-bar">
-  <span class="mcta-price"><small id="mcta-label">Total</small><span id="mcta-price">$0.00</span></span>
-  <button type="button" class="mcta-btn" id="mcta-add-btn">Add to Cart</button>
-</div>
 
 <footer class="site">
   <div class="container">
@@ -954,16 +618,19 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
       <div class="footer-col">
         <h5>Shop</h5>
         <a href="catalog.html">Full Catalog</a>
-        <a href="index.html#top">Bestsellers</a>
+        <a href="index.html#bestseller">Bestseller</a>
+        <a href="index.html#bundle-grid">Bundles</a>
       </div>
       <div class="footer-col">
         <h5>Support</h5>
-        <a href="index.html#track">Track Order</a>
-        <a href="index.html#guarantee">Guarantee</a>
+        <a href="returns.html">Returns</a>
+        <a href="faq.html">FAQ</a>
+        <a href="contacts.html">Contacts</a>
       </div>
       <div class="footer-col">
         <h5>Company</h5>
-        <a href="index.html#science">Science</a>
+        <a href="about.html">About</a>
+        <a href="routine-quiz.html">Routine Quiz</a>
         <p>hello@nikora.com</p>
       </div>
     </div>
@@ -978,6 +645,7 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
 </footer>
 
 <!-- ================= CART DRAWER ================= -->
+<!-- ================= CART DRAWER ================= -->
 <div class="cart-overlay" id="cart-overlay"></div>
 <div id="cart-drawer" aria-label="Shopping cart">
   <div class="cart-head">
@@ -985,7 +653,7 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
     <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="ship-progress-wrap">
-    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on every order (7&ndash;15 business days)</div>
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Add $50.00 more to unlock FREE Express Shipping</div>
     <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
   </div>
   <div class="cart-items" id="cart-items-list"></div>
@@ -1023,26 +691,19 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
 
 <!-- ================= EDIT PRODUCT MODAL ================= -->
 
+<!-- ================= ADD NEW PRODUCT MODAL ================= -->
+
+
 <div class="toast" id="toast"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span id="toast-text"></span></div>
+
 
 <script>
 /* ======================================================================
-   NIKORA — product.html
-   ------------------------------------------------------------------
-   STORAGE NOTES (index.html and catalog.html use two different, already
-   -existing product data conventions, so this page bridges both):
-   - 'nikora_products'         -> object keyed by product id, exactly as
-                                  index.html already reads/writes it.
-                                  Checked FIRST (product details
-                                  saved for each product id).
-   - 'nikora_catalog_products' -> the array catalog.html uses (numeric
-                                  ids 1-11). Catalog cards link here as
-                                  product.html?id=<n>, so this is checked
-                                  SECOND to make those links resolve.
-   - RICH_DEFAULT_PRODUCT      -> a fully-populated fallback used only
-                                  when an id is missing or matches
-                                  neither store.
-   - 'nikora_reviews_<id>'     -> one review array per product, per spec.
+   NIKORA — catalog.html
+   Visual system, safeStorage wrapper, and cart mechanics are built to
+   match index.html: same safeStorage.getItem/setItem naming, same
+   array-based nikora_cart shape ({id,title,price,qty}), same
+   pointer-events overlay fix, same window-bound handler pattern.
    ====================================================================== */
 
 var safeStorage = {
@@ -1056,7 +717,12 @@ var safeStorage = {
   }
 };
 
-/* ================= 1. PRODUCT DATA RESOLUTION ================= */
+/* ================= 1. PRODUCT CATALOG DATA =================
+   Stored under 'nikora_catalog_products' — a distinct key from
+   index.html's 'nikora_products' (which holds a small override object
+   for its 4 featured cards, keyed by string ids like "wand"). This
+   catalog is a separate 11-item numeric-id array, so sharing the same
+   key would corrupt one system or the other; this keeps both correct. */
 var DEFAULT_CATALOG = [
   { id:1, name:"NIKORA RED Light & EMS Facial Wand 4-in-1", category:"Facial Wand", price:34.99, oldPrice:49.99, bestseller:true, desc:"Microcurrent, red light therapy, therapeutic warmth, and facial massage for youthful glow.", img:"https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600" },
   { id:2, name:"3D EMS Gua Sha Sculptor", category:"Sculptors", price:24.99, oldPrice:34.99, bestseller:true, desc:"Advanced ergonomic electric Gua Sha with heat and microcurrent for facial contouring.", img:"https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=600" },
@@ -1071,41 +737,58 @@ var DEFAULT_CATALOG = [
   { id:11, name:"NIKORA Ultimate Glow Ritual Set (Full Gadget Bundle)", category:"Bundles & Sets", price:149.99, oldPrice:219.99, bestseller:true, lowStock:true, desc:"Complete beauty gadget set: Facial Wand, LED Mask, Gua Sha Sculptor, and Sonic Eye Massager.", img:"https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600" }
 ];
 
-var RICH_DEFAULT_PRODUCT = {
-  id: "demo-001",
-  name: "NIKORA RED Light & EMS Facial Wand 4-in-1",
-  subtitle: "Clinically-inspired 4-in-1 facial technology for a visible lift in weeks, not months.",
-  category: "Facial Wand",
-  price: 34.99,
-  oldPrice: 49.99,
-  bestseller: true,
-  stockCount: 12,
-  bullets: [
-    "Visibly firms skin in 14 days",
-    "Dermatologist tested & FDA cleared",
-    "Wireless with 30-day battery life",
-    "Waterproof for in-shower use"
-  ],
-  img: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600",
-  desc: "Microcurrent, red light therapy, therapeutic warmth, and facial massage combine in one wand for a smart, five-minute daily ritual."
+function getCatalogProducts(){
+  var stored = safeStorage.getItem('nikora_catalog_products');
+  if(!stored){
+    safeStorage.setItem('nikora_catalog_products', JSON.stringify(DEFAULT_CATALOG));
+    return DEFAULT_CATALOG.slice();
+  }
+  try{
+    var parsed = JSON.parse(stored);
+    return Array.isArray(parsed) && parsed.length ? parsed : DEFAULT_CATALOG.slice();
+  }catch(e){
+    return DEFAULT_CATALOG.slice();
+  }
+}
+
+var ALL_PRODUCTS = getCatalogProducts();
+var CATEGORIES = ["All Devices", "Bestsellers", "Facial Wand", "Sculptors", "Cleansing", "LED Therapy", "Body Care", "Bundles & Sets"];
+
+/* Safety net: bestsellers.js (loaded at the end of <body>) replaces this stub. If that file is ever missing, the catalog keeps working without bestseller data. */
+if(!window.NKBestsellers){
+  window.NKBestsellers = {
+    load: function(){ return Promise.resolve([]); },
+    apply: function(l){ return l; },
+    compare: function(a,b){ return Number(a.id) - Number(b.id); },
+    badges: function(p){ return p.bestseller ? ['BESTSELLER'] : []; },
+    imagesOf: function(p){ return p.img ? [p.img] : []; },
+    thumbsHtml: function(){ return ''; },
+    bindGallery: function(){}
+  };
+}
+
+var state = {
+  search: "",
+  category: "All Devices",
+  maxPrice: 200,
+  sort: "featured"
 };
 
-function getProductsStore(){
-  try{ return JSON.parse(safeStorage.getItem('nikora_products') || '{}'); }
-  catch(e){ return {}; }
+
+function saveCatalogProducts(list){
+  safeStorage.setItem('nikora_catalog_products', JSON.stringify(list));
 }
-function saveProductsStore(store){ safeStorage.setItem('nikora_products', JSON.stringify(store)); }
 
 /* ================= FIREBASE REALTIME SYNC =================
-   '/products' is the same root path catalog.html and index.html use.
-   This page only needs the single entry at '/products/<id>', so it
-   seeds the whole node (once, if totally empty) using the numeric
-   DEFAULT_CATALOG, then listens to just its own id for live updates —
-   e.g. a product update made in the catalog shows up here immediately.
-   '/reviews/<PRODUCT_ID>' holds this product's reviews as Firebase
-   push-keyed children (photos included as base64 strings). Both local
-   'nikora_products' / 'nikora_reviews_<id>' caches are kept in sync so
-   the page still works fully offline or if Firebase fails to load. */
+   Root path '/products' is shared across catalog.html / product.html /
+   index.html. Entries here use THIS page's schema
+   ({id,name,category,price,oldPrice,bestseller,lowStock,desc,img,...}),
+   keyed by numeric id as a string ("1".."11", "12" for new items). This
+   never collides with index.html's homepage-card overrides, which live
+   under different, non-numeric keys (e.g. "wand") in the same object.
+   Firebase is the source of truth when reachable; 'nikora_catalog_products'
+   remains a local cache so the page still works fully offline or if
+   Firebase fails to load. */
 var firebaseConfig = {
   apiKey: "AIzaSyCCHdCGRQCiKdeHRkC4e6bnvrMwUIq80TY",
   authDomain: "nikora-store.firebaseapp.com",
@@ -1128,731 +811,80 @@ try{
   console.warn('Firebase unavailable — continuing on local data only.', e);
   firebaseReady = false;
 }
+
 function productsObjectFromArray(list){
   var obj = {};
   list.forEach(function(p){ obj[String(p.id)] = p; });
   return obj;
 }
-/* Writes the product to /products/<PRODUCT_ID> and resolves with {ok, reason}.
-   The object is JSON-cleaned first because Realtime Database throws on
-   `undefined` values. */
-function pushProductToFirebase(product){
-  if(!firebaseReady) return Promise.resolve({ ok:false, reason:'unavailable' });
-  try{
-    var clean = JSON.parse(JSON.stringify(product));
-    return db.ref('products/' + PRODUCT_ID).set(clean)
-      .then(function(){ return { ok:true }; })
-      .catch(function(err){ console.warn('Firebase write failed', err); return { ok:false, reason:(err && err.message) || 'unknown error' }; });
-  }catch(e){
-    console.warn('Firebase write failed', e);
-    return Promise.resolve({ ok:false, reason:e.message });
-  }
+function productsArrayFromFirebaseObject(obj){
+  var arr = [];
+  Object.keys(obj || {}).forEach(function(key){
+    var p = obj[key];
+    if(p && p.name){ /* schema-tolerant: skip index.html's slug-keyed overrides, which use `title` not `name` */
+      if(p.id == null) p.id = isNaN(Number(key)) ? key : Number(key);
+      arr.push(p);
+    }
+  });
+  arr.sort(function(a,b){ return Number(a.id) - Number(b.id); });
+  return arr;
 }
-/* Loading / not-found states shown instead of the product layout while an unknown id is being fetched. */
-function setProductState(mode, title, text){
-  var b = document.body;
-  b.classList.toggle('pdp-pending', mode === 'loading');
-  b.classList.toggle('pdp-missing', mode === 'missing');
-  if(!mode) return;
-  var t = document.getElementById('pdp-state-title'), p = document.getElementById('pdp-state-text');
-  if(t) t.textContent = title || ''; if(p) p.textContent = text || '';
-  document.title = (mode === 'loading' ? 'Loading' : 'Product not found') + ' \u2014 NIKORA';
-}
-function initFirebaseProductSync(){
-  if(ID_INVALID){ setProductState('missing', 'Product not found', 'That product link isn\u2019t valid. Browse the catalog to find what you\u2019re looking for.'); return; }
-  if(!firebaseReady){
-    if(PRODUCT_PENDING) setProductState('missing', 'Product unavailable', 'We couldn\u2019t reach the store right now. Please check your connection and try again.');
-    return;
-  }
 
-  /* seed the catalog once, only if '/products' is completely empty (cheap one-record check) */
-  var seedRef = db.ref('products');
-  if(typeof seedRef.limitToFirst === 'function') seedRef = seedRef.limitToFirst(1);
-  seedRef.once('value').then(function(snap){
+function initFirebaseProductsSync(){
+  if(!firebaseReady) return;
+  db.ref('products').once('value').then(function(snap){
     if(!snap.exists()){
       db.ref('products').set(productsObjectFromArray(DEFAULT_CATALOG))
         .catch(function(err){ console.warn('Firebase seed failed', err); });
     }
   }).catch(function(err){ console.warn('Firebase initial read failed', err); });
 
-  var slow = PRODUCT_PENDING ? setTimeout(function(){
-    if(PRODUCT_PENDING) setProductState('missing', 'Still can\u2019t load this product', 'The store is taking longer than expected to respond. Please try again in a moment.');
-  }, 10000) : null;
-
-  /* live listener on exactly this product: /products/<id> */
-  db.ref('products/' + PRODUCT_ID).on('value', function(snap){
+  db.ref('products').on('value', function(snap){
     var data = snap.val();
-    if(!data){
-      if(PRODUCT_PENDING){ clearTimeout(slow); setProductState('missing', 'Product not found', 'We couldn\u2019t find that product - it may have been removed. Browse the catalog to see what\u2019s available.'); }
-      return;
+    var arr = productsArrayFromFirebaseObject(data);
+    if(arr.length){
+      ALL_PRODUCTS = NKBestsellers.apply(arr);   // lib/products.js ranks, prices and galleries win over stale Firebase flags
+      saveCatalogProducts(ALL_PRODUCTS); // keep the offline cache current too
+      renderCategoryTabs();
+      renderGrid();
+      renderCart();
     }
-    clearTimeout(slow);
-    PRODUCT_PENDING = false;
-    if(data.id == null) data.id = PRODUCT_ID;
-    CURRENT_PRODUCT = data;
-    setProductState(null);
-    var store = getProductsStore();
-    store[PRODUCT_ID] = data;
-    saveProductsStore(store); // keep the offline cache current too
-    renderProduct();
-    renderCart();
   }, function(err){
-    console.warn('Firebase live product sync error \u2014 staying on local data.', err);
-    if(PRODUCT_PENDING){ clearTimeout(slow); setProductState('missing', 'Product unavailable', 'We couldn\u2019t load this product. Please try again shortly.'); }
+    console.warn('Firebase live sync error — staying on local data.', err);
   });
 }
 
-var urlParams = new URLSearchParams(window.location.search);
-var requestedId = urlParams.get('id');
-var USING_RICH_DEFAULT = false;
-
-function resolveProduct(id){
-  var store = getProductsStore();
-  if(id != null && store[id]) return store[id];
-  if(id != null){
-    for(var i=0;i<DEFAULT_CATALOG.length;i++){ if(String(DEFAULT_CATALOG[i].id) === String(id)) return DEFAULT_CATALOG[i]; }
-  }
-  return null;
+function pushProductToFirebase(product){
+  if(!firebaseReady) return;
+  try{ db.ref('products/' + product.id).set(product); }
+  catch(e){ console.warn('Firebase write failed', e); }
+}
+function removeProductFromFirebase(id){
+  if(!firebaseReady) return;
+  try{ db.ref('products/' + id).remove(); }
+  catch(e){ console.warn('Firebase delete failed', e); }
 }
 
-/* Firebase keys can't contain . # $ [ ] / - such an id can never be a real product. */
-var ID_INVALID = !!requestedId && /[.#$\[\]\/]/.test(requestedId);
-var PRODUCT_PENDING = false;      /* an id was requested but isn't cached locally: fetch it from Firebase */
-var CURRENT_PRODUCT = ID_INVALID ? null : resolveProduct(requestedId);
-if(!CURRENT_PRODUCT){
-  if(requestedId){
-    PRODUCT_PENDING = true;
-    CURRENT_PRODUCT = { id: ID_INVALID ? '_invalid' : String(requestedId), name: 'Loading\u2026', category: '', price: 0, desc: '' };
-  } else {                         /* no ?id= at all: show the demo product */
-    CURRENT_PRODUCT = getProductsStore()[RICH_DEFAULT_PRODUCT.id] || RICH_DEFAULT_PRODUCT;
-    USING_RICH_DEFAULT = true;
-  }
-}
-var PRODUCT_ID = String(CURRENT_PRODUCT.id);
 
-/* ================= 2. SYNTHESIZED DEFAULTS FOR OPTIONAL FIELDS =================
-   Real catalog products don't carry subtitle/bullets/stockCount — sensible
-   category-based defaults are used until saved product data overrides them. */
-var SUBTITLE_MAP = {
-  "Facial Wand": "Multi-therapy facial sculpting for a visible glow in minutes a day.",
-  "Sculptors": "Contouring technology engineered for sharper, lifted definition.",
-  "Cleansing": "Deep-clean technology that preps skin for everything after it.",
-  "LED Therapy": "Clinical-grade light therapy, reimagined for your bathroom counter.",
-  "Body Care": "Targeted body technology for firmer, smoother results.",
-  "Eye Care": "Gentle, targeted relief for tired eyes and fine lines.",
-  "Cooling Therapy": "Instant cooling relief for redness, puffiness, and stress.",
-  "Anti-Aging": "Advanced anti-aging technology for visibly younger skin.",
-  "Bundles & Sets": "The complete ritual — everything you need in one set."
-};
-var BULLETS_FIRST_MAP = {
-  "Facial Wand": "Visibly lifts and firms skin in 14 days",
-  "Sculptors": "Sharper contour after just 2 weeks of use",
-  "Cleansing": "Removes 99% more impurities than hands alone",
-  "LED Therapy": "Visibly reduces breakouts in 14 days",
-  "Body Care": "Firms and tones targeted areas in 3 weeks",
-  "Eye Care": "Reduces puffiness in under 60 seconds",
-  "Cooling Therapy": "Calms redness and puffiness instantly",
-  "Anti-Aging": "Visibly softens fine lines in 21 days",
-  "Bundles & Sets": "A complete routine, visible results in 14 days"
-};
-function getSubtitle(p){ return p.subtitle || SUBTITLE_MAP[p.category] || "Smart beauty technology for a ritual that fits real mornings."; }
-function getBullets(p){
-  if(Array.isArray(p.bullets) && p.bullets.length) return p.bullets;
-  return [
-    BULLETS_FIRST_MAP[p.category] || "Visible results with consistent use",
-    "Dermatologist tested & cruelty-free",
-    "Rechargeable with 30-day battery life",
-    "Waterproof, travel-ready design"
-  ];
-}
-function seededStock(id){
-  var n = Number(String(id).replace(/\D/g,'')) || 1;
-  return 3 + (n * 11) % 9;
-}
-function getStock(p){ return (p.stockCount != null) ? Number(p.stockCount) : seededStock(p.id); }
-var FALLBACK_IMG = 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900';
-/* Image list for a product, in this order of preference:
-   1. images[] stored on the product itself, only when it has 2+ photos  2. the 4 default images[] from lib/products.js (served by /api/catalog, via bestsellers.js), used whenever the override is missing or has a single photo
-   3. a single image / img string (one image, no thumbnail strip)  4. FALLBACK_IMG.
-   Empty and duplicate entries are dropped. images[0] is always the hero. */
-function getImages(p){
-  var B = window.NKBestsellers, srv = (B && B.get) ? B.get(p.id) : null, list = [];
-  var own = (B && B.ownImages) ? B.ownImages(p) : (Array.isArray(p.images) && p.images.length > 1 ? p.images : null);
-  if(own) list = own;                                                            /* own gallery (Firebase / local override / admin panel) with 2+ photos: any length */
-  else if(srv && Array.isArray(srv.images) && srv.images.length) list = srv.images;   /* missing or 1-photo override: the 4 default images from lib/products.js */
-  else if(p.img || p.image) list = [p.img || p.image];                           /* product not in lib/products.js: its single photo */
-  else if(B && B.ownImages && B.ownImages(p, 1)) list = B.ownImages(p, 1);
-  var seen = {}, out = [];
-  list.forEach(function(u){
-    if(typeof u !== 'string') return;
-    u = u.trim();
-    if(u && !seen[u]){ seen[u] = true; out.push(u); }
-  });
-  return out.length ? out : [FALLBACK_IMG];
-}
-function isLowStock(p){
-  if(p.stockStatus === 'low') return true;
-  if(p.stockStatus === 'in') return false;
-  return !!p.lowStock || getStock(p) <= 6;
-}
-function isSoldOut(p){ return p.stockStatus !== 'in' && getStock(p) <= 0; }
-var DEFAULT_HOWTO = [
-  'Cleanse skin thoroughly and pat dry before use.',
-  'Apply your favorite serum or a conductive gel for a smooth glide.',
-  'Glide the device in slow, upward, outward motions for 5–10 minutes.',
-  'Use 3–5 times per week for best results, and wipe the device clean after each use.'
-];
-var DEFAULT_SHIPPING = [
-  'Orders are processed in 1–3 business days (quality check, assembly and packaging), then ship FREE in 7–15 business days with real-time tracking.',
-  'Visible lifting results usually appear within 30–45 days of consistent daily use. Our 30-Day Money-Back Guarantee covers unopened and unused items in original packaging upon arrival.',
-  'Customers are responsible for return shipping costs for change-of-mind returns. Defective, damaged or lost orders are covered by a free reshipment or a full refund.'
-];
-function getHowTo(p){ return (Array.isArray(p.howto) && p.howto.length) ? p.howto : DEFAULT_HOWTO; }
-function getShipping(p){ return (Array.isArray(p.shipping) && p.shipping.length) ? p.shipping : DEFAULT_SHIPPING; }
-function benefitsPanelHtml(p){
-  var descLines = (p.desc || '').split(/\r?\n/).map(function(s){ return s.trim(); }).filter(Boolean);
-  if(descLines.length > 1){
-    return descLines.map(function(l){ return '<p>' + escapeHtml(l) + '</p>'; }).join('');
-  }
-  var parts = (p.desc || '').split(/,| and /i).map(function(s){ return s.trim(); }).filter(Boolean);
-  var html = '<p>' + escapeHtml(p.desc || '') + '</p><ul>';
-  for(var i=0;i<parts.length;i++){
-    html += '<li>' + escapeHtml(parts[i].charAt(0).toUpperCase() + parts[i].slice(1)) + '</li>';
-  }
-  html += '</ul>';
-  return html;
-}
-/* ---- inline vector icons + helpers (no OS emojis anywhere on the page) ---- */
-var ICON_ATTR = 'class="ico" viewBox="0 0 24 24" aria-hidden="true"';
-var ICON_TRUCK = '<svg ' + ICON_ATTR + '><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>';
-var ICON_CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-var ICON_PLUS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
-var STAR_PATH = 'M12 2.5l2.94 5.96 6.58.96-4.76 4.64 1.12 6.55L12 17.52 6.12 20.6l1.12-6.55L2.48 9.42l6.58-.96L12 2.5z';
-function starSvg(cls){ return '<svg' + (cls ? ' class="' + cls + '"' : '') + ' viewBox="0 0 24 24" aria-hidden="true"><path d="' + STAR_PATH + '"/></svg>'; }
 
-/* Renders a 0-5 rating as inline SVG stars; fractional values fill partially (4.3 -> 86%). */
-function starsHtml(value){
-  var v = Math.max(0, Math.min(5, Number(value) || 0));
-  var row = '';
-  for(var i=0;i<5;i++) row += starSvg();
-  return '<span class="stars" role="img" aria-label="' + v.toFixed(1) + ' out of 5 stars">' +
-    '<span class="stars-row stars-empty">' + row + '</span>' +
-    '<span class="stars-fill" style="width:' + (v / 5 * 100) + '%"><span class="stars-row">' + row + '</span></span></span>';
-}
 
-/* Bullets are shown next to a vector check icon, so any leading emoji (in
-   older saved data or newly typed) is removed rather than rendered. */
-function stripEmoji(str){
-  return String(str == null ? '' : str)
-    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2300}-\u{23FF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{20E3}]/gu, '')
-    .replace(/\s{2,}/g, ' ').trim();
-}
+
+
+
+
+
+
+
+
 
 function escapeHtml(str){
   var div = document.createElement('div');
   div.textContent = str == null ? '' : str;
   return div.innerHTML;
 }
-function escapeAttr(str){
-  return String(str == null ? '' : str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-/* ================= 3. RENDER PRODUCT ================= */
-var currentQty = 1;
-var galleryImages = [];
-var galleryIndex = 0;
-var galleryToken = 0;   /* bumps on every image change so a slow image can never overwrite a newer click */
-
-function renderProduct(){
-  /* lib/products.js (via /api/catalog) is the source of truth for name, price, was-price, description, images and bestseller rank. */
-  if(!PRODUCT_PENDING && window.NKBestsellers && window.NKBestsellers.overlayOne){ CURRENT_PRODUCT = window.NKBestsellers.overlayOne(CURRENT_PRODUCT); }
-  var p = CURRENT_PRODUCT;
-
-  document.title = p.name + ' — NIKORA';
-  document.getElementById('breadcrumb-current').textContent = p.name;
-  document.getElementById('p-category').textContent = p.category || '';
-  document.getElementById('p-title').textContent = p.name;
-  document.getElementById('p-subtitle').textContent = getSubtitle(p);
-
-  var hasDiscount = p.oldPrice && p.oldPrice > p.price;
-  document.getElementById('p-price-now').textContent = '$' + Number(p.price).toFixed(2);
-  var oldEl = document.getElementById('p-price-old');
-  var saveEl = document.getElementById('p-save-badge');
-  if(hasDiscount){
-    oldEl.textContent = '$' + Number(p.oldPrice).toFixed(2);
-    saveEl.textContent = 'SAVE $' + (p.oldPrice - p.price).toFixed(2);
-    saveEl.style.display = 'inline-block';
-  } else {
-    oldEl.textContent = '';
-    saveEl.style.display = 'none';
-  }
-
-  var stockCount = getStock(p);
-  var soldOut = isSoldOut(p);
-  var lowStock = isLowStock(p);
-
-  var badgesHtml = '';
-  if(window.NKBestsellers){
-    window.NKBestsellers.badges(p).forEach(function(t){ badgesHtml += '<span class="badge-bestseller">' + escapeHtml(t) + '</span>'; });
-  } else if(p.bestseller){
-    badgesHtml += '<span class="badge-bestseller">Bestseller</span>';
-  }
-  if(hasDiscount) badgesHtml += '<span class="badge-sale">Sale</span>';
-  if(soldOut) badgesHtml += '<span class="badge-sale">Sold Out</span>';
-  else if(lowStock) badgesHtml += '<span class="badge-lowstock">Low Stock</span>';
-  document.getElementById('gallery-badges').innerHTML = badgesHtml;
-
-  var bullets = getBullets(p).map(stripEmoji).filter(Boolean);
-  document.getElementById('benefit-bullets').innerHTML = bullets.map(function(b){
-    return '<li><span class="benefit-check">' + ICON_CHECK + '</span><span>' + escapeHtml(b) + '</span></li>';
-  }).join('');
-
-  var urgencyBar = document.getElementById('urgency-bar');
-  var urgencyText = document.getElementById('urgency-text');
-  if(soldOut){
-    urgencyBar.classList.remove('instock');
-    urgencyText.textContent = 'Currently sold out.';
-  } else if(lowStock){
-    urgencyBar.classList.remove('instock');
-    urgencyText.textContent = 'Only ' + stockCount + ' left in stock — order soon!';
-  } else {
-    urgencyBar.classList.add('instock');
-    urgencyText.textContent = 'In stock (' + stockCount + ' available), processed in 1–3 business days.';
-  }
-
-  document.getElementById('panel-science').innerHTML = benefitsPanelHtml(p);
-  document.getElementById('panel-howto').innerHTML = '<ol>' + getHowTo(p).map(function(t){ return '<li>' + escapeHtml(t) + '</li>'; }).join('') + '</ol>';
-  document.getElementById('panel-shipping').innerHTML = getShipping(p).map(function(t){ return '<p>' + escapeHtml(t) + '</p>'; }).join('');
-
-  var ctaLabel = soldOut ? 'Sold Out' : 'Add to Cart';
-  ['add-to-cart-btn', 'mcta-add-btn'].forEach(function(id){
-    var btn = document.getElementById(id);
-    btn.disabled = soldOut;
-    btn.textContent = ctaLabel;
-  });
-  document.getElementById('buy-now-btn').disabled = soldOut;
-
-  renderGallery();
-
-  document.getElementById('mcta-price').textContent = '$' + Number(p.price).toFixed(2);
-
-  updateQtyDisplay();
-  refreshAccordionHeights();
-}
-
-/* Open accordion panels use a fixed max-height for the slide animation, so
-   it has to be recomputed whenever their content changes (e.g. after an edit). */
-function refreshAccordionHeights(){
-  document.querySelectorAll('.accordion-item.open .accordion-panel').forEach(function(panel){
-    panel.style.maxHeight = panel.scrollHeight + 'px';
-  });
-}
-
-/* ================= 4. GALLERY (dynamic: every image in images[] gets its own thumbnail) ================= */
-function galleryThumbSrc(src){
-  var B = window.NKBestsellers;
-  return (B && B.thumbUrl) ? B.thumbUrl(src, 160) : src;
-}
-
-/* Builds the hero + thumbnail strip from getImages(). Safe to call often: when the image list is unchanged
-   (e.g. a live Firebase refresh) it leaves the shopper's current selection alone. */
-function renderGallery(){
-  if(PRODUCT_PENDING) return;                               /* still loading: don't flash a placeholder photo */
-  var p = CURRENT_PRODUCT, mainImg = document.getElementById('main-image');
-  var imgs = getImages(p);
-  mainImg.alt = p.name || '';
-  var same = imgs.length === galleryImages.length && imgs.every(function(u, i){ return u === galleryImages[i]; });
-  if(same && mainImg.getAttribute('src')){ updateGalleryUi(); return; }
-  galleryImages = imgs;
-  galleryIndex = 0;
-  galleryToken++;
-  mainImg.classList.remove('is-fading');
-  mainImg.src = imgs[0];
-  renderGalleryThumbs();
-  updateGalleryUi();
-}
-
-function renderGalleryThumbs(){
-  var wrap = document.getElementById('gallery-thumbs');
-  var n = galleryImages.length;
-  wrap.style.display = n > 1 ? 'flex' : 'none';             /* single image: no empty thumbnail slots */
-  wrap.innerHTML = n > 1 ? galleryImages.map(function(src, i){
-    return '<button type="button" class="gallery-thumb thumb-btn' + (i === galleryIndex ? ' active' : '') + '" data-idx="' + i + '" data-src="' + escapeAttr(src) + '"' +
-      ' aria-label="View image ' + (i + 1) + ' of ' + n + '" aria-pressed="' + (i === galleryIndex ? 'true' : 'false') + '">' +
-      '<img src="' + escapeAttr(galleryThumbSrc(src)) + '" alt="" loading="lazy" draggable="false"></button>';
-  }).join('') : '';
-}
-
-/* Active thumbnail (gold border), "2 / 4" counter, alt text, and the active thumbnail scrolled into view inside the strip. */
-function updateGalleryUi(){
-  var n = galleryImages.length, wrap = document.getElementById('gallery-thumbs');
-  var thumbs = wrap.querySelectorAll('.gallery-thumb');
-  for(var i = 0; i < thumbs.length; i++){
-    var on = i === galleryIndex;
-    thumbs[i].classList.toggle('active', on);
-    thumbs[i].setAttribute('aria-pressed', on ? 'true' : 'false');
-  }
-  var count = document.getElementById('gallery-count');
-  count.hidden = n < 2;
-  count.textContent = (galleryIndex + 1) + ' / ' + n;
-  var name = (CURRENT_PRODUCT && CURRENT_PRODUCT.name) || '';
-  document.getElementById('main-image').alt = n > 1 ? name + ' (image ' + (galleryIndex + 1) + ' of ' + n + ')' : name;
-  var active = thumbs[galleryIndex];
-  if(active && wrap.scrollWidth > wrap.clientWidth){
-    var left = active.offsetLeft - (wrap.clientWidth - active.offsetWidth) / 2;
-    if(wrap.scrollTo) wrap.scrollTo({ left: left, behavior: 'smooth' }); else wrap.scrollLeft = left;
-  }
-}
-
-/* Switch the hero to image `idx`: the src changes immediately, and the new image fades in as soon as it has loaded. */
-function showGalleryImage(idx){
-  var n = galleryImages.length;
-  if(idx < 0 || idx >= n) return;
-  galleryIndex = idx;
-  updateGalleryUi();
-  var mainImg = document.getElementById('main-image'), src = galleryImages[idx];
-  if(mainImg.getAttribute('src') === src){ mainImg.classList.remove('is-fading'); return; }
-  var token = ++galleryToken;
-  function done(){ if(token === galleryToken) mainImg.classList.remove('is-fading'); }
-  mainImg.classList.add('is-fading');
-  mainImg.onload = mainImg.onerror = done;
-  mainImg.setAttribute('src', src);
-  setTimeout(done, 600);                                    /* safety: never leave the hero dimmed */
-}
-
-/* An image URL that fails to load is removed, so there is never a broken thumbnail or a blank hero. */
-function dropBrokenImage(src){
-  var at = galleryImages.indexOf(src);
-  if(at === -1 || galleryImages.length <= 1) return;
-  var wasCurrent = at === galleryIndex;
-  galleryImages.splice(at, 1);
-  if(wasCurrent) galleryIndex = 0; else if(at < galleryIndex) galleryIndex -= 1;
-  renderGalleryThumbs();
-  if(wasCurrent){ document.getElementById('main-image').removeAttribute('src'); }
-  showGalleryImage(galleryIndex);
-}
-
-function initGallery(){
-  var wrap = document.getElementById('gallery-thumbs'), main = document.getElementById('gallery-main'), mainImg = document.getElementById('main-image');
-
-  /* click / tap a thumbnail */
-  wrap.addEventListener('click', function(e){
-    var btn = e.target.closest('.gallery-thumb');
-    if(btn) showGalleryImage(Number(btn.getAttribute('data-idx')));
-  });
-
-  /* keyboard: left / right arrows move through the images while a thumbnail has focus */
-  wrap.addEventListener('keydown', function(e){
-    if(e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-    e.preventDefault();
-    var n = galleryImages.length, i = (galleryIndex + (e.key === 'ArrowRight' ? 1 : -1) + n) % n;
-    showGalleryImage(i);
-    var b = wrap.querySelector('[data-idx="' + i + '"]');
-    if(b && b.focus) b.focus({ preventScroll: true });
-  });
-
-  /* swipe / drag on the hero image (touch-action:pan-y keeps vertical scrolling) */
-  var sx = 0, sy = 0, tracking = false;
-  main.addEventListener('pointerdown', function(e){
-    if(e.pointerType === 'mouse' && e.button !== 0) return;
-    tracking = true; sx = e.clientX; sy = e.clientY;
-  });
-  main.addEventListener('pointerup', function(e){
-    if(!tracking) return;
-    tracking = false;
-    var dx = e.clientX - sx, dy = e.clientY - sy, n = galleryImages.length;
-    if(n < 2 || Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-    showGalleryImage((galleryIndex + (dx < 0 ? 1 : -1) + n) % n);
-  });
-  main.addEventListener('pointercancel', function(){ tracking = false; });
-
-  /* broken images: a thumbnail first retries with the full-size URL, then the image is dropped */
-  wrap.addEventListener('error', function(e){
-    var img = e.target, btn = img && img.closest && img.closest('.gallery-thumb');
-    if(!btn) return;
-    var full = btn.getAttribute('data-src');
-    if(!img.getAttribute('data-retried') && img.getAttribute('src') !== full){ img.setAttribute('data-retried', '1'); img.setAttribute('src', full); return; }
-    dropBrokenImage(full);
-  }, true);
-  mainImg.addEventListener('error', function(){
-    var cur = galleryImages[galleryIndex];
-    if(cur && mainImg.getAttribute('src') === cur) dropBrokenImage(cur);
-  });
-
-  /* lib/products.js data arrives from /api/catalog a moment after first paint: re-render the product (price, text, gallery, badges) when it does */
-  if(window.NKBestsellers) window.NKBestsellers.load().then(function(){ if(!PRODUCT_PENDING) renderProduct(); });
-}
-
-/* ================= 5. QUANTITY SELECTOR ================= */
-function updateQtyDisplay(){ document.getElementById('qty-value').textContent = currentQty; }
-function initQty(){
-  document.getElementById('qty-dec').addEventListener('click', function(){
-    if(currentQty > 1){ currentQty -= 1; updateQtyDisplay(); }
-  });
-  document.getElementById('qty-inc').addEventListener('click', function(){
-    currentQty += 1; updateQtyDisplay();
-  });
-}
-
-/* ================= 6. ACCORDION ================= */
-function initAccordion(){
-  var items = document.querySelectorAll('.accordion-item');
-  items.forEach(function(item){
-    var panel = item.querySelector('.accordion-panel');
-    if(item.classList.contains('open')) panel.style.maxHeight = panel.scrollHeight + 'px';
-    item.querySelector('.accordion-head').addEventListener('click', function(){
-      var isOpen = item.classList.contains('open');
-      items.forEach(function(other){
-        other.classList.remove('open');
-        other.querySelector('.accordion-panel').style.maxHeight = 0;
-      });
-      if(!isOpen){
-        item.classList.add('open');
-        panel.style.maxHeight = panel.scrollHeight + 'px';
-      }
-    });
-  });
-  document.getElementById('p-review-link').addEventListener('click', function(){
-    document.getElementById('reviews').scrollIntoView({ behavior:'smooth', block:'start' });
-  });
-  window.addEventListener('resize', refreshAccordionHeights);
-}
-
-/* ================= 7. STICKY MOBILE CTA ================= */
-function initStickyCta(){
-  var bar = document.getElementById('mobile-cta-bar');
-  /* watch the real Add to Cart / Buy Now row: the bar appears the moment those buttons scroll out of view */
-  var sentinel = document.getElementById('main-cta-row') || document.getElementById('cta-sentinel');
-  if(!('IntersectionObserver' in window)) return;
-  var observer = new IntersectionObserver(function(entries){
-    entries.forEach(function(entry){
-      if(entry.isIntersecting){ bar.classList.remove('show'); }
-      else if(entry.boundingClientRect.top < 0){ bar.classList.add('show'); }
-      else { bar.classList.remove('show'); }
-    });
-  }, { threshold: 0 });
-  observer.observe(sentinel);
-}
-
-/* ================= 8. DISPATCH CUTOFF TIMER ================= */
-function initCutoffTimer(){
-  var el = document.getElementById('cutoff-timer');
-  if(!el) return;   /* the countdown was replaced by the 1-3 business day processing note */
-  var CUTOFF_HOUR = 15; /* 3pm local time same-day dispatch cutoff */
-  function nextCutoff(){
-    var now = new Date();
-    var cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), CUTOFF_HOUR, 0, 0, 0);
-    if(now >= cutoff) cutoff.setDate(cutoff.getDate() + 1);
-    return cutoff;
-  }
-  var target = nextCutoff();
-  function tick(){
-    var diff = target - new Date();
-    if(diff <= 0){ target = nextCutoff(); diff = target - new Date(); }
-    var h = Math.floor(diff/3600000);
-    var m = Math.floor((diff%3600000)/60000);
-    var s = Math.floor((diff%60000)/1000);
-    el.textContent = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-  }
-  tick();
-  setInterval(tick, 1000);
-}
-
-/* ================= 10. REVIEWS SYSTEM (per-product key, real stats only) ================= */
-function getReviews(){
-  try{ return JSON.parse(safeStorage.getItem('nikora_reviews_' + PRODUCT_ID) || '[]'); }
-  catch(e){ return []; }
-}
-function saveReviews(list){ safeStorage.setItem('nikora_reviews_' + PRODUCT_ID, JSON.stringify(list)); }
-
-function renderReviewStats(reviews){
-  var total = reviews.length;
-  var scoreEl = document.getElementById('rs-score');
-  var starsEl = document.getElementById('rs-stars');
-  var countEl = document.getElementById('rs-count');
-  var barsEl = document.getElementById('rs-bars');
-  var recommendEl = document.getElementById('rs-recommend');
-  var headStars = document.getElementById('p-stars');
-  var headScore = document.getElementById('p-rating-score');
-
-  if(total === 0){
-    scoreEl.textContent = '—';
-    starsEl.innerHTML = starsHtml(0);
-    countEl.textContent = 'No reviews yet';
-    barsEl.innerHTML = [5,4,3,2,1].map(function(star){
-      return '<div class="rs-bar-row"><span class="rs-label">' + star + starSvg('star-mini') + '</span><div class="rs-bar-track"><div class="rs-bar-fill" style="width:0%"></div></div><span class="rs-pct">0%</span></div>';
-    }).join('');
-    recommendEl.textContent = 'Be the first to review this product.';
-    headStars.innerHTML = starsHtml(0);
-    headScore.textContent = 'No ratings yet';
-    return;
-  }
-
-  var sum = 0, counts = {1:0,2:0,3:0,4:0,5:0};
-  reviews.forEach(function(r){
-    sum += Number(r.rating) || 0;
-    counts[r.rating] = (counts[r.rating] || 0) + 1;
-  });
-  var avg = sum / total;
-
-  scoreEl.textContent = avg.toFixed(1);
-  starsEl.innerHTML = starsHtml(avg);
-  countEl.textContent = total + (total === 1 ? ' review' : ' reviews');
-  headStars.innerHTML = starsHtml(avg);
-  headScore.textContent = avg.toFixed(1) + '/5';
-
-  barsEl.innerHTML = [5,4,3,2,1].map(function(star){
-    var c = counts[star] || 0;
-    var pct = Math.round((c / total) * 100);
-    return '<div class="rs-bar-row"><span class="rs-label">' + star + starSvg('star-mini') + '</span><div class="rs-bar-track"><div class="rs-bar-fill" style="width:' + pct + '%"></div></div><span class="rs-pct">' + pct + '%</span></div>';
-  }).join('');
-
-  var recommendCount = reviews.filter(function(r){ return Number(r.rating) >= 4; }).length;
-  var recommendPct = Math.round((recommendCount / total) * 100);
-  recommendEl.innerHTML = '<strong>' + recommendPct + '%</strong> of reviewers recommend this product.';
-}
-
-function renderReviewList(reviews){
-  var wrap = document.getElementById('review-list');
-  if(reviews.length === 0){
-    wrap.innerHTML = '<div class="review-empty">No reviews yet — be the first to share your experience.</div>';
-    return;
-  }
-  var sorted = reviews.slice().sort(function(a,b){ return (b.date || 0) - (a.date || 0); });
-  wrap.innerHTML = sorted.map(function(r){
-    var dateLabel = r.date ? new Date(r.date).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' }) : '';
-    var photoHtml = r.photo ? '<div class="review-photo"><img src="' + escapeAttr(r.photo) + '" alt="Photo from ' + escapeHtml(r.name) + '"></div>' : '';
-    return '<div class="review-card">' +
-      '<div class="review-card-head">' +
-        '<span class="review-author">' + escapeHtml(r.name) + '</span>' +
-        '<span class="review-stars">' + starsHtml(r.rating) + '</span>' +
-        '<span class="review-date">' + dateLabel + '</span>' +
-      '</div>' +
-      '<p class="review-text">' + escapeHtml(r.text) + '</p>' +
-      photoHtml +
-    '</div>';
-  }).join('');
-}
-
-function refreshReviews(){
-  var reviews = getReviews();
-  renderReviewStats(reviews);
-  renderReviewList(reviews);
-}
-
-/* Firebase keeps '/reviews/<PRODUCT_ID>' as push-keyed children (each
-   Firebase-generated key becomes that review's `id`), live-updating
-   the stats/list for every visitor the instant a review is submitted
-   or one is removed — no page reload needed anywhere. */
-function initFirebaseReviewsSync(){
-  if(!firebaseReady) return;
-  db.ref('reviews/' + PRODUCT_ID).on('value', function(snap){
-    var data = snap.val() || {};
-    var arr = Object.keys(data).map(function(key){
-      var r = data[key];
-      r.id = key;
-      return r;
-    });
-    saveReviews(arr); // keep the offline cache current too
-    renderReviewStats(arr);
-    renderReviewList(arr);
-  }, function(err){
-    console.warn('Firebase live reviews sync error — staying on local data.', err);
-  });
-}
-
-var selectedStarRating = 0;
-var pendingReviewPhoto = null;
-
-function initReviewForm(){
-  document.getElementById('rf-star-picker').addEventListener('click', function(e){
-    var btn = e.target.closest('button[data-star]');
-    if(!btn) return;
-    selectedStarRating = Number(btn.getAttribute('data-star'));
-    document.querySelectorAll('#rf-star-picker button').forEach(function(b){
-      b.classList.toggle('filled', Number(b.getAttribute('data-star')) <= selectedStarRating);
-    });
-  });
-
-  document.getElementById('rf-photo').addEventListener('change', function(e){
-    var input = e.target, file = input.files && input.files[0];
-    if(!file) return;
-    nkCompressImage(file, function(dataUrl){
-      pendingReviewPhoto = dataUrl;
-      document.getElementById('rf-photo-preview-img').src = dataUrl;
-      document.getElementById('rf-photo-preview').classList.add('show');
-    }, function(msg){ input.value = ''; showToast(msg); });
-  });
-  document.getElementById('rf-photo-remove').addEventListener('click', function(){
-    pendingReviewPhoto = null;
-    document.getElementById('rf-photo').value = '';
-    document.getElementById('rf-photo-preview').classList.remove('show');
-    document.getElementById('rf-photo-preview-img').src = '';
-  });
-
-  document.getElementById('rf-submit-btn').addEventListener('click', function(){
-    var name = document.getElementById('rf-name').value.trim();
-    var text = document.getElementById('rf-text').value.trim();
-    var errorEl = document.getElementById('rf-error');
-
-    if(!name || !text || selectedStarRating < 1){
-      errorEl.classList.add('show');
-      return;
-    }
-    errorEl.classList.remove('show');
-
-    var reviewData = {
-      name: name,
-      rating: selectedStarRating,
-      text: text,
-      photo: pendingReviewPhoto,
-      date: Date.now()
-    };
-
-    if(firebaseReady){
-      db.ref('reviews/' + PRODUCT_ID).push(reviewData).catch(function(err){
-        console.warn('Firebase review write failed, saving locally only.', err);
-        var reviews = getReviews();
-        reviewData.id = Date.now() + '-' + Math.floor(Math.random()*1000);
-        reviews.push(reviewData);
-        saveReviews(reviews);
-        refreshReviews();
-      });
-      // on success the '/reviews' listener above re-renders automatically
-    } else {
-      var reviews = getReviews();
-      reviewData.id = Date.now() + '-' + Math.floor(Math.random()*1000);
-      reviews.push(reviewData);
-      saveReviews(reviews);
-      refreshReviews();
-    }
-
-    document.getElementById('rf-name').value = '';
-    document.getElementById('rf-text').value = '';
-    document.getElementById('rf-photo').value = '';
-    document.getElementById('rf-photo-preview').classList.remove('show');
-    pendingReviewPhoto = null;
-    selectedStarRating = 0;
-    document.querySelectorAll('#rf-star-picker button').forEach(function(b){ b.classList.remove('filled'); });
-
-    showToast('Thanks — your review was posted!');
-  });
-
-}
-
-function getAllProductsFallback(){
-  var store = getProductsStore();
-  var map = {};
-  DEFAULT_CATALOG.forEach(function(p){ map[String(p.id)] = p; });
-  Object.keys(store).forEach(function(k){ if(store[k] && store[k].name) map[k] = store[k]; });
-  return Object.keys(map).map(function(k){ return map[k]; });
-}
-
-function addCurrentProductToCart(qty){
-  var p = CURRENT_PRODUCT;
-  cartAdd(String(p.id), p.name, p.price, qty);
-  bumpCartBadge();
-  showToast(p.name + ' added to your bag.');
+function findProductById(id){
+  for(var i=0;i<ALL_PRODUCTS.length;i++){ if(String(ALL_PRODUCTS[i].id) === String(id)) return ALL_PRODUCTS[i]; }
+  return null;
 }
 
 /* ================= UNIFIED CART MODULE (identical on index / catalog / product) =================
@@ -2158,12 +1190,12 @@ function renderCart(){
 
   var text = document.getElementById('ship-progress-text');
   var fill = document.getElementById('ship-progress-fill');
-  var unlocked = true;   /* Express shipping is free on every order */
-  fill.style.width = '100%';
+  var unlocked = payable >= NK_FREE_SHIP;
+  fill.style.width = Math.min(100, (payable / NK_FREE_SHIP) * 100) + '%';
   text.classList.toggle('unlocked', unlocked);
   fill.classList.toggle('unlocked', unlocked);
   text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
-    ? 'FREE Express Shipping on every order (7\u201315 business days)'
+    ? 'You\u2019ve unlocked FREE Express Shipping!'
     : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
 
   renderCartRecs(cart);
@@ -2467,92 +1499,201 @@ function nkReviewStats(list){
   });
   return { count: count, avg: count ? Math.round(sum / count * 10) / 10 : 0, verified: verified };
 }
-/* ================= 12. TRUST BADGES ================= */
+/* ================= TRUST BADGES ================= */
 function trustBadgesHtml(){
   return (
-    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>30-Day Risk-Free Trial</span>' +
-    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Free Express Shipping</span>' +
-    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>Loss &amp; Damage Protection</span>'
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>30-Day Money-Back Guarantee</span>' +
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>100% Secure Checkout</span>' +
+    '<span class="trust-badge"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>2-Year Warranty</span>'
   );
 }
 function renderTrustBadges(){
-  var productWrap = document.getElementById('product-trust-badges');
   var cartWrap = document.getElementById('cart-trust-badges');
   var footerWrap = document.getElementById('footer-trust-badges');
-  if(productWrap) productWrap.innerHTML = trustBadgesHtml();
   if(cartWrap) cartWrap.innerHTML = trustBadgesHtml();
   if(footerWrap) footerWrap.innerHTML = trustBadgesHtml();
 }
 
 
 var toastTimer;
-function showToast(msg, ms){
+function showToast(msg){
   var toast = document.getElementById('toast');
   document.getElementById('toast-text').textContent = msg;
   toast.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, ms || 2600);
+  toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2600);
 }
 
-/* ================= 13. THEME ENGINE (synced with index.html / catalog.html) ================= */
+/* ================= 3. SEARCH / FILTER / SORT / RENDER ================= */
+function getFilteredSortedProducts(){
+  var list = ALL_PRODUCTS.slice();
+  var onBestsellers = state.category === 'Bestsellers';
+  var onBundles = state.category === 'Bundles & Sets';   // listed in the same order as the home page's Bundles section
+
+  if(state.search.trim()){
+    var q = state.search.trim().toLowerCase();
+    list = list.filter(function(p){ return p.name.toLowerCase().indexOf(q) !== -1; });
+  }
+  if(onBestsellers){
+    list = list.filter(function(p){ return p.bestseller; });   // isBestseller from lib/products.js arrives here as `bestseller`
+  } else if(state.category && state.category !== 'All Devices'){
+    list = list.filter(function(p){ return p.category === state.category; });
+  }
+  list = list.filter(function(p){ return p.price <= state.maxPrice; });
+
+  if(state.sort === 'price-asc'){
+    list.sort(function(a,b){ return a.price - b.price; });
+  } else if(state.sort === 'price-desc'){
+    list.sort(function(a,b){ return b.price - a.price; });
+  } else if(state.sort === 'sale'){
+    list = list.filter(function(p){ return p.oldPrice && p.oldPrice > p.price; });
+  } else if(onBestsellers || onBundles || state.sort === 'bestsellers'){
+    // bestsellerRank 1, 2, 3 ... first, then unranked products by id (same order as the home page)
+    list.sort(NKBestsellers.compare);
+  }
+  // 'featured' = original catalog order
+
+  return list;
+}
+
+function productCardHtml(p){
+  var hasSale = p.oldPrice && p.oldPrice > p.price;
+  var saveAmount = hasSale ? (p.oldPrice - p.price).toFixed(2) : '0.00';
+  var badges = '';
+  NKBestsellers.badges(p).forEach(function(t){ badges += '<span class="badge-bestseller">' + escapeHtml(t) + '</span>'; });
+  if(hasSale) badges += '<span class="badge-sale">Save $' + saveAmount + '</span>';
+  if(p.lowStock) badges += '<span class="badge-lowstock">Only 3 Left in Stock</span>';
+
+  var priceHtml = hasSale
+    ? '<span class="card-price-now">$' + p.price.toFixed(2) + '</span><span class="card-price-old" style="opacity:0.5; text-decoration:line-through;">$' + p.oldPrice.toFixed(2) + '</span>'
+    : '<span class="card-price-now">$' + p.price.toFixed(2) + '</span>';
+
+  var mainImg = NKBestsellers.imagesOf(p)[0] || p.img;
+  return '<div class="glass-card product-card" data-bs-card data-product-id="' + p.id + '">' +
+    '<a href="product.html?id=' + p.id + '" class="card-media" aria-label="' + escapeHtml(p.name) + '">' +
+      '<div class="card-badges">' + badges + '</div>' +
+      '<img data-bs-main data-bs-src0="' + escapeHtml(mainImg) + '" src="' + escapeHtml(mainImg) + '" alt="' + escapeHtml(p.name) + '" loading="lazy">' +
+    '</a>' +
+    NKBestsellers.thumbsHtml(p) +
+    '<div class="card-body">' +
+      '<div class="card-cat">' + escapeHtml(p.category) + '</div>' +
+      '<a href="product.html?id=' + p.id + '" class="card-title">' + escapeHtml(p.name) + '</a>' +
+      '<p class="card-desc">' + escapeHtml(p.desc) + '</p>' +
+      '<div class="card-price-row">' + priceHtml + '</div>' +
+      '<button type="button" class="card-add-btn" data-action="add-to-cart" data-id="' + p.id + '" data-name="' + escapeHtml(p.name) + '" data-price="' + p.price + '"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/><path d="M14 9v4M12 11h4"/></svg>Add to Cart</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderGrid(){
+  var grid = document.getElementById('product-grid');
+  var list = getFilteredSortedProducts();
+
+  document.getElementById('result-count').textContent = list.length + ' device' + (list.length === 1 ? '' : 's');
+
+  if(list.length === 0){
+    grid.innerHTML = '<div class="no-results">No devices match your search and filters. Try widening your price range or clearing the search.</div>';
+    return;
+  }
+
+  grid.innerHTML = list.map(productCardHtml).join('');
+  initTactileCards();
+}
+
+function renderCategoryTabs(){
+  var wrap = document.getElementById('category-tabs');
+  wrap.innerHTML = CATEGORIES.map(function(cat){
+    var active = cat === state.category ? ' active' : '';
+    return '<button type="button" class="cat-tab' + active + '" data-cat="' + escapeHtml(cat) + '">' + escapeHtml(cat) + '</button>';
+  }).join('');
+}
+
+/* ---------------- Tactile card spotlight + 3D tilt/press (same mechanic as index.html) ---------------- */
+function initTactileCards(){
+  var cards = document.querySelectorAll('.glass-card');
+  for(var i=0;i<cards.length;i++){
+    (function(card){
+      if(card.dataset.tactileBound) return;
+      card.dataset.tactileBound = "1";
+
+      var rx = 0, ry = 0, pressed = false;
+      function applyTransform(){
+        var scale = pressed ? 0.985 : 1;
+        card.style.transform = 'perspective(1000px) rotateX(' + rx.toFixed(2) + 'deg) rotateY(' + ry.toFixed(2) + 'deg) scale(' + scale + ')';
+      }
+
+      card.addEventListener('mousemove', function(e){
+        var rect = card.getBoundingClientRect();
+        var x = e.clientX - rect.left, y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', ((x/rect.width)*100) + '%');
+        card.style.setProperty('--mouse-y', ((y/rect.height)*100) + '%');
+
+        var px = (x / rect.width) - 0.5;
+        var py = (y / rect.height) - 0.5;
+        ry = px * 10;
+        rx = -py * 10;
+        applyTransform();
+      });
+
+      card.addEventListener('mousedown', function(){
+        pressed = true;
+        applyTransform();
+      });
+
+      function release(){
+        if(pressed){ pressed = false; applyTransform(); }
+      }
+      card.addEventListener('mouseup', release);
+
+      card.addEventListener('mouseleave', function(){
+        pressed = false;
+        rx = 0; ry = 0;
+        card.style.transform = '';
+      });
+    })(cards[i]);
+  }
+}
+
+/* ================= EVENT BINDING (no inline onsubmit; button/select/input listeners only) ================= */
+/* ================= THEME SYSTEM =================
+   Writes the new 'theme' key (read by the anti-flicker script above) AND
+   the legacy 'nikora_theme' key used by index.html, so a theme choice
+   made on either page still carries over to the other. */
 function setTheme(mode){
   document.documentElement.setAttribute('data-theme', mode);
   try { localStorage.setItem('theme', mode); } catch(e){}
   safeStorage.setItem('nikora_theme', mode);
 }
 
-
-
-
-
-
-
-/* ================= LIVE VIEWING BADGE (real presence, no simulated numbers) =================
-   Each open tab registers a child under /presence/<PRODUCT_ID> that Firebase
-   removes automatically on disconnect; the badge shows how many exist.
-   If Firebase (or the /presence rules) is unavailable the badge stays hidden. */
-function initLivePresence(){
-  if(!firebaseReady) return;
-  var pill = document.getElementById('viewing-pill');
-  var text = document.getElementById('viewing-text');
-  try{
-    var listRef = db.ref('presence/' + PRODUCT_ID);
-    var mine = listRef.push();
-    mine.onDisconnect().remove()
-      .then(function(){ return mine.set(true); })
-      .catch(function(){ pill.classList.remove('show'); });
-    window.addEventListener('pagehide', function(){ try{ mine.remove(); }catch(e){} });
-    listRef.on('value', function(snap){
-      var n = snap.numChildren();
-      if(n >= 1){
-        text.textContent = n + (n === 1 ? ' person' : ' people') + ' viewing this right now';
-        pill.classList.add('show');
-      } else {
-        pill.classList.remove('show');
-      }
-    }, function(){ pill.classList.remove('show'); });
-  }catch(e){
-    console.warn('Live presence unavailable', e);
-  }
-}
-
-/* ================= 16. EVENT BINDING ================= */
 function bindEvents(){
+  NKBestsellers.bindGallery(document.getElementById('product-grid'));
+
+  document.getElementById('search-input').addEventListener('input', function(e){
+    state.search = e.target.value;
+    renderGrid();
+  });
+
+  document.getElementById('price-range').addEventListener('input', function(e){
+    state.maxPrice = Number(e.target.value);
+    document.getElementById('price-filter-value').textContent = '$' + state.maxPrice;
+    renderGrid();
+  });
+
+  document.getElementById('sort-select').addEventListener('change', function(e){
+    state.sort = e.target.value;
+    renderGrid();
+  });
+
+  document.getElementById('category-tabs').addEventListener('click', function(e){
+    var btn = e.target.closest('.cat-tab');
+    if(!btn) return;
+    state.category = btn.getAttribute('data-cat');
+    renderCategoryTabs();
+    renderGrid();
+  });
+
   document.getElementById('close-cart-btn').addEventListener('click', closeCart);
   document.getElementById('cart-overlay').addEventListener('click', closeCart);
-
-  document.getElementById('add-to-cart-btn').addEventListener('click', function(){
-    addCurrentProductToCart(currentQty);
-    openCart();
-  });
-  document.getElementById('mcta-add-btn').addEventListener('click', function(){
-    addCurrentProductToCart(currentQty);
-    openCart();
-  });
-  document.getElementById('buy-now-btn').addEventListener('click', function(){
-    addCurrentProductToCart(currentQty);
-    window.location.href = 'checkout.html';
-  });
 
   document.querySelectorAll('.modal-overlay').forEach(function(overlay){
     overlay.addEventListener('click', function(e){
@@ -2561,6 +1702,15 @@ function bindEvents(){
         overlay.style.display = 'none';
       }
     });
+  });
+
+  document.getElementById('product-grid').addEventListener('click', function(e){
+    var addBtn = e.target.closest('[data-action="add-to-cart"]');
+    if(addBtn){
+      e.preventDefault();
+      addToCart(addBtn.getAttribute('data-id'), addBtn.getAttribute('data-name'), addBtn.getAttribute('data-price'));
+      return;
+    }
   });
 
   document.addEventListener('keydown', function(e){
@@ -2581,25 +1731,18 @@ function init(){
   if(savedTheme !== 'light' && savedTheme !== 'dark'){
     savedTheme = safeStorage.getItem('nikora_theme');
   }
-  setTheme(savedTheme === 'light' ? 'light' : (savedTheme === 'dark' ? 'dark' : 'light'));
-
-  if(PRODUCT_PENDING && !ID_INVALID){ setProductState('loading', 'Loading product\u2026', ''); }
-
-  initCutoffTimer();
-  renderProduct();
-  initGallery();
-  initQty();
-  initAccordion();
-  initStickyCta();
-  refreshReviews();
-  initReviewForm();
+  setTheme(savedTheme === 'dark' ? 'dark' : 'light');
+  var qFilter = (location.search.match(/[?&]filter=([a-z]+)/) || [])[1];   // deep links used by the home page's "Shop all bestsellers" / "View all bundles" buttons
+  if(qFilter === 'bestsellers') state.category = 'Bestsellers';
+  else if(qFilter === 'bundles') state.category = 'Bundles & Sets';
+  renderCategoryTabs();
+  renderGrid();
   renderCart();
   renderTrustBadges();
   bindEvents();
-  initFirebaseProductSync(); // renders instantly from local cache above, then live-updates from the cloud
-  initFirebaseReviewsSync();
-  initLivePresence();
   initCartSync();
+  initFirebaseProductsSync(); // renders instantly from local cache above, then live-updates from the cloud
+  NKBestsellers.load().then(function(){ ALL_PRODUCTS = NKBestsellers.apply(ALL_PRODUCTS); renderGrid(); });   // re-render once /api/catalog has answered
 }
 
 if(document.readyState === 'loading'){
