@@ -278,6 +278,25 @@ h1.hero-title .accent{font-style:italic; color:var(--gold);}
 
 
 
+/* ---------------- DYNAMIC BESTSELLERS ---------------- */
+#bundle-grid{grid-template-columns:repeat(auto-fit,minmax(260px,340px)); gap:22px;}
+#home-bestseller-grid{grid-template-columns:repeat(4,1fr); gap:22px;}
+@media (max-width:1100px){ #home-bestseller-grid{grid-template-columns:repeat(2,1fr);} }
+@media (max-width:560px){ #home-bestseller-grid{grid-template-columns:1fr;} }
+.bs-card{padding:18px;}
+.bs-media{position:relative; display:block; aspect-ratio:1/1; border-radius:16px; overflow:hidden; background:rgba(0,0,0,0.03); margin-bottom:12px;}
+[data-theme="dark"] .bs-media{background:rgba(255,255,255,0.04);}
+.bs-media img{width:100%; height:100%; object-fit:cover; display:block; transition:opacity .2s ease;}
+.bs-badges{position:absolute; top:10px; left:10px; display:flex; flex-direction:column; align-items:flex-start; gap:6px; z-index:2;}
+.bs-badge{font-size:10.5px; font-weight:700; letter-spacing:.06em; padding:5px 10px; border-radius:100px; background:var(--gold); color:#241c0f;}
+.bs-badge.alt{background:var(--text); color:var(--canvas);}
+.bs-thumbs{display:flex; gap:6px; margin-bottom:14px;}
+.bs-thumb{width:42px; height:42px; padding:0; border-radius:10px; overflow:hidden; background:none; cursor:pointer; opacity:.7; border:1px solid var(--line); transition:opacity .15s ease, border-color .15s ease;}
+.bs-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+.bs-thumb:hover, .bs-thumb:focus-visible, .bs-thumb.is-active{opacity:1; border-color:var(--gold);}
+.bs-thumb:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+.bs-card .pc-title a{color:inherit; text-decoration:none;}
+
 /* ---------------- BUNDLES ---------------- */
 .bundle-section{background:var(--surface-raised); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
 
@@ -708,87 +727,32 @@ footer.site{border-top:1px solid var(--line); padding:60px 0 30px; margin-top:20
     </div>
   </section>
 
-  <!-- ================= BESTSELLER SPOTLIGHT ================= -->
+  <!-- ================= BESTSELLERS (rendered by renderBestsellers(); data from lib/products.js via /api/catalog) ================= -->
   <section class="section" id="bestseller">
     <div class="container">
-      <div class="glass-card spotlight-wrap" data-card="wand">
-        <div class="spotlight-media">
-          <div class="product-img-placeholder">4-in-1 Wand Image</div>
+      <div class="section-head">
+        <div>
+          <h2>Our <em>bestsellers</em></h2>
+          <p>The NIKORA devices at the top of our ranking.</p>
         </div>
-        <div class="spotlight-body">
-          <div class="spot-kicker">4-in-1 Facial Device</div>
-          <h2 class="spot-title" id="wand-title">Red Light &amp; EMS Facial Wand</h2>
-          <p class="spot-desc" id="wand-desc">Combines red light therapy, EMS micro-current, sonic vibration, and heat therapy in one ergonomic wand — built to fit a five-minute morning routine.</p>
-          <div class="price-row">
-            <span class="price-now" id="wand-price">$34.99</span>
-            <span class="price-was" id="wand-was">$49.00</span>
-            <span class="price-save">Save 29%</span>
-          </div>
-          <div class="tab-switcher" role="tablist" aria-label="Routine steps">
-            <button type="button" class="tab-btn active" role="tab" aria-selected="true" onclick="switchTab(1)">Step 1</button>
-            <button type="button" class="tab-btn" role="tab" aria-selected="false" onclick="switchTab(2)">Step 2</button>
-            <button type="button" class="tab-btn" role="tab" aria-selected="false" onclick="switchTab(3)">Step 3</button>
-          </div>
-          <div class="tab-panel active" id="tab-panel-1"><strong>Cleanse &amp; Prep</strong>Apply a thin layer of conductive gel or serum to clean, dry skin so the wand glides smoothly.</div>
-          <div class="tab-panel" id="tab-panel-2"><strong>Glide &amp; Activate</strong>Sweep the wand upward along the jawline and cheeks for 60 seconds per zone with red light and EMS engaged.</div>
-          <div class="tab-panel" id="tab-panel-3"><strong>Seal &amp; Set</strong>Finish with the heat-assist pass to help serum absorption, then power off and store on the charging base.</div>
-          <div class="spot-actions">
-            <button type="button" class="btn-primary" onclick="addToCart('wand','Red Light &amp; EMS Facial Wand',34.99)">Add to Bag — $34.99 <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-            <a href="catalog.html" class="btn-ghost">Full Specs</a>
-          </div>
-        </div>
+        <a href="catalog.html?filter=bestsellers" class="section-link">Shop all bestsellers</a>
       </div>
+      <div class="card-grid" id="home-bestseller-grid"></div>
     </div>
   </section>
 
   <!-- ================= BUNDLES ================= -->
-  <section class="section bundle-section">
+  <section class="section bundle-section" id="bundles">
     <div class="container">
       <div class="section-head">
         <div>
           <h2>Bundles &amp; <em>gift sets</em></h2>
-          <p>Curated routines at a lower price than buying each device separately.</p>
+          <p>Curated routines in one set.</p>
         </div>
-        <a href="catalog.html" class="section-link">View all bundles</a>
+        <a href="catalog.html?filter=bundles" class="section-link">View all bundles</a>
       </div>
-      <div class="card-grid" id="bundle-grid">
-
-        <div class="glass-card product-card" data-card="sculpt-bundle">
-          <div class="pc-media">
-            <span class="pc-savings">Save $20</span>
-            <div class="product-img-placeholder">Product Image</div>
-          </div>
-          <div class="pc-cat">3-Piece Set</div>
-          <h3 class="pc-title">The Ultimate Sculpt &amp; Glow Set</h3>
-          <p class="pc-desc">4-in-1 Facial Wand + EMS Gua Sha + Hydro Vacuum Cleaner — a complete contour and clarity routine.</p>
-          <div class="pc-price-row"><span class="pc-price">$74.99</span><span class="pc-was">$94.97</span></div>
-          <button type="button" class="pc-add" onclick="addToCart('sculpt-bundle','The Ultimate Sculpt &amp; Glow Set',74.99)"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/><path d="M14 9v4M12 11h4"/></svg>Add Set to Bag</button>
-        </div>
-
-        <div class="glass-card product-card" data-card="scalp-bundle">
-          <div class="pc-media">
-            <span class="pc-savings">Save $17</span>
-            <div class="product-img-placeholder">Product Image</div>
-          </div>
-          <div class="pc-cat">2-Piece Set</div>
-          <h3 class="pc-title">Crown &amp; Scalp Renewal Ritual</h3>
-          <p class="pc-desc">Scalp Massager + LED Therapy Comb, paired for circulation and density-focused care.</p>
-          <div class="pc-price-row"><span class="pc-price">$49.99</span><span class="pc-was">$66.99</span></div>
-          <button type="button" class="pc-add" onclick="addToCart('scalp-bundle','Crown &amp; Scalp Renewal Ritual',49.99)"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/><path d="M14 9v4M12 11h4"/></svg>Add Set to Bag</button>
-        </div>
-
-        <div class="glass-card product-card" data-card="eye-bundle">
-          <div class="pc-media">
-            <span class="pc-savings">Save $15</span>
-            <div class="product-img-placeholder">Product Image</div>
-          </div>
-          <div class="pc-cat">2-Piece Set</div>
-          <h3 class="pc-title">Radiant Eye &amp; Lift Duo</h3>
-          <p class="pc-desc">Smart Eye Massager + Wireless Neck Sculptor for the upper-face routine, together.</p>
-          <div class="pc-price-row"><span class="pc-price">$64.99</span><span class="pc-was">$79.98</span></div>
-          <button type="button" class="pc-add" onclick="addToCart('eye-bundle','Radiant Eye &amp; Lift Duo',64.99)"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/><path d="M14 9v4M12 11h4"/></svg>Add Set to Bag</button>
-        </div>
-
+      <!-- rendered by renderBundles(): every product in the "Bundles & Sets" category of lib/products.js -->
+      <div class="card-grid" id="bundle-grid"></div>
       </div>
     </div>
   </section>
@@ -1794,6 +1758,7 @@ function initFirebaseProductsSync(){
     if(!data) return;
     saveProductOverrides(data); // keep the offline cache current too
     applyProductOverrides();
+    renderHomeCollections();
   }, function(err){
     console.warn('Firebase live sync error — staying on local data.', err);
   });
@@ -1824,6 +1789,86 @@ function renderCardMedia(mediaEl, imgUrl, altText){
       mediaEl.appendChild(placeholder);
     }
   }
+}
+
+/* ================= DYNAMIC HOME COLLECTIONS: Bestsellers + Bundles & Sets =================
+   Data: lib/products.js via /api/catalog; helpers: bestsellers.js. Name, price, was-price, description and images all come from
+   lib/products.js, so this page and catalog.html show identical values. Cards deliberately do NOT use the data-card attribute:
+   applyProductOverrides() keys on it and would replace the product image with a placeholder. Cart ids are the numeric product ids the server knows ("1", "11"). */
+var HOME_BESTSELLER_LIMIT = 4;
+
+/* Firebase /products as already cached by initFirebaseProductsSync (numeric-id entries use {id,name,desc,oldPrice,...}; slug-keyed overrides have no `name` and are skipped). */
+function storefrontProductsFromCache(){
+  var o = getProductOverrides(), out = [];
+  Object.keys(o).forEach(function(k){
+    var p = o[k];
+    if(p && p.name && !p._deleted && !isNaN(Number(p.id != null ? p.id : k))){
+      out.push(p.id != null ? p : Object.assign({ id: k }, p));
+    }
+  });
+  return out;
+}
+
+function homeProductCardHtml(p){
+  var B = window.NKBestsellers, esc = B.esc;
+  var imgs = B.imagesOf(p), main = imgs[0] || '';
+  var href = 'product.html?id=' + encodeURIComponent(p.id);
+  var price = Number(p.price) || 0, was = Number(p.oldPrice) || 0;
+  var hasSale = was > price;
+  var badgeHtml = B.badges(p).map(function(t, i){
+    return '<span class="bs-badge' + (i ? ' alt' : '') + '">' + esc(t) + '</span>';
+  }).join('');
+  return '<article class="glass-card product-card bs-card" data-bs-card data-bs-id="' + esc(p.id) + '">' +
+    '<a class="bs-media" href="' + href + '" aria-label="' + esc(p.name) + '">' +
+      (hasSale ? '<span class="pc-savings">Save $' + (was - price).toFixed(2) + '</span>' : '') +
+      '<span class="bs-badges">' + badgeHtml + '</span>' +
+      (main ? '<img data-bs-main data-bs-src0="' + esc(main) + '" src="' + esc(main) + '" alt="' + esc(p.name) + '" loading="lazy">' : '') +
+    '</a>' +
+    B.thumbsHtml(p) +
+    '<div class="pc-cat">' + esc(p.category || '') + '</div>' +
+    '<h3 class="pc-title"><a href="' + href + '">' + esc(p.name) + '</a></h3>' +
+    (p.desc ? '<p class="pc-desc">' + esc(p.desc) + '</p>' : '<div style="flex-grow:1"></div>') +
+    '<div class="pc-price-row"><span class="pc-price">$' + price.toFixed(2) + '</span>' +
+      (hasSale ? '<span class="pc-was">$' + was.toFixed(2) + '</span>' : '') + '</div>' +
+    '<button type="button" class="pc-add" data-bs-add data-id="' + esc(p.id) + '" data-name="' + esc(p.name) + '" data-price="' + price + '">' +
+      '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/><path d="M14 9v4M12 11h4"/></svg>Add to Bag</button>' +
+  '</article>';
+}
+
+/* Renders one grid. `pick(list)` chooses and orders the products. Nothing to show: the whole section hides instead of leaving an empty grid. */
+function renderHomeGrid(gridId, sectionId, pick){
+  var grid = document.getElementById(gridId);
+  if(!grid || !window.NKBestsellers) return;
+  var section = document.getElementById(sectionId);
+  window.NKBestsellers.load().then(function(){
+    var items = pick(window.NKBestsellers.apply(storefrontProductsFromCache()));
+    if(!items.length){ if(section) section.hidden = true; return; }
+    if(section) section.hidden = false;
+    grid.innerHTML = items.map(homeProductCardHtml).join('');
+    initTactileCards();
+  });
+}
+function renderBestsellers(){
+  renderHomeGrid('home-bestseller-grid', 'bestseller', function(list){ return window.NKBestsellers.ranked(list).slice(0, HOME_BESTSELLER_LIMIT); });
+}
+function renderBundles(){
+  renderHomeGrid('bundle-grid', 'bundles', function(list){ return window.NKBestsellers.bundles(list); });
+}
+function renderHomeCollections(){ renderBestsellers(); renderBundles(); }
+
+function bindHomeGrids(){
+  if(!window.NKBestsellers) return;
+  ['home-bestseller-grid', 'bundle-grid'].forEach(function(id){
+    var grid = document.getElementById(id);
+    if(!grid) return;
+    window.NKBestsellers.bindGallery(grid);
+    grid.addEventListener('click', function(e){
+      var btn = e.target.closest('[data-bs-add]');
+      if(!btn) return;
+      e.preventDefault();
+      addToCart(btn.getAttribute('data-id'), btn.getAttribute('data-name'), Number(btn.getAttribute('data-price')));
+    });
+  });
 }
 
 /* ================= REVIEWS ================= */
@@ -2151,6 +2196,8 @@ function init(){
   var saved = safeStorage.getItem('theme') || safeStorage.getItem('nikora_theme');
   setTheme(saved === 'dark' ? 'dark' : 'light');
   applyProductOverrides();
+  renderHomeCollections();
+  bindHomeGrids();
   renderCart();
   renderTrustBadges();
   initCartSync();
@@ -2169,5 +2216,6 @@ if(document.readyState === 'loading'){
 </script>
 
 <script src="reviews-data.js"></script>
+<script src="bestsellers.js"></script>
 </body>
 </html>
