@@ -134,7 +134,14 @@ button{font-family:inherit;cursor:pointer;}
   position:relative; aspect-ratio:1/1; border-radius:20px; overflow:hidden;
   background:var(--surface-tint); border:1px solid var(--card-border); box-shadow:var(--shadow-ambient);
 }
-.gallery-main img{width:100%; height:100%; object-fit:cover;}
+.gallery-main{touch-action:pan-y; -webkit-user-select:none; user-select:none;}   /* vertical page scroll still works; horizontal drags become swipes */
+.gallery-main img{width:100%; height:100%; object-fit:cover; display:block; opacity:1; transition:opacity .25s ease; -webkit-user-drag:none; pointer-events:none;}
+.gallery-main img.is-fading{opacity:.1; transition:none;}   /* dims instantly when the image changes, then fades back in */
+.gallery-count{
+  position:absolute; right:12px; bottom:12px; z-index:2; font-size:11px; font-weight:700; letter-spacing:.04em;
+  padding:4px 10px; border-radius:100px; background:rgba(20,16,12,.55); color:#fff; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+}
+@media (prefers-reduced-motion: reduce){ .gallery-main img, .gallery-thumb{transition:none;} }
 .gallery-badges{position:absolute; top:14px; left:14px; display:flex; flex-direction:column; gap:6px; z-index:2;}
 .badge-bestseller, .badge-sale, .badge-lowstock{
   font-size:10px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
@@ -144,14 +151,22 @@ button{font-family:inherit;cursor:pointer;}
 .badge-sale{background:var(--rose); color:#fff;}
 @keyframes badgeFlash{ 0%,100%{opacity:1;} 50%{opacity:0.45;} }
 .badge-lowstock{background:#e11d48; color:#fff; animation:badgeFlash 1.2s ease-in-out infinite;}
-.gallery-thumbs{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;}
-.gallery-thumb{
-  width:76px; height:76px; border-radius:12px; overflow:hidden; border:2px solid transparent;
-  cursor:pointer; opacity:.65; transition:opacity .2s ease, border-color .2s ease; background:var(--surface-tint);
+/* Gallery thumbnails: one per image, a single scrollable row (swipe / drag / scroll on phones) */
+.gallery-thumbs{
+  position:relative; display:flex; flex-wrap:nowrap; gap:10px; margin-top:14px; padding:3px 2px;
+  overflow-x:auto; overflow-y:hidden; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain; scrollbar-width:thin;
 }
-.gallery-thumb img{width:100%; height:100%; object-fit:cover;}
+.gallery-thumb{
+  flex:0 0 auto; scroll-snap-align:start; width:76px; height:76px; padding:0; border-radius:12px; overflow:hidden;
+  border:2px solid transparent; cursor:pointer; opacity:.65; background:var(--surface-tint);
+  transition:opacity .2s ease, border-color .2s ease, transform .2s ease;
+}
+.gallery-thumb img{width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; -webkit-user-drag:none;}
 .gallery-thumb:hover{opacity:1;}
-.gallery-thumb.active{opacity:1; border-color:var(--gold);}
+.gallery-thumb.active{opacity:1; border-color:var(--gold, #C89B54);}
+.gallery-thumb:focus-visible{outline:2px solid var(--gold, #C89B54); outline-offset:2px; opacity:1;}
+@media (max-width:719px){ .gallery-thumb{width:64px; height:64px;} }
 
 /* ---------------- PRODUCT INFO / BUY BOX ---------------- */
 .product-info{padding-top:4px;}
@@ -760,11 +775,13 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
     <div class="product-hero" id="product-hero">
       <!-- ============ GALLERY ============ -->
       <div class="gallery-col">
-        <div class="gallery-main">
+        <div class="gallery-main" id="gallery-main">
           <div class="gallery-badges" id="gallery-badges"></div>
           <img id="main-image" src="" alt="">
+          <span class="gallery-count" id="gallery-count" aria-live="polite" hidden></span>
         </div>
-        <div class="gallery-thumbs" id="gallery-thumbs"></div>
+        <!-- one thumbnail per image, created by renderGallery(); hidden when the product has a single image -->
+        <div class="gallery-thumbs product-gallery-thumbs" id="gallery-thumbs" role="group" aria-label="Product images" style="display:none"></div>
       </div>
 
       <!-- ============ KEY BENEFITS (directly right of the gallery) ============ -->
@@ -1254,24 +1271,24 @@ function seededStock(id){
 }
 function getStock(p){ return (p.stockCount != null) ? Number(p.stockCount) : seededStock(p.id); }
 var FALLBACK_IMG = 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900';
-function buildGallery(imgUrl){
-  if(!imgUrl) return [FALLBACK_IMG];
-  if(imgUrl.indexOf('images.unsplash.com') === -1) return [imgUrl]; /* crop params only work on Unsplash */
-  var base = imgUrl.split('?')[0];
-  return [
-    base + '?w=900&h=900&fit=crop&crop=entropy&q=80',
-    base + '?w=900&h=900&fit=crop&crop=top&q=80',
-    base + '?w=900&h=900&fit=crop&crop=bottom&q=80',
-    base + '?w=900&h=900&fit=crop&crop=faces&q=80'
-  ];
-}
+/* Image list for a product, in this order of preference:
+   1. images[] stored on the product itself, only when it has 2+ photos  2. the 4 default images[] from lib/products.js (served by /api/catalog, via bestsellers.js), used whenever the override is missing or has a single photo
+   3. a single image / img string (one image, no thumbnail strip)  4. FALLBACK_IMG.
+   Empty and duplicate entries are dropped. images[0] is always the hero. */
 function getImages(p){
-  if(Array.isArray(p.images) && p.images.length){
-    var imgs = p.images.slice();
-    if(p.img && imgs[0] !== p.img) imgs[0] = p.img; /* an image change made on catalog.html wins */
-    return imgs;
-  }
-  return buildGallery(p.img);
+  var B = window.NKBestsellers, srv = (B && B.get) ? B.get(p.id) : null, list = [];
+  var own = (B && B.ownImages) ? B.ownImages(p) : (Array.isArray(p.images) && p.images.length > 1 ? p.images : null);
+  if(own) list = own;                                                            /* own gallery (Firebase / local override / admin panel) with 2+ photos: any length */
+  else if(srv && Array.isArray(srv.images) && srv.images.length) list = srv.images;   /* missing or 1-photo override: the 4 default images from lib/products.js */
+  else if(p.img || p.image) list = [p.img || p.image];                           /* product not in lib/products.js: its single photo */
+  else if(B && B.ownImages && B.ownImages(p, 1)) list = B.ownImages(p, 1);
+  var seen = {}, out = [];
+  list.forEach(function(u){
+    if(typeof u !== 'string') return;
+    u = u.trim();
+    if(u && !seen[u]){ seen[u] = true; out.push(u); }
+  });
+  return out.length ? out : [FALLBACK_IMG];
 }
 function isLowStock(p){
   if(p.stockStatus === 'low') return true;
@@ -1343,8 +1360,12 @@ function escapeAttr(str){
 /* ================= 3. RENDER PRODUCT ================= */
 var currentQty = 1;
 var galleryImages = [];
+var galleryIndex = 0;
+var galleryToken = 0;   /* bumps on every image change so a slow image can never overwrite a newer click */
 
 function renderProduct(){
+  /* lib/products.js (via /api/catalog) is the source of truth for name, price, was-price, description, images and bestseller rank. */
+  if(!PRODUCT_PENDING && window.NKBestsellers && window.NKBestsellers.overlayOne){ CURRENT_PRODUCT = window.NKBestsellers.overlayOne(CURRENT_PRODUCT); }
   var p = CURRENT_PRODUCT;
 
   document.title = p.name + ' — NIKORA';
@@ -1371,7 +1392,11 @@ function renderProduct(){
   var lowStock = isLowStock(p);
 
   var badgesHtml = '';
-  if(p.bestseller) badgesHtml += '<span class="badge-bestseller">Bestseller</span>';
+  if(window.NKBestsellers){
+    window.NKBestsellers.badges(p).forEach(function(t){ badgesHtml += '<span class="badge-bestseller">' + escapeHtml(t) + '</span>'; });
+  } else if(p.bestseller){
+    badgesHtml += '<span class="badge-bestseller">Bestseller</span>';
+  }
   if(hasDiscount) badgesHtml += '<span class="badge-sale">Sale</span>';
   if(soldOut) badgesHtml += '<span class="badge-sale">Sold Out</span>';
   else if(lowStock) badgesHtml += '<span class="badge-lowstock">Low Stock</span>';
@@ -1407,15 +1432,7 @@ function renderProduct(){
   });
   document.getElementById('buy-now-btn').disabled = soldOut;
 
-  galleryImages = getImages(p);
-  var mainImg = document.getElementById('main-image');
-  mainImg.src = galleryImages[0];
-  mainImg.alt = p.name;
-  var thumbsWrap = document.getElementById('gallery-thumbs');
-  thumbsWrap.style.display = galleryImages.length > 1 ? 'flex' : 'none';
-  thumbsWrap.innerHTML = galleryImages.map(function(src, i){
-    return '<button type="button" class="gallery-thumb' + (i === 0 ? ' active' : '') + '" data-idx="' + i + '" aria-label="View image ' + (i+1) + '"><img src="' + escapeAttr(src) + '" alt=""></button>';
-  }).join('');
+  renderGallery();
 
   document.getElementById('mcta-price').textContent = '$' + Number(p.price).toFixed(2);
 
@@ -1431,16 +1448,139 @@ function refreshAccordionHeights(){
   });
 }
 
-/* ================= 4. GALLERY ================= */
+/* ================= 4. GALLERY (dynamic: every image in images[] gets its own thumbnail) ================= */
+function galleryThumbSrc(src){
+  var B = window.NKBestsellers;
+  return (B && B.thumbUrl) ? B.thumbUrl(src, 160) : src;
+}
+
+/* Builds the hero + thumbnail strip from getImages(). Safe to call often: when the image list is unchanged
+   (e.g. a live Firebase refresh) it leaves the shopper's current selection alone. */
+function renderGallery(){
+  if(PRODUCT_PENDING) return;                               /* still loading: don't flash a placeholder photo */
+  var p = CURRENT_PRODUCT, mainImg = document.getElementById('main-image');
+  var imgs = getImages(p);
+  mainImg.alt = p.name || '';
+  var same = imgs.length === galleryImages.length && imgs.every(function(u, i){ return u === galleryImages[i]; });
+  if(same && mainImg.getAttribute('src')){ updateGalleryUi(); return; }
+  galleryImages = imgs;
+  galleryIndex = 0;
+  galleryToken++;
+  mainImg.classList.remove('is-fading');
+  mainImg.src = imgs[0];
+  renderGalleryThumbs();
+  updateGalleryUi();
+}
+
+function renderGalleryThumbs(){
+  var wrap = document.getElementById('gallery-thumbs');
+  var n = galleryImages.length;
+  wrap.style.display = n > 1 ? 'flex' : 'none';             /* single image: no empty thumbnail slots */
+  wrap.innerHTML = n > 1 ? galleryImages.map(function(src, i){
+    return '<button type="button" class="gallery-thumb thumb-btn' + (i === galleryIndex ? ' active' : '') + '" data-idx="' + i + '" data-src="' + escapeAttr(src) + '"' +
+      ' aria-label="View image ' + (i + 1) + ' of ' + n + '" aria-pressed="' + (i === galleryIndex ? 'true' : 'false') + '">' +
+      '<img src="' + escapeAttr(galleryThumbSrc(src)) + '" alt="" loading="lazy" draggable="false"></button>';
+  }).join('') : '';
+}
+
+/* Active thumbnail (gold border), "2 / 4" counter, alt text, and the active thumbnail scrolled into view inside the strip. */
+function updateGalleryUi(){
+  var n = galleryImages.length, wrap = document.getElementById('gallery-thumbs');
+  var thumbs = wrap.querySelectorAll('.gallery-thumb');
+  for(var i = 0; i < thumbs.length; i++){
+    var on = i === galleryIndex;
+    thumbs[i].classList.toggle('active', on);
+    thumbs[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  var count = document.getElementById('gallery-count');
+  count.hidden = n < 2;
+  count.textContent = (galleryIndex + 1) + ' / ' + n;
+  var name = (CURRENT_PRODUCT && CURRENT_PRODUCT.name) || '';
+  document.getElementById('main-image').alt = n > 1 ? name + ' (image ' + (galleryIndex + 1) + ' of ' + n + ')' : name;
+  var active = thumbs[galleryIndex];
+  if(active && wrap.scrollWidth > wrap.clientWidth){
+    var left = active.offsetLeft - (wrap.clientWidth - active.offsetWidth) / 2;
+    if(wrap.scrollTo) wrap.scrollTo({ left: left, behavior: 'smooth' }); else wrap.scrollLeft = left;
+  }
+}
+
+/* Switch the hero to image `idx`: the src changes immediately, and the new image fades in as soon as it has loaded. */
+function showGalleryImage(idx){
+  var n = galleryImages.length;
+  if(idx < 0 || idx >= n) return;
+  galleryIndex = idx;
+  updateGalleryUi();
+  var mainImg = document.getElementById('main-image'), src = galleryImages[idx];
+  if(mainImg.getAttribute('src') === src){ mainImg.classList.remove('is-fading'); return; }
+  var token = ++galleryToken;
+  function done(){ if(token === galleryToken) mainImg.classList.remove('is-fading'); }
+  mainImg.classList.add('is-fading');
+  mainImg.onload = mainImg.onerror = done;
+  mainImg.setAttribute('src', src);
+  setTimeout(done, 600);                                    /* safety: never leave the hero dimmed */
+}
+
+/* An image URL that fails to load is removed, so there is never a broken thumbnail or a blank hero. */
+function dropBrokenImage(src){
+  var at = galleryImages.indexOf(src);
+  if(at === -1 || galleryImages.length <= 1) return;
+  var wasCurrent = at === galleryIndex;
+  galleryImages.splice(at, 1);
+  if(wasCurrent) galleryIndex = 0; else if(at < galleryIndex) galleryIndex -= 1;
+  renderGalleryThumbs();
+  if(wasCurrent){ document.getElementById('main-image').removeAttribute('src'); }
+  showGalleryImage(galleryIndex);
+}
+
 function initGallery(){
-  document.getElementById('gallery-thumbs').addEventListener('click', function(e){
+  var wrap = document.getElementById('gallery-thumbs'), main = document.getElementById('gallery-main'), mainImg = document.getElementById('main-image');
+
+  /* click / tap a thumbnail */
+  wrap.addEventListener('click', function(e){
     var btn = e.target.closest('.gallery-thumb');
-    if(!btn) return;
-    var idx = Number(btn.getAttribute('data-idx'));
-    document.getElementById('main-image').src = galleryImages[idx];
-    document.querySelectorAll('.gallery-thumb').forEach(function(t){ t.classList.remove('active'); });
-    btn.classList.add('active');
+    if(btn) showGalleryImage(Number(btn.getAttribute('data-idx')));
   });
+
+  /* keyboard: left / right arrows move through the images while a thumbnail has focus */
+  wrap.addEventListener('keydown', function(e){
+    if(e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    var n = galleryImages.length, i = (galleryIndex + (e.key === 'ArrowRight' ? 1 : -1) + n) % n;
+    showGalleryImage(i);
+    var b = wrap.querySelector('[data-idx="' + i + '"]');
+    if(b && b.focus) b.focus({ preventScroll: true });
+  });
+
+  /* swipe / drag on the hero image (touch-action:pan-y keeps vertical scrolling) */
+  var sx = 0, sy = 0, tracking = false;
+  main.addEventListener('pointerdown', function(e){
+    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    tracking = true; sx = e.clientX; sy = e.clientY;
+  });
+  main.addEventListener('pointerup', function(e){
+    if(!tracking) return;
+    tracking = false;
+    var dx = e.clientX - sx, dy = e.clientY - sy, n = galleryImages.length;
+    if(n < 2 || Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    showGalleryImage((galleryIndex + (dx < 0 ? 1 : -1) + n) % n);
+  });
+  main.addEventListener('pointercancel', function(){ tracking = false; });
+
+  /* broken images: a thumbnail first retries with the full-size URL, then the image is dropped */
+  wrap.addEventListener('error', function(e){
+    var img = e.target, btn = img && img.closest && img.closest('.gallery-thumb');
+    if(!btn) return;
+    var full = btn.getAttribute('data-src');
+    if(!img.getAttribute('data-retried') && img.getAttribute('src') !== full){ img.setAttribute('data-retried', '1'); img.setAttribute('src', full); return; }
+    dropBrokenImage(full);
+  }, true);
+  mainImg.addEventListener('error', function(){
+    var cur = galleryImages[galleryIndex];
+    if(cur && mainImg.getAttribute('src') === cur) dropBrokenImage(cur);
+  });
+
+  /* lib/products.js data arrives from /api/catalog a moment after first paint: re-render the product (price, text, gallery, badges) when it does */
+  if(window.NKBestsellers) window.NKBestsellers.load().then(function(){ if(!PRODUCT_PENDING) renderProduct(); });
 }
 
 /* ================= 5. QUANTITY SELECTOR ================= */
@@ -2469,5 +2609,6 @@ if(document.readyState === 'loading'){
 }
 </script>
 
+<script src="bestsellers.js"></script>
 </body>
 </html>
