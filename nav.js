@@ -22,8 +22,13 @@
  *   - styles use the page's CSS variables (--text, --gold, --line ...) with
  *     built-in light/dark fallbacks, so it also looks right on pages that lack them.
  *
+ * SITE CONTENT: the announcement bar (above the header) and the promo banner (under it) are
+ * managed from the admin site and read from Firebase /site_content (announcement_enabled,
+ * announcement_text, promo_banner_enabled, promo_banner_image_url, promo_banner_link).
+ * Nothing is shown until the admin turns them on. Needs public read on /site_content.
+ *
  * Public API:
- *   window.NikoraNav = { openMenu, closeMenu, config }
+ *   window.NikoraNav = { openMenu, closeMenu, config, refreshSiteContent }
  *   window.openAiAssistant()   opens the Beauty Concierge chat (loads it first if needed)
  */
 (function () {
@@ -160,6 +165,17 @@
   '  fill:var(--nkn-logo-primary);color:var(--nkn-logo-accent);transition:fill .35s ease,color .35s ease;}',
   '.nkn-d-head .nkn-logo{--nkn-logo-h:50px;}',
   '.nkn-footer .nkn-logo{--nkn-logo-h:78px;}',
+
+  /* ---- announcement bar + promo banner (content comes from Firebase /site_content) ---- */
+  '.nkn-announce{position:relative;z-index:401;background:#0B0B0E;color:#F3EEE6;border-bottom:1px solid rgba(200,155,84,.45);font-family:inherit;}',
+  '.nkn-announce[hidden],.nkn-promo[hidden]{display:none;}',
+  '.nkn-announce-text{margin:0;padding:9px clamp(16px,4vw,48px);text-align:center;font-size:12.5px;font-weight:500;letter-spacing:.04em;line-height:1.45;}',
+  '.nkn-promo{position:relative;z-index:1;background:#0B0B0E;font-family:inherit;}',
+  '.nkn-promo a,.nkn-promo img{display:block;width:100%;}',
+  '.nkn-promo img{height:auto;max-height:clamp(72px,16vw,190px);object-fit:cover;}',
+  '.nkn-promo-x{position:absolute;top:8px;right:10px;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:1px solid rgba(255,255,255,.28);border-radius:50%;background:rgba(11,11,14,.6);color:#fff;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}',
+  '.nkn-promo-x svg{width:14px;height:14px;}',
+  '.nkn-promo-x:focus-visible{outline:2px solid #C89B54;outline-offset:2px;}',
 
   /* ---- desktop links ---- */
   '.nkn-primary{display:flex;align-items:center;gap:clamp(16px,1.9vw,28px);}',
@@ -352,7 +368,100 @@
     st.textContent = CSS;
     (document.head || document.documentElement).appendChild(st);
   }
-  var HTML = LOGO_SPRITE + buildHeader() + buildDrawer();
+  /* ----------------------------------------------------------------------
+   * 5a. SITE CONTENT  -  announcement bar + promo banner from Firebase /site_content
+   *     Painted instantly from the last cached copy, then refreshed from the database
+   *     (live listener when the page has the Firebase SDK, plain REST read otherwise).
+   * -------------------------------------------------------------------- */
+  var SITE = { dbUrl: 'https://nikora-store-default-rtdb.firebaseio.com', cacheKey: 'nikora_site_content', dismissKey: 'nkn_promo_dismissed', refreshMs: 60000 };
+  var siteLive = false, siteLast = 0;
+
+  function safeLink(v) {                              // https URL, #anchor, /path or page.html. Anything else (javascript:, //host, http:) is dropped
+    if (typeof v !== 'string') return '';
+    v = v.trim();
+    if (!v || v.indexOf('//') === 0) return '';
+    return /^(https:\/\/\S+|#[\w-]*|\/[^\s]*|[\w\-\/]+\.html(\?[^\s#]*)?(#\S*)?)$/i.test(v) ? v : '';
+  }
+  function safeImg(v) { return (typeof v === 'string' && /^https:\/\/\S+$/i.test(v.trim())) ? v.trim() : ''; }
+  function siteSubset(c) {
+    c = c || {};
+    return { announcement_enabled: c.announcement_enabled, announcement_text: c.announcement_text, promo_banner_enabled: c.promo_banner_enabled, promo_banner_image_url: c.promo_banner_image_url, promo_banner_link: c.promo_banner_link };
+  }
+  function sitePick(c) {                              // raw /site_content -> what to show ({ ann, img, link })
+    c = c || {};
+    var text = (typeof c.announcement_text === 'string') ? c.announcement_text.trim().slice(0, 160) : '';
+    return {
+      ann:  (c.announcement_enabled !== false && text) ? text : '',
+      img:  (c.promo_banner_enabled !== false) ? safeImg(c.promo_banner_image_url) : '',
+      link: safeLink(c.promo_banner_link)
+    };
+  }
+  function siteCacheGet() { try { return JSON.parse(localStorage.getItem(SITE.cacheKey) || 'null'); } catch (e) { return null; } }
+  function siteCacheSet(v) { try { localStorage.setItem(SITE.cacheKey, JSON.stringify(v)); } catch (e) {} }
+  function promoDismissed(img) { try { return sessionStorage.getItem(SITE.dismissKey) === img; } catch (e) { return false; } }
+
+  function announceHtml(sc) {
+    return '<div class="nkn-announce" id="nkn-announce" role="region" aria-label="Announcement"' + (sc.ann ? '' : ' hidden') + '>' +
+      '<p class="nkn-announce-text" id="nkn-announce-text">' + esc(sc.ann) + '</p></div>';
+  }
+  function promoMedia(sc) {
+    var img = '<img src="' + esc(sc.img) + '" alt="Promotion" decoding="async">';
+    if (!sc.link) return img;
+    return '<a href="' + esc(sc.link) + '"' + (/^https:/i.test(sc.link) ? ' target="_blank" rel="noopener"' : '') + '>' + img + '</a>';
+  }
+  function promoHtml(sc) {
+    var show = !!sc.img && !promoDismissed(sc.img);
+    return '<section class="nkn-promo" id="nkn-promo" aria-label="Promotion"' + (show ? ' data-key="' + esc(sc.img + '|' + sc.link) + '"' : ' hidden') + '>' +
+      '<div class="nkn-promo-media" id="nkn-promo-media">' + (show ? promoMedia(sc) : '') + '</div>' +
+      '<button type="button" class="nkn-promo-x" id="nkn-promo-x" aria-label="Dismiss promotion">' + ico('close') + '</button></section>';
+  }
+  function bindPromo() {                              // a banner image that fails to load is hidden instead of showing a broken icon
+    var p = $('nkn-promo'), im = p && p.querySelector('img');
+    if (im) im.onerror = function () { p.hidden = true; };
+  }
+  function applySite(sc) {
+    var a = $('nkn-announce'), at = $('nkn-announce-text'), p = $('nkn-promo'), pm = $('nkn-promo-media');
+    if (a && at) { at.textContent = sc.ann; a.hidden = !sc.ann; }
+    if (p && pm) {
+      var show = !!sc.img && !promoDismissed(sc.img), key = sc.img + '|' + sc.link;
+      if (show) {
+        if (p.getAttribute('data-key') !== key || !pm.firstChild) { pm.innerHTML = promoMedia(sc); p.setAttribute('data-key', key); bindPromo(); }
+        p.hidden = false;
+      } else { pm.innerHTML = ''; p.removeAttribute('data-key'); p.hidden = true; }
+    }
+  }
+  function onSiteContent(c) {
+    var raw = siteSubset(c);
+    siteCacheSet(raw);
+    siteLast = Date.now();
+    applySite(sitePick(raw));
+  }
+  function fetchSite() {                              // works on every page, with or without the Firebase SDK (public read of /site_content)
+    if (typeof fetch !== 'function') return;
+    fetch(SITE.dbUrl + '/site_content.json', { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (c) { onSiteContent(c || {}); })
+      .catch(function (err) { if (window.console) console.warn('NIKORA nav: site content unavailable, keeping the cached or default state.', err); });
+  }
+  function attachLive() {                             // pages that already initialised Firebase get instant updates
+    if (siteLive) return;
+    try {
+      if (window.firebase && firebase.apps && firebase.apps.length) {
+        firebase.database().ref('site_content').on('value', function (snap) { onSiteContent(snap.val() || {}); }, function () { siteLive = false; });
+        siteLive = true;
+      }
+    } catch (e) {}
+  }
+  function startSite() {
+    fetchSite();
+    if (document.readyState === 'complete') attachLive(); else window.addEventListener('load', attachLive);
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible' && !siteLive && Date.now() - siteLast > SITE.refreshMs) fetchSite();
+    });
+  }
+  var SC0 = sitePick(siteCacheGet());                 // first paint from the last known state, so nothing jumps in later
+
+  var HTML = LOGO_SPRITE + announceHtml(SC0) + buildHeader() + promoHtml(SC0) + buildDrawer();
   var mounted = false;
   /* Apply the saved theme before any markup is inserted, so the logo (and the page) are correct on the very first paint. */
   function bootstrapTheme() {
@@ -379,6 +488,8 @@
     else if (script && script.parentNode && script.parentNode !== document.head) { script.insertAdjacentHTML('beforebegin', HTML); }
     else { document.body.insertAdjacentHTML('afterbegin', HTML); }
     wire();
+    bindPromo();
+    startSite();
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountFooter); else mountFooter();
     loadAssistant();
   }
@@ -502,6 +613,12 @@
     document.addEventListener('click', function (e) {
       var t = e.target; if (!t || !t.closest) return;
       var th = t.closest('[data-nkn-theme]'); if (th) { applyTheme(th.getAttribute('data-nkn-theme')); return; }
+      if (t.closest('#nkn-promo-x')) {
+        var pr = $('nkn-promo'), key = pr && pr.getAttribute('data-key');
+        try { if (key) sessionStorage.setItem(SITE.dismissKey, key.split('|')[0]); } catch (er) {}
+        if (pr) pr.hidden = true;
+        return;
+      }
       if (t.closest('#open-cart-btn')) { if (typeof window.openCart === 'function') window.openCart(); return; }
       if (t.closest('[data-nkn-ai]')) { closeMenu(true); window.openAiAssistant(); return; }
       var logo = t.closest('#nkn-logo');                                       /* on the home page the logo scrolls to the top */
@@ -521,7 +638,7 @@
   /* ======================================================================
    * 8. PUBLIC API
    * ====================================================================== */
-  window.NikoraNav = { openMenu: openMenu, closeMenu: closeMenu, config: CONFIG };
+  window.NikoraNav = { openMenu: openMenu, closeMenu: closeMenu, config: CONFIG, refreshSiteContent: fetchSite };
   /* legacy global names used by older page code (pages' own definitions may delegate to these) */
   if (typeof window.openMobileMenu !== 'function')  window.openMobileMenu = openMenu;
   if (typeof window.closeMobileMenu !== 'function') window.closeMobileMenu = closeMenu;
