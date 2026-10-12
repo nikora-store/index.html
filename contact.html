@@ -1556,7 +1556,7 @@ var C_REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-moti
 var C_SUPPORT = 'nikora.support@gmail.com';
 
 /* The success message below says the message "has been sent to nikora.support@gmail.com" only when this is true.
-   Messages are saved to Firebase '/contacts'. Set it to true once something forwards new '/contacts' entries to that
+   Messages are saved to Firebase '/contact_messages'. Set it to true once something forwards new '/contact_messages' entries to that
    inbox (a Cloud Function, a Firebase email extension, Zapier...). Until then the wording stays accurate. */
 var C_FORWARDS_TO_EMAIL = false;
 
@@ -1650,8 +1650,9 @@ function cSubmit(e){
     return;
   }
   cSetSending(true);
-  var ref = db.ref('contacts').push();
-  var payload = { contactId: ref.key, name: name, email: email.toLowerCase(), subject: subject, message: message, status: 'New', createdAt: Date.now() };
+  var ref = db.ref('contact_messages').push();
+  var now = new Date();
+  var payload = { contactId: ref.key, name: name, email: email.toLowerCase(), subject: subject, message: message, status: 'new', date: now.toISOString(), createdAt: now.getTime() };
   if(orderId) payload.orderId = orderId;
   ref.set(payload).then(function(){
     try{ localStorage.setItem('nk_contact_last', String(Date.now())); }catch(err){}
