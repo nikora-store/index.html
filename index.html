@@ -222,7 +222,7 @@ h1.hero-title .accent{font-style:italic; color:var(--gold);}
 
 
 
-.hero-visual .product-card-img{ position:absolute; inset:0; height:100%; width:100%; border-radius:0; }
+.hero-visual .product-card-img{ position:absolute; inset:0; height:100%; width:100%; border-radius:0; transition:opacity .35s ease; }
 .spotlight-media .product-card-img{ height:100%; min-height:330px; width:100%; }
 
 /* ---------------- BESTSELLER SPOTLIGHT ---------------- */
@@ -696,11 +696,11 @@ footer.site{border-top:1px solid var(--line); padding:60px 0 30px; margin-top:20
     <div class="container hero-inner">
       <div class="hero-copy">
         <span class="hero-badge" id="hero-badge"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.6L22 9.3l-5 5 1.2 7.1L12 18l-6.2 3.4L7 14.3l-5-5 7.1-.7z"/></svg> <span id="hero-badge-text">4.9 Rated by verified beauty tech users</span></span>
-        <h1 class="hero-title">Smart care.<br><span class="accent">Instant</span> glow.</h1>
-        <p class="hero-sub">Dermatologist-informed skin and scalp devices engineered for five-minute routines and visible results — no studio appointment required.</p>
+        <h1 class="hero-title" id="hero-title">Smart care.<br><span class="accent">Instant</span> glow.</h1>
+        <p class="hero-sub" id="hero-sub">Dermatologist-informed skin and scalp devices engineered for five-minute routines and visible results — no studio appointment required.</p>
         <div class="hero-ctas">
-          <a href="catalog.html" class="btn-primary">Explore Full Collection <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-          <a href="#bestseller" class="btn-ghost">Meet the Wand</a>
+          <a href="catalog.html" class="btn-primary" id="hero-cta-primary"><span id="hero-cta-primary-text">Explore Full Collection</span> <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a href="#bestseller" class="btn-ghost" id="hero-cta-secondary"><span id="hero-cta-secondary-text">Meet the Wand</span></a>
         </div>
         <div class="hero-proof" id="hero-proof">
           <div class="stars" id="hero-proof-stars">
@@ -714,8 +714,8 @@ footer.site{border-top:1px solid var(--line); padding:60px 0 30px; margin-top:20
         </div>
       </div>
       <div class="hero-visual">
-        <div class="product-img-placeholder" id="hero-placeholder">Hero Visual Placeholder</div>
-        <img class="product-card-img" id="hero-image" alt="NIKORA hero" hidden>
+        <!-- Default hero (a soft champagne gradient) shows until /site_content/hero_image_url has a URL. Swap this src for a hosted photo if you like. -->
+        <img class="product-card-img" id="hero-image" alt="NIKORA hero" decoding="async" fetchpriority="high" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 1000'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23EFE7DC'/><stop offset='1' stop-color='%23C89B54' stop-opacity='.55'/></linearGradient><radialGradient id='r' cx='.5' cy='.42' r='.45'><stop offset='0' stop-color='%23ffffff' stop-opacity='.7'/><stop offset='1' stop-color='%23ffffff' stop-opacity='0'/></radialGradient></defs><rect width='800' height='1000' fill='url(%23g)'/><rect width='800' height='1000' fill='url(%23r)'/></svg>">
         <div class="hero-specs">
           <span>4-in-1 Device</span>
           <span class="spec-sep">•</span>
@@ -1920,9 +1920,20 @@ function initFirebaseHomeReviewsSync(){
 /* Hero social proof (pill above the headline + star bar under the CTAs). Always visible.
    With reviews: real average + count from /reviews. Without any: the fallback below. */
 var HERO_PROOF_FALLBACK_RATING = '4.9';
+var nkHeroLastStats = null, nkHeroStatsOverride = null;   /* override = manual numbers from /site_content when hero_stats_auto is false */
 function nkUpdateHeroProof(st){
   var badge = document.getElementById('hero-badge-text'), line = document.getElementById('hero-proof-text');
   if(!badge || !line) return;
+  nkHeroLastStats = st;
+  var o = nkHeroStatsOverride;
+  if(o){
+    var r = o.rating.toFixed(1);
+    badge.textContent = o.label ? (r + ' \u00b7 ' + o.count + ' ' + o.label) : (r + ' Rated by ' + o.count + ' verified buyer' + (o.count === 1 ? '' : 's'));
+    line.textContent = '';
+    var b = document.createElement('strong'); b.textContent = r + '/5';
+    line.appendChild(b); line.appendChild(document.createTextNode(' average rating from ' + o.count + ' verified review' + (o.count === 1 ? '' : 's')));
+    return;
+  }
   if(st && st.count){
     var avg = st.avg.toFixed(1);
     badge.textContent = avg + ' Rated by ' + st.count + ' verified buyer' + (st.count === 1 ? '' : 's');
@@ -2106,29 +2117,100 @@ window.submitReview = function() {
   showToast('Thanks - your review has been posted.');
 };
 
-/* ---------- HERO IMAGE: Firebase '/settings/hero_image' (string: https URL or Base64 data URL) ---------- */
-function nkApplyHeroImage(src){
-  var img = document.getElementById('hero-image'), ph = document.getElementById('hero-placeholder');
-  if(!img) return;
-  if(src && nkSafeImgSrc(src)){
-    img.onerror = function(){ img.hidden = true; if(ph) ph.hidden = false; };
-    img.src = src; img.hidden = false; if(ph) ph.hidden = true;
-  } else {
-    img.removeAttribute('src'); img.hidden = true; if(ph) ph.hidden = false;
-  }
-}
+/* ---------- HERO CMS: Firebase '/site_content' (managed from the nikora-admin site) ----------
+   Image : site_content/hero_image_url  ->  legacy settings/hero_image  ->  built-in default (the gradient in the <img>)
+   Text  : hero_title, hero_subtitle, hero_primary_btn_text/_link, hero_secondary_btn_text/_link
+   Stats : hero_stats_auto (default true = live /reviews); when false, hero_rating_score + hero_review_count + hero_badge_label
+   Anything missing falls back to the text already in the HTML above. */
+var NK_HERO_DEFAULT = '';
+var nkHeroSrc = { cms: '', legacy: '' }, nkHeroLoaded = { cms: false, legacy: false };
+var nkHeroDefaults = null;
+
 function nkHeroCacheSet(v){ try{ if(v) localStorage.setItem('nikora_hero_image', v); else localStorage.removeItem('nikora_hero_image'); }catch(e){} }
 function nkHeroCacheGet(){ try{ return localStorage.getItem('nikora_hero_image') || ''; }catch(e){ return ''; } }
+
+function nkApplyHeroImage(){
+  var img = document.getElementById('hero-image'); if(!img) return;
+  if(!NK_HERO_DEFAULT) NK_HERO_DEFAULT = img.getAttribute('src') || '';
+  var want = (nkHeroSrc.cms && nkSafeImgSrc(nkHeroSrc.cms) && nkHeroSrc.cms) || (nkHeroSrc.legacy && nkSafeImgSrc(nkHeroSrc.legacy) && nkHeroSrc.legacy) || NK_HERO_DEFAULT;
+  img._want = want;
+  if(img.getAttribute('src') === want) return;
+  if(want === NK_HERO_DEFAULT){ img.src = want; return; }
+  var probe = new Image();                          /* preload so a bad URL never replaces the default with a broken image */
+  probe.onload = function(){ if(img._want === want) img.src = want; };
+  probe.onerror = function(){ if(img._want === want){ console.warn('Hero image URL failed to load, using default.', want); img.src = NK_HERO_DEFAULT; } };
+  probe.src = want;
+}
+function nkHeroMaybeApply(){
+  if(nkHeroSrc.cms || (nkHeroLoaded.cms && nkHeroLoaded.legacy)) nkApplyHeroImage();
+}
+
+function nkSafeLink(v){
+  if(typeof v !== 'string') return '';
+  v = v.trim();
+  if(!v || v.indexOf('//') === 0) return '';
+  return /^(https:\/\/\S+|#[\w-]*|\/[^\s]*|[\w\-\/]+\.html(\?[^\s#]*)?(#\S*)?)$/i.test(v) ? v : '';
+}
+function nkHeroTitleRender(el, text){
+  el.textContent = '';
+  String(text).split(/\r?\n/).forEach(function(line, li){
+    if(li) el.appendChild(document.createElement('br'));
+    line.split(/(\*[^*]+\*)/).forEach(function(seg){
+      if(!seg) return;
+      if(seg.length > 2 && seg.charAt(0) === '*' && seg.charAt(seg.length - 1) === '*'){
+        var sp = document.createElement('span'); sp.className = 'accent'; sp.textContent = seg.slice(1, -1); el.appendChild(sp);
+      } else el.appendChild(document.createTextNode(seg));
+    });
+  });
+}
+function nkApplyHeroText(c){
+  c = c || {};
+  var ids = { title: 'hero-title', sub: 'hero-sub', p: 'hero-cta-primary', pt: 'hero-cta-primary-text', s: 'hero-cta-secondary', st: 'hero-cta-secondary-text' };
+  var el = {}; for(var k in ids) el[k] = document.getElementById(ids[k]);
+  if(!nkHeroDefaults){
+    nkHeroDefaults = {
+      title: el.title ? el.title.innerHTML : '', sub: el.sub ? el.sub.textContent : '',
+      pt: el.pt ? el.pt.textContent : '', st: el.st ? el.st.textContent : '',
+      p: el.p ? el.p.getAttribute('href') : '', s: el.s ? el.s.getAttribute('href') : ''
+    };
+  }
+  function str(v, max){ return (typeof v === 'string' && v.trim()) ? v.trim().slice(0, max) : ''; }
+  if(el.title){ var t = str(c.hero_title, 160); if(t) nkHeroTitleRender(el.title, t); else el.title.innerHTML = nkHeroDefaults.title; }
+  if(el.sub)  el.sub.textContent = str(c.hero_subtitle, 400) || nkHeroDefaults.sub;
+  if(el.pt)   el.pt.textContent = str(c.hero_primary_btn_text, 40) || nkHeroDefaults.pt;
+  if(el.st)   el.st.textContent = str(c.hero_secondary_btn_text, 40) || nkHeroDefaults.st;
+  if(el.p)    el.p.setAttribute('href', nkSafeLink(c.hero_primary_btn_link) || nkHeroDefaults.p);
+  if(el.s)    el.s.setAttribute('href', nkSafeLink(c.hero_secondary_btn_link) || nkHeroDefaults.s);
+
+  var rating = Number(c.hero_rating_score), count = Number(c.hero_review_count);
+  nkHeroStatsOverride = (c.hero_stats_auto === false && isFinite(rating) && rating > 0 && rating <= 5 && isFinite(count) && count >= 0 && c.hero_review_count != null)
+    ? { rating: rating, count: Math.floor(count), label: str(c.hero_badge_label, 60) } : null;
+  nkUpdateHeroProof(nkHeroLastStats);
+}
+
 function initHeroImage(){
-  nkApplyHeroImage(nkHeroCacheGet());                    /* instant paint from the last known image */
+  var img = document.getElementById('hero-image');
+  if(img) NK_HERO_DEFAULT = img.getAttribute('src') || '';
+  nkHeroSrc.cms = nkHeroCacheGet();                      /* instant paint from the last known image */
+  nkApplyHeroImage();
   nkImgFieldBind('hero', 1600);
   if(!firebaseReady) return;
-  db.ref('settings/hero_image').on('value', function(snap){
+  db.ref('site_content/hero_image_url').on('value', function(snap){
     var v = snap.val();
-    v = (typeof v === 'string') ? v : '';
-    nkHeroCacheSet(v);
-    nkApplyHeroImage(v);
-  }, function(err){ console.warn('Hero image sync error - using cached image.', err); });
+    nkHeroSrc.cms = (typeof v === 'string') ? v.trim() : '';
+    nkHeroLoaded.cms = true;
+    if(nkHeroLoaded.legacy || nkHeroSrc.cms) nkHeroCacheSet(nkHeroSrc.cms || nkHeroSrc.legacy);
+    nkHeroMaybeApply();
+  }, function(err){ console.warn('Hero image sync error - using cached or default image.', err); nkHeroLoaded.cms = true; nkHeroMaybeApply(); });
+  db.ref('settings/hero_image').on('value', function(snap){      /* older setting, kept as a fallback */
+    var v = snap.val();
+    nkHeroSrc.legacy = (typeof v === 'string') ? v.trim() : '';
+    nkHeroLoaded.legacy = true;
+    if(nkHeroLoaded.cms) nkHeroCacheSet(nkHeroSrc.cms || nkHeroSrc.legacy);
+    nkHeroMaybeApply();
+  }, function(){ nkHeroLoaded.legacy = true; nkHeroMaybeApply(); });
+  db.ref('site_content').on('value', function(snap){ nkApplyHeroText(snap.val()); },
+    function(err){ console.warn('Hero text sync error - keeping the built-in text.', err); });
 }
 
 /* ---------------- Tactile 3D card spotlight ---------------- */
