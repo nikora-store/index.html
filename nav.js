@@ -27,6 +27,11 @@
  * announcement_text, promo_banner_enabled, promo_banner_image_url, promo_banner_link).
  * Nothing is shown until the admin turns them on. Needs public read on /site_content.
  *
+ * SITE CONTENT STORE: nav.js keeps one live copy of /site_content for the page (server-sent stream, no SDK needed)
+ * and exposes it as  window.NikoraSite  { get(), onChange(fn), refresh(), util }. Pages subscribe with
+ * NikoraSite.onChange(function (content) { ... }) and fall back to their built-in text when a field is empty.
+ * The shared footer (copyright, support email / phone, hours, social links) is rendered from it here.
+ *
  * Public API:
  *   window.NikoraNav = { openMenu, closeMenu, config, refreshSiteContent }
  *   window.openAiAssistant()   opens the Beauty Concierge chat (loads it first if needed)
@@ -165,6 +170,15 @@
   '  fill:var(--nkn-logo-primary);color:var(--nkn-logo-accent);transition:fill .35s ease,color .35s ease;}',
   '.nkn-d-head .nkn-logo{--nkn-logo-h:50px;}',
   '.nkn-footer .nkn-logo{--nkn-logo-h:78px;}',
+
+  /* ---- footer contact lines + social icons (content comes from Firebase /site_content) ---- */
+  '.nkn-f-brand .nkn-f-contact{margin-top:14px;font-size:13px;line-height:1.7;color:var(--nkn-soft);}',
+  '.nkn-f-contact a{color:inherit;text-decoration:none;border-bottom:1px solid transparent;transition:color .2s,border-color .2s;}',
+  '.nkn-f-contact a:hover,.nkn-f-contact a:focus-visible{color:var(--nkn-gold);border-bottom-color:currentColor;}',
+  '.nkn-f-social{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}',
+  '.nkn-f-social a{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid var(--nkn-line);border-radius:50%;color:var(--nkn-soft);transition:color .2s,border-color .2s,transform .2s;}',
+  '.nkn-f-social a:hover,.nkn-f-social a:focus-visible{color:var(--nkn-gold);border-color:var(--nkn-gold);transform:translateY(-2px);}',
+  '.nkn-f-social svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}',
 
   /* ---- announcement bar + promo banner (content comes from Firebase /site_content) ---- */
   '.nkn-announce{position:relative;z-index:401;background:#0B0B0E;color:#F3EEE6;border-bottom:1px solid rgba(200,155,84,.45);font-family:inherit;}',
@@ -331,7 +345,7 @@
   function legalHtml() {
     return '<nav class="nkn-f-legal" aria-label="Legal and support">' + CONFIG.legal.map(function (l) {
       var st = state(l.href);
-      return '<a' + (st ? ' class="is-current"' : '') + ' href="' + esc(l.href) + '"' + activeAttrs(st) + '>' + esc(l.label) + '</a>';
+      return '<a' + (st ? ' class="is-current"' : '') + ' href="' + esc(fixMail(l.href)) + '"' + activeAttrs(st) + '>' + esc(l.label) + '</a>';
     }).join('') + '</nav>';
   }
 
@@ -343,17 +357,17 @@
           return '<button type="button" class="nkn-f-link" data-nkn-ai>' + ico(l.icon || 'sparkle') + esc(l.label) + '</button>';
         }
         var st = state(l.href);
-        return '<a class="nkn-f-link' + activeClass(st) + '" href="' + esc(l.href) + '"' + activeAttrs(st) + '>' + esc(l.label) + '</a>';
+        return '<a class="nkn-f-link' + activeClass(st) + '" href="' + esc(fixMail(l.href)) + '"' + activeAttrs(st) + '>' + esc(l.label) + '</a>';
       }).join('');
       return '<nav class="nkn-f-col" aria-labelledby="' + hid + '"><h5 id="' + hid + '">' + esc(sec.title) + '</h5>' + links + '</nav>';
     }).join('');
 
     return '<div class="nkn-f-wrap">' +
       '<div class="nkn-f-grid">' +
-        '<div class="nkn-f-brand">' + logoHtml() + '<p>' + esc(CONFIG.tagline) + '</p><p class="nkn-f-hours">' + esc(CONFIG.hours) + '</p><p class="nkn-f-hours">' + esc(CONFIG.shipNote) + '</p></div>' +
+        '<div class="nkn-f-brand">' + logoHtml() + '<p>' + esc(CONFIG.tagline) + '</p><p class="nkn-f-hours">' + esc(hoursText()) + '</p><p class="nkn-f-hours">' + esc(CONFIG.shipNote) + '</p>' + footerContactHtml() + footerSocialHtml() + '</div>' +
         cols +
       '</div>' +
-      '<div class="nkn-f-bottom"><span>&copy; ' + new Date().getFullYear() + ' NIKORA. All rights reserved.</span>' + legalHtml() + '</div>' +
+      '<div class="nkn-f-bottom"><span>' + copyrightHtml() + '</span>' + legalHtml() + '</div>' +
     '</div>';
   }
 
@@ -373,21 +387,70 @@
    *     Painted instantly from the last cached copy, then refreshed from the database
    *     (live listener when the page has the Firebase SDK, plain REST read otherwise).
    * -------------------------------------------------------------------- */
-  var SITE = { dbUrl: 'https://nikora-store-default-rtdb.firebaseio.com', cacheKey: 'nikora_site_content', dismissKey: 'nkn_promo_dismissed', refreshMs: 60000 };
-  var siteLive = false, siteLast = 0;
+  var SITE = { dbUrl: 'https://nikora-store-default-rtdb.firebaseio.com', cacheKey: 'nikora_site_content_v2', dismissKey: 'nkn_promo_dismissed', refreshMs: 60000 };
+  var DEFAULT_EMAIL = 'nikora.support@gmail.com';
+  var SITE_DATA = {}, siteSubs = [], siteLastKey = null, pollTimer = null, siteLast = 0;
 
-  function safeLink(v) {                              // https URL, #anchor, /path or page.html. Anything else (javascript:, //host, http:) is dropped
+  function safeLink(v) {                              // https URL, mailto:/tel:, #anchor, /path or page.html. Anything else (javascript:, //host, http:) is dropped
     if (typeof v !== 'string') return '';
     v = v.trim();
     if (!v || v.indexOf('//') === 0) return '';
-    return /^(https:\/\/\S+|#[\w-]*|\/[^\s]*|[\w\-\/]+\.html(\?[^\s#]*)?(#\S*)?)$/i.test(v) ? v : '';
+    return /^(https:\/\/\S+|mailto:[^\s<>"']+|tel:[+\d][\d\s().-]*|#[\w-]*|\/[^\s]*|[\w\-\/]+\.html(\?[^\s#]*)?(#\S*)?)$/i.test(v) ? v : '';
   }
   function safeImg(v) { return (typeof v === 'string' && /^https:\/\/\S+$/i.test(v.trim())) ? v.trim() : ''; }
-  function siteSubset(c) {
-    c = c || {};
-    return { announcement_enabled: c.announcement_enabled, announcement_text: c.announcement_text, promo_banner_enabled: c.promo_banner_enabled, promo_banner_image_url: c.promo_banner_image_url, promo_banner_link: c.promo_banner_link };
+  function siteStr(k, max) { var v = SITE_DATA && SITE_DATA[k]; return (typeof v === 'string' && v.trim()) ? v.trim().slice(0, max || 300) : ''; }
+  function validEmail(e) { return /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']{2,}$/.test(e || ''); }
+  function siteEmail(first) {                         // 'footer' or 'contact' decides which saved address wins; the other is the fallback
+    var a = siteStr('footer_support_email', 120), b = siteStr('contact_email', 120), e = first === 'contact' ? (b || a) : (a || b);
+    return validEmail(e) ? e : DEFAULT_EMAIL;
   }
-  function sitePick(c) {                              // raw /site_content -> what to show ({ ann, img, link })
+  function siteEmailCustom() { return siteEmail('footer') !== DEFAULT_EMAIL; }
+  function sitePhone(first) {
+    var a = siteStr('footer_support_phone', 40), b = siteStr('contact_phone', 40), v = first === 'contact' ? (b || a) : (a || b);
+    return /^[+\d][\d\s().-]{4,}$/.test(v) ? v : '';
+  }
+  function toList(v) {                                // Firebase gives arrays back as arrays or as {0:..,1:..} objects
+    if (Array.isArray(v)) return v.filter(function (x) { return x && typeof x === 'object'; });
+    if (v && typeof v === 'object') return Object.keys(v).sort(function (a, b) { return Number(a) - Number(b); }).map(function (k) { return v[k]; }).filter(function (x) { return x && typeof x === 'object'; });
+    return [];
+  }
+  function inlineHtml(t) {                            // plain text with [label](link) -> escaped HTML
+    t = String(t); var out = '', last = 0, re = /\[([^\]]{1,120})\]\(([^)\s]{1,300})\)/g, m;
+    while ((m = re.exec(t))) {
+      out += esc(t.slice(last, m.index));
+      var u = safeLink(m[2]);
+      out += u ? '<a href="' + esc(u) + '"' + (/^https:/i.test(u) ? ' target="_blank" rel="noopener"' : '') + '>' + esc(m[1]) + '</a>' : esc(m[1]);
+      last = re.lastIndex;
+    }
+    return out + esc(t.slice(last));
+  }
+  function answerHtml(text) {                         // blank line = new paragraph, lines starting "- " = tick list
+    var TICK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    return String(text || '').split(/\n\s*\n/).map(function (b) {
+      var lines = b.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+      if (!lines.length) return '';
+      if (lines.every(function (l) { return /^[-\u2022]\s+/.test(l); })) return '<ul>' + lines.map(function (l) { return '<li>' + TICK + inlineHtml(l.replace(/^[-\u2022]\s+/, '')) + '</li>'; }).join('') + '</ul>';
+      return '<p>' + lines.map(inlineHtml).join('<br>') + '</p>';
+    }).join('');
+  }
+  function richText(el, text, tag, cls) {             // "Smart care. *Instant* glow." -> accent word + line breaks, built with DOM nodes (no HTML injection)
+    el.textContent = '';
+    String(text).split(/\r?\n/).forEach(function (line, li) {
+      if (li) el.appendChild(document.createElement('br'));
+      line.split(/(\*[^*]+\*)/).forEach(function (seg) {
+        if (!seg) return;
+        if (seg.length > 2 && seg.charAt(0) === '*' && seg.charAt(seg.length - 1) === '*') {
+          var n = document.createElement(tag || 'em'); if (cls) n.className = cls; n.textContent = seg.slice(1, -1); el.appendChild(n);
+        } else el.appendChild(document.createTextNode(seg));
+      });
+    });
+  }
+  function siteCacheGet() { try { return JSON.parse(localStorage.getItem(SITE.cacheKey) || 'null'); } catch (e) { return null; } }
+  function siteCacheSet(v) { try { localStorage.setItem(SITE.cacheKey, JSON.stringify(v)); } catch (e) {} }
+  function promoDismissed(img) { try { return sessionStorage.getItem(SITE.dismissKey) === img; } catch (e) { return false; } }
+  SITE_DATA = (function () { var c = siteCacheGet(); return (c && typeof c === 'object') ? c : {}; })();
+
+  function sitePick(c) {                              // raw /site_content -> what the bar and banner show ({ ann, img, link })
     c = c || {};
     var text = (typeof c.announcement_text === 'string') ? c.announcement_text.trim().slice(0, 160) : '';
     return {
@@ -396,9 +459,6 @@
       link: safeLink(c.promo_banner_link)
     };
   }
-  function siteCacheGet() { try { return JSON.parse(localStorage.getItem(SITE.cacheKey) || 'null'); } catch (e) { return null; } }
-  function siteCacheSet(v) { try { localStorage.setItem(SITE.cacheKey, JSON.stringify(v)); } catch (e) {} }
-  function promoDismissed(img) { try { return sessionStorage.getItem(SITE.dismissKey) === img; } catch (e) { return false; } }
 
   function announceHtml(sc) {
     return '<div class="nkn-announce" id="nkn-announce" role="region" aria-label="Announcement"' + (sc.ann ? '' : ' hidden') + '>' +
@@ -430,35 +490,114 @@
       } else { pm.innerHTML = ''; p.removeAttribute('data-key'); p.hidden = true; }
     }
   }
-  function onSiteContent(c) {
-    var raw = siteSubset(c);
-    siteCacheSet(raw);
-    siteLast = Date.now();
-    applySite(sitePick(raw));
+
+  /* ---- footer content: copyright, support email / phone, hours, social links ---- */
+  var SOCIALS = [
+    ['instagram', 'Instagram', '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r=".7"/>'],
+    ['tiktok',    'TikTok',    '<path d="M14 3v11.5a3.5 3.5 0 11-3.5-3.5"/><path d="M14 3c.3 2.6 2 4.4 5 4.6"/>'],
+    ['facebook',  'Facebook',  '<path d="M14 8h3V4h-3a4 4 0 00-4 4v3H7v4h3v6h4v-6h3l1-4h-4V8z"/>'],
+    ['youtube',   'YouTube',   '<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10 9.5l5 2.5-5 2.5z"/>'],
+    ['pinterest', 'Pinterest', '<circle cx="12" cy="12" r="9"/><path d="M10.6 20l1.7-7.2"/><path d="M9.3 10.4c.4-2 2.2-3 3.9-2.5 1.6.5 2.2 2.5 1.4 4.2-.8 1.6-2.3 2-3.3 1.2"/>']
+  ];
+  function fixMail(h) { return /^mailto:/i.test(h) ? 'mailto:' + siteEmail('footer') : h; }
+  function hoursText() { return siteStr('contact_hours', 120) || CONFIG.hours; }
+  function footerContactHtml() {
+    var out = '', ph = sitePhone('footer');
+    if (siteEmailCustom()) out += '<a href="mailto:' + esc(siteEmail('footer')) + '">' + esc(siteEmail('footer')) + '</a>';
+    if (ph) out += (out ? '<br>' : '') + '<a href="tel:' + esc(ph.replace(/[^\d+]/g, '')) + '">' + esc(ph) + '</a>';
+    return out ? '<p class="nkn-f-contact">' + out + '</p>' : '';
   }
-  function fetchSite() {                              // works on every page, with or without the Firebase SDK (public read of /site_content)
+  function footerSocialHtml() {
+    var links = SOCIALS.map(function (sc) {
+      var u = siteStr('footer_social_' + sc[0], 300);
+      return /^https:\/\/\S+$/i.test(u) ? '<a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer" aria-label="' + sc[1] + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + sc[2] + '</svg></a>' : '';
+    }).join('');
+    return links ? '<div class="nkn-f-social" aria-label="Follow NIKORA">' + links + '</div>' : '';
+  }
+  function copyrightHtml() { var t = siteStr('footer_copyright', 200); return t ? esc(t) : '&copy; ' + new Date().getFullYear() + ' NIKORA. All rights reserved.'; }
+  function applyFooter() {
+    var el = document.querySelector('footer.nkn-footer'); if (!el) return;
+    var html = buildFooterHtml();
+    if (el._nkHtml !== html) { el.innerHTML = html; el._nkHtml = html; }
+  }
+  function swapMailLinks() {                          // every mailto: link that points at the default support address follows the saved one
+    var cur = siteEmail('footer'), list = document.querySelectorAll('a[href^="mailto:"]');
+    for (var i = 0; i < list.length; i++) {
+      var a = list[i], href = a.getAttribute('href'), em = href.slice(7).split('?')[0], rest = href.slice(7 + em.length);
+      if (a.hasAttribute('data-nk-own')) continue;                  /* the page sets this one itself (contact page) */
+      if (em.toLowerCase() !== DEFAULT_EMAIL && !a._nkPrev) continue;
+      if (a._nkPrev === cur || (!a._nkPrev && cur === DEFAULT_EMAIL)) continue;
+      var prev = a._nkPrev || DEFAULT_EMAIL;
+      a.setAttribute('href', 'mailto:' + cur + rest);
+      if (a.textContent.trim().toLowerCase() === prev.toLowerCase()) a.textContent = cur;
+      a._nkPrev = cur;
+    }
+  }
+
+  /* ---- the shared store: one live copy of /site_content for the whole page ---- */
+  function notifySite() {
+    var key; try { key = JSON.stringify(SITE_DATA); } catch (e) { key = String(Date.now()); }
+    if (key === siteLastKey) return;
+    siteLastKey = key;
+    siteSubs.slice().forEach(function (fn) { try { fn(SITE_DATA); } catch (err) { if (window.console) console.error('NikoraSite listener failed', err); } });
+  }
+  function onSiteContent(c) {
+    SITE_DATA = (c && typeof c === 'object') ? c : {};
+    siteLast = Date.now();
+    siteCacheSet(SITE_DATA);
+    applySite(sitePick(SITE_DATA));
+    applyFooter();
+    swapMailLinks();
+    notifySite();
+  }
+  function fetchSite() {                              // one-off read (used when streaming is unavailable)
     if (typeof fetch !== 'function') return;
     fetch(SITE.dbUrl + '/site_content.json', { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function (c) { onSiteContent(c || {}); })
-      .catch(function (err) { if (window.console) console.warn('NIKORA nav: site content unavailable, keeping the cached or default state.', err); });
+      .catch(function (err) { if (window.console) console.warn('NIKORA nav: site content unavailable, keeping the cached or default content.', err); });
   }
-  function attachLive() {                             // pages that already initialised Firebase get instant updates
-    if (siteLive) return;
-    try {
-      if (window.firebase && firebase.apps && firebase.apps.length) {
-        firebase.database().ref('site_content').on('value', function (snap) { onSiteContent(snap.val() || {}); }, function () { siteLive = false; });
-        siteLive = true;
-      }
-    } catch (e) {}
-  }
-  function startSite() {
+  function startPolling() {
+    if (pollTimer) return;
     fetchSite();
-    if (document.readyState === 'complete') attachLive(); else window.addEventListener('load', attachLive);
-    document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'visible' && !siteLive && Date.now() - siteLast > SITE.refreshMs) fetchSite();
-    });
+    pollTimer = setInterval(function () { if (document.visibilityState !== 'hidden') fetchSite(); }, SITE.refreshMs);
   }
+  function setAt(root, path, val) {                   // apply a Firebase stream event (path like "/faq_items/2/q") to the local copy
+    if (path === '/' || path === '') return (val && typeof val === 'object') ? val : {};
+    var seg = path.split('/').filter(Boolean), cur = root, k;
+    for (var i = 0; i < seg.length - 1; i++) { k = seg[i]; if (!cur[k] || typeof cur[k] !== 'object') cur[k] = {}; cur = cur[k]; }
+    k = seg[seg.length - 1];
+    if (val === null || val === undefined) delete cur[k]; else cur[k] = val;
+    return root;
+  }
+  function openStream() {                             // live updates on every page, with or without the Firebase SDK
+    if (typeof EventSource !== 'function') return startPolling();
+    var es, data = {}, got = false;
+    try { es = new EventSource(SITE.dbUrl + '/site_content.json'); } catch (e) { return startPolling(); }
+    function fallback() { try { es.close(); } catch (e) {} startPolling(); }
+    es.addEventListener('put', function (ev) {
+      try { var m = JSON.parse(ev.data); data = setAt(data, m.path, m.data); got = true; onSiteContent(JSON.parse(JSON.stringify(data))); } catch (e) {}
+    });
+    es.addEventListener('patch', function (ev) {
+      try { var m = JSON.parse(ev.data); Object.keys(m.data || {}).forEach(function (k) { data = setAt(data, (m.path === '/' ? '' : m.path) + '/' + k, m.data[k]); }); got = true; onSiteContent(JSON.parse(JSON.stringify(data))); } catch (e) {}
+    });
+    es.addEventListener('cancel', fallback);
+    es.addEventListener('auth_revoked', fallback);
+    es.onerror = function () { if (!got) fallback(); };   // never connected (blocked, offline, rules) -> plain reads instead
+  }
+  function startSite() { openStream(); }
+
+  window.NikoraSite = {                               // pages subscribe here: NikoraSite.onChange(function (content) { ... })
+    get: function () { return SITE_DATA; },
+    onChange: function (fn) {
+      if (typeof fn !== 'function') return function () {};
+      siteSubs.push(fn);
+      try { fn(SITE_DATA); } catch (err) { if (window.console) console.error('NikoraSite listener failed', err); }
+      return function () { var i = siteSubs.indexOf(fn); if (i >= 0) siteSubs.splice(i, 1); };
+    },
+    refresh: fetchSite,
+    util: { toList: toList, answerHtml: answerHtml, inlineHtml: inlineHtml, rich: richText, safeLink: safeLink, safeImg: safeImg, email: siteEmail, phone: sitePhone, esc: esc }
+  };
   var SC0 = sitePick(siteCacheGet());                 // first paint from the last known state, so nothing jumps in later
 
   var HTML = LOGO_SPRITE + announceHtml(SC0) + buildHeader() + promoHtml(SC0) + buildDrawer();
@@ -500,13 +639,15 @@
     var old = document.querySelector('footer.site') || (feet.length ? feet[feet.length - 1] : null);
     var el = document.createElement('footer');
     el.className = 'nkn-footer';
-    el.innerHTML = buildFooterHtml();
+    el._nkHtml = buildFooterHtml();
+    el.innerHTML = el._nkHtml;
     if (old && old.parentNode) {
       if (old.id) el.id = old.id;                              /* keep any in-page anchor (e.g. #track) working */
       old.parentNode.replaceChild(el, old);
     } else {
       document.body.appendChild(el);
     }
+    swapMailLinks();
   }
 
   /* ======================================================================
