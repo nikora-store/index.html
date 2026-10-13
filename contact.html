@@ -688,9 +688,17 @@ h1.c-title em{font-style:italic; color:var(--gold);}
               <span class="c-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
               <div>
                 <h3>Concierge Working Hours</h3>
-                <p>Monday &ndash; Sunday: 8:00 AM &ndash; 10:00 PM EST</p>
+                <p id="c-hours">Monday &ndash; Sunday: 8:00 AM &ndash; 10:00 PM EST</p>
                 <span class="c-open" id="c-open" hidden><i aria-hidden="true"></i><span id="c-open-txt"></span></span>
               </div>
+            </div>
+            <div class="c-row" id="c-row-phone" style="display:none;">
+              <span class="c-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/></svg></span>
+              <div><h3>Phone</h3><p><a id="c-phone" href="#" data-nk-own="1"></a></p></div>
+            </div>
+            <div class="c-row" id="c-row-address" style="display:none;">
+              <span class="c-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.1 7-11.5A7 7 0 005 9.5C5 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span>
+              <div><h3>Address</h3><p id="c-address" style="white-space:pre-line;"></p></div>
             </div>
           </div>
         </article>
@@ -1583,7 +1591,9 @@ function cIsOpen(d){
   return t === null ? null : (t >= C_OPEN_MIN && t < C_CLOSE_MIN);
 }
 function cUpdateOpen(){
-  var box = cEl('c-open'), txt = cEl('c-open-txt'), open = cIsOpen();
+  var box = cEl('c-open'), txt = cEl('c-open-txt');
+  if(window.NK_HOURS_CUSTOM){ box.hidden = true; return; }      /* the live badge only knows the built-in hours */
+  var open = cIsOpen();
   if(open === null){ box.hidden = true; return; }
   box.hidden = false;
   box.classList.toggle('on', open);
@@ -1751,6 +1761,42 @@ if(document.readyState === 'loading'){
 } else {
   init();
 }
+</script>
+<script>
+/* ---------------- LIVE CONTENT: Firebase /site_content (edited in the admin CMS) ----------------
+   contact_title, contact_subtitle, contact_email (falls back to footer_support_email), contact_phone, contact_hours, contact_address.
+   Any empty field keeps the built-in text above. */
+(function(){
+  var S = window.NikoraSite; if(!S) return;
+  var U = S.util, D = null;
+  function $(id){ return document.getElementById(id); }
+  function str(v, max){ return (typeof v === 'string' && v.trim()) ? v.trim().slice(0, max) : ''; }
+  function render(c){
+    var h1 = $('c-h1'), sub = document.querySelector('.c-sub'), em = $('c-email'), hrs = $('c-hours');
+    if(!h1 || !sub || !em || !hrs) return;
+    if(!D) D = { title: h1.innerHTML, sub: sub.textContent, hours: hrs.innerHTML, email: em.textContent.trim() };
+    var t = str(c.contact_title, 160);
+    if(t) U.rich(h1, t, 'em'); else h1.innerHTML = D.title;
+    sub.textContent = str(c.contact_subtitle, 400) || D.sub;
+
+    var addr = U.email('contact');                      /* contact_email, else footer_support_email, else the built-in address */
+    em.textContent = addr; em.href = 'mailto:' + addr; em.setAttribute('data-nk-own', '1');
+    var pill = document.querySelector('a.c-pill[href^="mailto:"]');
+    if(pill){ pill.href = 'mailto:' + addr; pill.setAttribute('data-nk-own', '1'); }
+    if(typeof C_SUPPORT !== 'undefined') C_SUPPORT = addr;   /* copy button, message fallback and confirmation text */
+
+    var h = str(c.contact_hours, 120);
+    if(h) hrs.textContent = h; else hrs.innerHTML = D.hours;
+    window.NK_HOURS_CUSTOM = !!h;
+    if(typeof cUpdateOpen === 'function'){ try{ cUpdateOpen(); }catch(e){} }
+
+    var ph = U.phone('contact'), rowP = $('c-row-phone'), a = $('c-phone');
+    if(ph){ a.textContent = ph; a.href = 'tel:' + ph.replace(/[^\d+]/g, ''); rowP.style.display = ''; } else rowP.style.display = 'none';
+    var ad = str(c.contact_address, 300), rowA = $('c-row-address');
+    if(ad){ $('c-address').textContent = ad; rowA.style.display = ''; } else rowA.style.display = 'none';
+  }
+  S.onChange(render);
+})();
 </script>
 </body>
 </html>
