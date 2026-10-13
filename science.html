@@ -2026,5 +2026,75 @@ if(document.readyState === 'loading'){
 }
 
 </script>
+<style>
+.cms-off{display:none !important;}
+.cms-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px;}
+.cms-block{padding:clamp(22px,2.4vw,30px);}
+.cms-block h3{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(20px,2vw,24px); margin:0 0 10px; line-height:1.25;}
+.cms-block h3::before{content:""; display:block; width:28px; height:2px; background:var(--gold); margin-bottom:14px; border-radius:2px;}
+.cms-block p{margin:0; font-size:14.5px; line-height:1.7; color:var(--text-soft); white-space:pre-line;}
+</style>
+<script>
+/* ---------------- LIVE CONTENT: Firebase /site_content (edited in the admin CMS) ----------------
+   science_title, science_subtitle, science_tech_title, science_tech_text, science_results_title, science_results_text,
+   science_pillars [{ name, tag, title, text }] (up to 3, in page order), science_blocks_title, science_blocks_text,
+   science_blocks [{ title, text }] (extra feature cards). Title fields accept *accent words* and line breaks.
+   Any empty field keeps the built-in text above. */
+(function(){
+  var S = window.NikoraSite; if(!S) return;
+  var U = S.util, D = null, lastBlocks = '';
+  var PILLARS = ['light', 'ems', 'warmth'];
+  function $(id){ return document.getElementById(id); }
+  function str(v, max){ return (typeof v === 'string' && v.trim()) ? v.trim().slice(0, max) : ''; }
+  function sibP(h){ return h && h.parentNode ? h.parentNode.querySelector('p') : null; }
+  function capture(){
+    var o = { h1: $('sci-h1').innerHTML, sub: document.querySelector('.sci-sub').textContent, tech: $('tech-h2').innerHTML, techP: sibP($('tech-h2')).textContent,
+              res: $('res-h2').innerHTML, resP: sibP($('res-h2')).textContent, pil: [] };
+    PILLARS.forEach(function(k){
+      var tab = $('tab-' + k), pan = $('panel-' + k);
+      o.pil.push({ name: tab.querySelector('.pillar-name').textContent, tag: tab.querySelector('.pillar-tag').textContent, title: pan.querySelector('.pp-title').innerHTML, text: pan.querySelector('.pp-text').textContent });
+    });
+    return o;
+  }
+  function setRich(el, v, def){ var t = str(v, 200); if(t) U.rich(el, t, 'em'); else el.innerHTML = def; }
+  function setText(el, v, def, max){ el.textContent = str(v, max || 500) || def; }
+  function render(c){
+    if(!$('sci-h1') || !$('tech-h2') || !$('res-h2')) return;
+    if(!D) D = capture();
+    setRich($('sci-h1'), c.science_title, D.h1);
+    setText(document.querySelector('.sci-sub'), c.science_subtitle, D.sub, 400);
+    setRich($('tech-h2'), c.science_tech_title, D.tech);
+    setText(sibP($('tech-h2')), c.science_tech_text, D.techP, 500);
+    setRich($('res-h2'), c.science_results_title, D.res);
+    setText(sibP($('res-h2')), c.science_results_text, D.resP, 500);
+
+    var pl = U.toList(c.science_pillars);
+    PILLARS.forEach(function(k, i){
+      var p = pl[i] || {}, d = D.pil[i], tab = $('tab-' + k), pan = $('panel-' + k);
+      setText(tab.querySelector('.pillar-name'), p.name, d.name, 80);
+      setText(tab.querySelector('.pillar-tag'), p.tag, d.tag, 160);
+      setRich(pan.querySelector('.pp-title'), p.title, d.title);
+      setText(pan.querySelector('.pp-text'), p.text, d.text, 700);
+    });
+
+    /* extra feature cards, placed right after the technologies section */
+    var blocks = U.toList(c.science_blocks).map(function(b){ return { title: str(b.title, 120), text: str(b.text, 700) }; }).filter(function(b){ return b.title || b.text; });
+    var head = [str(c.science_blocks_title, 160), str(c.science_blocks_text, 400)];
+    var key = JSON.stringify([blocks, head]);
+    if(key === lastBlocks) return;
+    lastBlocks = key;
+    var old = $('cms-blocks'); if(old) old.remove();
+    if(!blocks.length) return;
+    var sec = document.createElement('section');
+    sec.className = 'section'; sec.id = 'cms-blocks'; sec.setAttribute('style', 'padding-top:clamp(30px,4vw,50px);');
+    sec.setAttribute('aria-label', head[0] || 'More about the science');
+    sec.innerHTML = '<div class="container">' +
+      (head[0] || head[1] ? '<div class="section-head"><div>' + (head[0] ? '<h2>' + U.esc(head[0]).replace(/\*([^*]+)\*/g, '<em>$1</em>') + '</h2>' : '') + (head[1] ? '<p>' + U.esc(head[1]) + '</p>' : '') + '</div></div>' : '') +
+      '<div class="cms-grid">' + blocks.map(function(b){ return '<article class="glass-card cms-block">' + (b.title ? '<h3>' + U.esc(b.title) + '</h3>' : '') + (b.text ? '<p>' + U.esc(b.text) + '</p>' : '') + '</article>'; }).join('') + '</div></div>';
+    var anchor = $('technologies'); if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(sec, anchor.nextSibling);
+  }
+  S.onChange(render);
+})();
+</script>
 </body>
 </html>
