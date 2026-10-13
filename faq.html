@@ -1762,17 +1762,23 @@ function fInitFaq(){
   var status = document.getElementById('f-status');
   var emptyBox = document.getElementById('f-empty');
   var groupsBox = document.getElementById('f-groups');
-  var items = Array.prototype.slice.call(document.querySelectorAll('.faq-item'));
-  var groups = Array.prototype.slice.call(document.querySelectorAll('.f-group'));
-  var chips = Array.prototype.slice.call(document.querySelectorAll('.f-chip'));
+  var items = [], groups = [], chips = [];
   var state = { cat: 'all' };
 
-  /* searchable text per question: question + answer + keywords */
-  items.forEach(function(it){
-    var q = it.querySelector('.q-text');
-    it._orig = q.textContent;
-    it._hay = (q.textContent + ' ' + it.querySelector('.faq-a-inner').textContent + ' ' + (it.getAttribute('data-kw') || '')).toLowerCase();
-  });
+  /* (Re)collect what is on the page. Questions can be added or hidden live from the admin (/site_content), so this runs again after each change.
+     Searchable text per question: question + answer + keywords. */
+  function collect(){
+    items = Array.prototype.slice.call(document.querySelectorAll('.faq-item')).filter(function(it){ return !it.closest('.cms-off'); });
+    groups = Array.prototype.slice.call(document.querySelectorAll('.f-group')).filter(function(g){ return !g.classList.contains('cms-off'); });
+    chips = Array.prototype.slice.call(document.querySelectorAll('.f-chip'));
+    items.forEach(function(it){
+      var q = it.querySelector('.q-text');
+      it._orig = q.textContent;
+      it._hay = (q.textContent + ' ' + it.querySelector('.faq-a-inner').textContent + ' ' + (it.getAttribute('data-kw') || '')).toLowerCase();
+      bindItem(it);
+    });
+    chips.forEach(bindChip);
+  }
 
   function setOpen(it, open){
     it.classList.toggle('open', open);
@@ -1836,12 +1842,14 @@ function fInitFaq(){
   function paintChips(){
     chips.forEach(function(c){ c.setAttribute('aria-pressed', c.getAttribute('data-cat') === state.cat ? 'true' : 'false'); });
   }
-  chips.forEach(function(chip){
+  function bindChip(chip){
+    if(chip._bound) return; chip._bound = true;
     chip.addEventListener('click', function(){ state.cat = chip.getAttribute('data-cat'); paintChips(); apply(true); });
-  });
+  }
 
   /* accordion (each question toggles on its own; closed answers are removed from the tab order) */
-  items.forEach(function(it, i){
+  function bindItem(it){
+    if(it._bound) return; it._bound = true;
     var btn = it.querySelector('.faq-q');
     btn.addEventListener('click', function(){ setOpen(it, !it.classList.contains('open')); });
     btn.addEventListener('keydown', function(e){
@@ -1853,7 +1861,14 @@ function fInitFaq(){
       if(n < 0) return;
       e.preventDefault(); vis[n].querySelector('.faq-q').focus();
     });
-  });
+  }
+
+  collect();
+  window.NK_FAQ_REFRESH = function(){                       /* called by the live-content script below after /site_content changes */
+    collect();
+    if(!chips.some(function(c){ return c.getAttribute('data-cat') === state.cat && c.style.display !== 'none'; })) state.cat = 'all';
+    paintChips(); apply(false);
+  };
 
   /* deep links: faq.html#faq-ship-track opens that answer; faq.html?q=shipping pre-fills the search */
   function openFromHash(){
@@ -1923,6 +1938,64 @@ if(document.readyState === 'loading'){
 } else {
   init();
 }
+</script>
+<style>.cms-off{display:none !important;}</style>
+<script>
+/* ---------------- LIVE CONTENT: Firebase /site_content (edited in the admin CMS) ----------------
+   faq_title, faq_subtitle, faq_items [{ q, a }], faq_mode ('append' adds a "More answers" group, 'replace' shows only these questions),
+   contact_hours. Any empty field keeps the built-in text above. */
+(function(){
+  var S = window.NikoraSite; if(!S) return;
+  var U = S.util, D = null, lastKey = '';
+  function $(id){ return document.getElementById(id); }
+  function str(v, max){ return (typeof v === 'string' && v.trim()) ? v.trim().slice(0, max) : ''; }
+  var HEAD_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 015 .9c0 1.7-2.5 2.2-2.5 3.8M12 17.2v.1"/></svg>';
+  var CHEV = '<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
+  function itemHtml(n, q, a){
+    var id = 'faq-cms-' + n;
+    return '<div class="faq-item" id="' + id + '" data-cat="cms" data-kw=""><h3 style="margin:0;"><button type="button" class="faq-q" id="' + id + '-q" aria-expanded="false" aria-controls="' + id + '-a">' +
+      '<span class="q-text">' + U.esc(q) + '</span><span class="faq-chev" aria-hidden="true">' + CHEV + '</span></button></h3>' +
+      '<div class="faq-a" id="' + id + '-a" role="region" aria-labelledby="' + id + '-q"><div><div class="faq-a-inner">' + U.answerHtml(a) + '</div></div></div></div>';
+  }
+  function render(c){
+    var h1 = $('f-h1'), sub = document.querySelector('.f-sub'), hrs = document.querySelector('.s-hours');
+    if(!h1 || !sub) return;
+    if(!D) D = { title: h1.innerHTML, sub: sub.textContent, hours: hrs ? hrs.innerHTML : '' };
+    var t = str(c.faq_title, 160);
+    if(t) U.rich(h1, t, 'em'); else h1.innerHTML = D.title;
+    sub.textContent = str(c.faq_subtitle, 400) || D.sub;
+    if(hrs){ var h = str(c.contact_hours, 120); if(h) hrs.textContent = h; else hrs.innerHTML = D.hours; }
+
+    var list = U.toList(c.faq_items).map(function(o){ return { q: str(o.q, 200), a: str(o.a, 3000) }; }).filter(function(o){ return o.q && o.a; });
+    var replace = c.faq_mode === 'replace' && list.length > 0;
+    var key = JSON.stringify([list, replace]);
+    if(key === lastKey) return;
+    lastKey = key;
+
+    var box = $('f-groups'), chipRow = document.querySelector('.f-chips'), chipWrap = document.querySelector('.f-chips-wrap');
+    Array.prototype.forEach.call(box.querySelectorAll('.f-group:not([data-cms])'), function(g){ g.classList.toggle('cms-off', replace); });
+    var old = box.querySelector('.f-group[data-cms]'); if(old) old.remove();
+    var oldChip = document.querySelector('.f-chip[data-cms]'); if(oldChip) oldChip.remove();
+    if(chipWrap) chipWrap.style.display = replace ? 'none' : '';
+
+    if(list.length){
+      var g = document.createElement('section');
+      g.className = 'f-group'; g.setAttribute('data-cat', 'cms'); g.setAttribute('data-cms', '1');
+      var head = replace ? ['Frequently asked questions', 'Everything you need to know about NIKORA.'] : ['More answers', 'Extra answers from our team.'];
+      g.setAttribute('aria-label', head[0]);
+      g.innerHTML = '<div class="f-group-head"><span class="f-group-ico">' + HEAD_ICO + '</span><div><h2>' + U.esc(head[0]) + '</h2><p>' + U.esc(head[1]) + '</p></div></div>' +
+        '<div class="glass-card faq">' + list.map(function(o, i){ return itemHtml(i + 1, o.q, o.a); }).join('') + '</div>';
+      box.appendChild(g);
+      if(!replace && chipRow){
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'f-chip'; b.setAttribute('data-cat', 'cms'); b.setAttribute('data-cms', '1'); b.setAttribute('aria-pressed', 'false');
+        b.textContent = 'More answers'; chipRow.appendChild(b);
+      }
+    }
+    if(window.NK_FAQ_REFRESH) window.NK_FAQ_REFRESH();
+  }
+  S.onChange(render);
+})();
 </script>
 </body>
 </html>
