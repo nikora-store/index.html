@@ -683,6 +683,43 @@ footer.site{border-top:1px solid var(--line); padding:60px 0 30px; margin-top:20
 .toast svg{width:15px;height:15px;stroke:var(--success);fill:none; flex-shrink:0;}
 .visually-hidden{position:absolute; width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
 </style>
+<style id="nk-hs-css">
+/* ===== Hero slider (Firebase /site_content/banners/hero) — Obsidian #0B0B0E, frosted glass, gold #C89B54 ===== */
+.hero[hidden]{display:none!important}
+.nk-hs{margin:clamp(20px,3vw,36px) 0 0}
+.nk-hs[hidden]{display:none!important}
+.nk-hs-frame{position:relative;height:clamp(440px,52vw,620px);border-radius:32px;overflow:hidden;background:#0B0B0E;border:1px solid rgba(255,255,255,.1);box-shadow:0 28px 70px -28px rgba(0,0,0,.55)}
+.nk-hs-viewport{position:absolute;inset:0;overflow:hidden;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
+.nk-hs-viewport.drag{cursor:grabbing}
+.nk-hs-track{display:flex;height:100%;transition:transform .65s cubic-bezier(.22,.8,.24,1);will-change:transform}
+.nk-hs-track.drag{transition:none}
+.nk-hs-slide{position:relative;flex:0 0 100%;height:100%;overflow:hidden}
+.nk-hs-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-drag:none}
+.nk-hs-slide::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,11,14,.84) 0%,rgba(11,11,14,.46) 50%,rgba(11,11,14,.08) 100%)}
+.nk-hs-copy{position:absolute;z-index:2;left:clamp(20px,5vw,64px);top:50%;transform:translateY(-50%);width:min(540px,calc(100% - 40px));padding:clamp(22px,3vw,36px);border-radius:26px;background:rgba(11,11,14,.42);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#F7F4F0}
+.nk-hs-title{margin:0 0 12px;font-family:'Playfair Display',serif;font-weight:500;font-size:clamp(26px,4vw,50px);line-height:1.1;color:#fff}
+.nk-hs-sub{margin:0 0 24px;font-size:clamp(14px,1.5vw,16.5px);line-height:1.6;color:rgba(247,244,240,.8)}
+.nk-hs-title:last-child,.nk-hs-sub:last-child{margin-bottom:0}
+.nk-hs-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 26px;border-radius:100px;background:#C89B54;color:#17120a;font-size:13.5px;font-weight:700;letter-spacing:.02em;text-decoration:none;transition:transform .2s ease,box-shadow .2s ease,filter .2s ease}
+.nk-hs-btn:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 10px 28px -8px rgba(200,155,84,.65)}
+.nk-hs-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.nk-hs-arrow{position:absolute;z-index:3;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;color:#fff;background:rgba(11,11,14,.4);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:border-color .2s,color .2s,background .2s}
+.nk-hs-arrow:hover{border-color:#C89B54;color:#C89B54;background:rgba(11,11,14,.6)}
+.nk-hs-arrow svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.nk-hs-prev{left:16px}.nk-hs-next{right:16px}
+.nk-hs-dots{position:absolute;z-index:3;left:50%;bottom:18px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:100px;background:rgba(11,11,14,.42);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.nk-hs-dot{position:relative;width:8px;height:8px;padding:0;border:0;border-radius:99px;background:rgba(255,255,255,.45);cursor:pointer;transition:width .3s ease,background .3s ease}
+.nk-hs-dot::after{content:"";position:absolute;inset:-10px}
+.nk-hs-dot.on{width:26px;background:#C89B54}
+.nk-hs-arrow:focus-visible,.nk-hs-dot:focus-visible,.nk-hs-btn:focus-visible{outline:2px solid #C89B54;outline-offset:3px}
+@media(max-width:760px){
+  .nk-hs-frame{border-radius:24px}
+  .nk-hs-arrow{display:none}
+  .nk-hs-slide::after{background:linear-gradient(0deg,rgba(11,11,14,.92) 0%,rgba(11,11,14,.4) 62%,rgba(11,11,14,.1) 100%)}
+  .nk-hs-copy{top:auto;bottom:64px;left:14px;transform:none;width:calc(100% - 28px);padding:20px;border-radius:20px}
+}
+@media(prefers-reduced-motion:reduce){.nk-hs-track{transition:none}.nk-hs-btn:hover{transform:none}}
+</style>
 </head>
 <body>
 <script src="nav.js"></script>
@@ -692,6 +729,9 @@ footer.site{border-top:1px solid var(--line); padding:60px 0 30px; margin-top:20
 <main id="top">
 
   <!-- ================= HERO ================= -->
+  <!-- ================= HERO SLIDER (data: Firebase /site_content/banners/hero; the static hero below is the automatic fallback when there are no slides) ================= -->
+  <section class="nk-hs" id="nk-hero-slider" aria-label="Featured offers" hidden></section>
+
   <section class="hero">
     <div class="container hero-inner">
       <div class="hero-copy">
@@ -810,8 +850,8 @@ footer.site{border-top:1px solid var(--line); padding:60px 0 30px; margin-top:20
   <section class="section" id="guarantee">
     <div class="container">
       <div class="guarantee">
-        <h2>The 60-night glow guarantee</h2>
-        <p>Try any NIKORA device for 60 nights. If your routine hasn't earned its place on your counter, send it back for a full refund — no forms, no fine print.</p>
+        <h2>The 30-day money-back guarantee</h2>
+        <p>Order risk-free for 30 days. If NIKORA isn&rsquo;t the right fit, return your unopened, unused item in its original packaging within 30 days for a full refund. <a href="guarantee.html" style="color:inherit;text-decoration:underline;text-underline-offset:3px;">See the full guarantee terms</a>.</p>
         <a href="catalog.html" class="btn-primary">Shop with Confidence <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       </div>
     </div>
@@ -820,34 +860,42 @@ footer.site{border-top:1px solid var(--line); padding:60px 0 30px; margin-top:20
 </main>
 
 <!-- ================= FOOTER ================= -->
-<footer class="site" id="track">
+<footer class="site">
   <div class="container">
     <div class="footer-grid">
       <div class="footer-col">
-        <a href="#top" class="logo" style="font-size:22px;">NIK<em>ora</em></a>
+        <a href="index.html" class="logo" style="font-size:22px;">NIK<em>ora</em></a>
         <p style="margin-top:14px;">Smart care. Instant glow. Beauty tech designed around the routine you actually have time for.</p>
+        <p><a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a><br>Mon&ndash;Sun, 8am&ndash;10pm EST</p>
       </div>
       <div class="footer-col">
-        <h5>Shop</h5>
-        <a href="catalog.html">Full Catalog</a>
-        <a href="#bestseller">Bestseller</a>
-        <a href="#bundle-grid">Bundles</a>
+        <h5>Explore NIKORA</h5>
+        <a href="index.html">Home</a>
+        <a href="catalog.html">Collection</a>
+        <a href="science.html">The Science</a>
+        <a href="reviews.html">Customer Reviews</a>
+        <a href="about.html">About NIKORA</a>
       </div>
       <div class="footer-col">
-        <h5>Support</h5>
-        <a href="#track">Track Order</a>
-        <a href="#guarantee">Guarantee</a>
-        <a href="#reviews">Reviews</a>
+        <h5>Customer Care</h5>
+        <a href="track-order.html">Track Order</a>
+        <a href="returns.html">Returns &amp; Refunds</a>
+        <a href="guarantee.html">30-Day Guarantee</a>
+        <a href="faq.html">FAQ Center</a>
+        <a href="contact.html">Contact Support</a>
+        <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a>
       </div>
       <div class="footer-col">
-        <h5>Company</h5>
-        <a href="#science">Science</a>
-        <p>hello@nikora.com</p>
-        <p>Mon–Fri, 9am–6pm ET</p>
+        <h5>Legal</h5>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms of Service</a>
+        <a href="shipping.html">Shipping Policy</a>
+        <a href="returns.html#return-policy">Refund &amp; Return Policy</a>
       </div>
     </div>
+    <p class="footer-disclaimer" style="margin:28px 0 0;font-size:12px;line-height:1.7;opacity:.75;max-width:920px;"><strong>Disclaimer:</strong> NIKORA devices are cosmetic tools intended for personal home skincare and are not medical devices. They are not intended to diagnose, treat, cure, or prevent any medical condition or disease.</p>
     <div class="footer-bottom">
-      <span>© 2026 NIKORA. All rights reserved.</span>
+      <span>&copy; 2026 NIKORA. All rights reserved.</span>
     </div>
   </div>
 </footer>
@@ -2299,5 +2347,159 @@ if(document.readyState === 'loading'){
 
 <script src="reviews-data.js"></script>
 <script src="bestsellers.js"></script>
+<script>
+/* ===== NIKORA hero slider: Firebase /site_content/banners/hero (managed in nikora-admin) =====
+   Auto-swipe 5 s, touch/mouse swipe, arrows, indicators, pause on hover/keyboard focus/off-screen/hidden tab.
+   No slides (or Firebase unreachable and no cache) -> the static .hero above stays visible. */
+(function(){
+  'use strict';
+  var root = document.getElementById('nk-hero-slider'); if(!root) return;
+  var CACHE = 'nikora_hero_banners', DELAY = 5000;
+  var staticHero = document.querySelector('main .hero');
+  var reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var slides = [], sig = '', idx = 0, timer = null, hovering = false, focused = false, onScreen = true, dragging = false, suppress = false;
+  var frame, viewport, track, items = [], dots = [], io = null;
+
+  function el(tag, cls, txt){ var e = document.createElement(tag); if(cls) e.className = cls; if(txt != null) e.textContent = txt; return e; }
+  function safeImg(u){ return typeof u === 'string' && /^https:\/\/\S+$/i.test(u.trim()) ? u.trim() : ''; }
+  function safeLink(v){
+    if(typeof v !== 'string') return ''; v = v.trim();
+    if(!v || v.indexOf('//') === 0) return '';
+    return /^(https:\/\/\S+|#[\w-]*|\/[^\s]*|[\w\-\/]+\.html(\?[^\s#]*)?(#\S*)?)$/i.test(v) ? v : '';
+  }
+  function clean(raw){
+    var list = Array.isArray(raw) ? raw : (raw && typeof raw === 'object' ? Object.keys(raw).map(function(k){ return raw[k]; }) : []);
+    return list.filter(function(b){ return b && typeof b === 'object' && safeImg(b.imageUrl); }).map(function(b, i){
+      return { imageUrl: safeImg(b.imageUrl), title: String(b.title || '').slice(0, 120), subtitle: String(b.subtitle || '').slice(0, 300),
+               buttonText: String(b.buttonText || '').slice(0, 40), buttonLink: safeLink(b.buttonLink), order: Number(b.order) || i + 1 };
+    }).sort(function(a, b){ return a.order - b.order; }).slice(0, 10);
+  }
+
+  function sync(){
+    items.forEach(function(s, i){
+      s.setAttribute('aria-hidden', i === idx ? 'false' : 'true');
+      var a = s.querySelector('.nk-hs-btn'); if(a) a.tabIndex = i === idx ? 0 : -1;
+    });
+    dots.forEach(function(d, i){ d.classList.toggle('on', i === idx); if(i === idx) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current'); });
+  }
+  function go(n){
+    if(!slides.length) return;
+    idx = (n + slides.length) % slides.length;
+    track.style.transform = 'translate3d(' + (-idx * 100) + '%,0,0)'; sync();
+  }
+  function stop(){ clearTimeout(timer); timer = null; }
+  function start(){
+    stop();
+    if(reduce || slides.length < 2 || hovering || focused || dragging || !onScreen || document.hidden) return;
+    timer = setTimeout(function(){ go(idx + 1); start(); }, DELAY);
+  }
+
+  function build(list){
+    stop(); if(io){ io.disconnect(); io = null; }
+    slides = list; idx = 0; items = []; dots = []; root.textContent = '';
+    if(!list.length){ root.hidden = true; if(staticHero) staticHero.hidden = false; return; }
+    root.hidden = false; if(staticHero) staticHero.hidden = true;
+
+    var wrap = el('div', 'container');
+    frame = el('div', 'nk-hs-frame');
+    frame.setAttribute('role', 'region'); frame.setAttribute('aria-roledescription', 'carousel'); frame.setAttribute('aria-label', 'Featured offers');
+    viewport = el('div', 'nk-hs-viewport'); track = el('div', 'nk-hs-track');
+    if(list.length < 2) viewport.style.cursor = 'default';
+    list.forEach(function(b, i){
+      var s = el('div', 'nk-hs-slide');
+      s.setAttribute('role', 'group'); s.setAttribute('aria-roledescription', 'slide'); s.setAttribute('aria-label', (i + 1) + ' of ' + list.length);
+      var im = el('img', 'nk-hs-img'); im.alt = ''; im.decoding = 'async'; im.draggable = false;
+      if(i === 0) im.setAttribute('fetchpriority', 'high'); else im.loading = 'lazy';
+      im.src = b.imageUrl; s.appendChild(im);
+      var hasBtn = b.buttonText && b.buttonLink;
+      if(b.title || b.subtitle || hasBtn){
+        var c = el('div', 'nk-hs-copy');
+        if(b.title) c.appendChild(el('h2', 'nk-hs-title', b.title));
+        if(b.subtitle) c.appendChild(el('p', 'nk-hs-sub', b.subtitle));
+        if(hasBtn){
+          var a = el('a', 'nk-hs-btn', b.buttonText); a.href = b.buttonLink; if(/^https:/i.test(b.buttonLink)) a.rel = 'noopener';
+          a.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>');
+          c.appendChild(a);
+        }
+        s.appendChild(c);
+      }
+      items.push(s); track.appendChild(s);
+    });
+    viewport.appendChild(track); frame.appendChild(viewport);
+
+    if(list.length > 1){
+      var prev = el('button', 'nk-hs-arrow nk-hs-prev'); prev.type = 'button'; prev.setAttribute('aria-label', 'Previous slide');
+      prev.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
+      var next = el('button', 'nk-hs-arrow nk-hs-next'); next.type = 'button'; next.setAttribute('aria-label', 'Next slide');
+      next.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+      prev.onclick = function(){ go(idx - 1); start(); }; next.onclick = function(){ go(idx + 1); start(); };
+      var dw = el('div', 'nk-hs-dots');
+      list.forEach(function(b, i){
+        var d = el('button', 'nk-hs-dot'); d.type = 'button'; d.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+        d.onclick = function(){ go(i); start(); }; dots.push(d); dw.appendChild(d);
+      });
+      frame.appendChild(prev); frame.appendChild(next); frame.appendChild(dw);
+      bindInteraction();
+    }
+    wrap.appendChild(frame); root.appendChild(wrap);
+    go(0);
+    if(list.length > 1 && 'IntersectionObserver' in window){
+      io = new IntersectionObserver(function(es){ onScreen = es[0].isIntersecting; if(onScreen) start(); else stop(); }, { threshold: 0.25 });
+      io.observe(frame);
+    }
+    start();
+  }
+
+  function bindInteraction(){
+    var sx = 0, sy = 0, dx = 0, pid = null, axis = null, moved = false;
+    viewport.addEventListener('pointerdown', function(e){
+      if(e.pointerType === 'mouse' && e.button !== 0) return;
+      sx = e.clientX; sy = e.clientY; dx = 0; axis = null; moved = false; pid = e.pointerId; dragging = true; stop();
+    });
+    viewport.addEventListener('pointermove', function(e){
+      if(!dragging || e.pointerId !== pid) return;
+      var mx = e.clientX - sx, my = e.clientY - sy;
+      if(!axis && (Math.abs(mx) > 6 || Math.abs(my) > 6)) axis = Math.abs(mx) > Math.abs(my) ? 'x' : 'y';
+      if(axis !== 'x') return;
+      if(!moved){ moved = true; track.classList.add('drag'); viewport.classList.add('drag'); try{ viewport.setPointerCapture(pid); }catch(_){} }
+      dx = mx; track.style.transform = 'translate3d(calc(' + (-idx * 100) + '% + ' + dx + 'px),0,0)';
+    });
+    function end(e){
+      if(!dragging || e.pointerId !== pid) return;
+      dragging = false; track.classList.remove('drag'); viewport.classList.remove('drag');
+      if(moved){
+        var th = Math.max(48, viewport.offsetWidth * 0.12);
+        suppress = true; setTimeout(function(){ suppress = false; }, 60);
+        go(dx < -th ? idx + 1 : dx > th ? idx - 1 : idx);
+      }
+      start();
+    }
+    viewport.addEventListener('pointerup', end); viewport.addEventListener('pointercancel', end);
+    viewport.addEventListener('click', function(e){ if(suppress){ e.preventDefault(); e.stopPropagation(); } }, true);
+    frame.addEventListener('pointerenter', function(e){ if(e.pointerType === 'mouse'){ hovering = true; stop(); } });
+    frame.addEventListener('pointerleave', function(e){ if(e.pointerType === 'mouse'){ hovering = false; start(); } });
+    frame.addEventListener('focusin', function(e){ try{ focused = e.target.matches(':focus-visible'); }catch(_){ focused = true; } if(focused) stop(); });
+    frame.addEventListener('focusout', function(){ focused = false; start(); });
+    frame.addEventListener('keydown', function(e){
+      if(e.key === 'ArrowLeft'){ go(idx - 1); start(); } else if(e.key === 'ArrowRight'){ go(idx + 1); start(); }
+    });
+  }
+  document.addEventListener('visibilitychange', function(){ if(document.hidden) stop(); else start(); });
+
+  function apply(list){ var s = JSON.stringify(list); if(s === sig) return; sig = s; build(list); }
+
+  var cached = null; try{ cached = JSON.parse(localStorage.getItem(CACHE) || 'null'); }catch(e){}
+  var first = clean(cached); if(first.length) apply(first);
+
+  var d = (typeof db !== 'undefined' && db) ? db : null;
+  if(!d && window.firebase && firebase.apps && firebase.apps.length) d = firebase.database();
+  if(!d) return;
+  d.ref('site_content/banners/hero').on('value', function(snap){
+    var list = clean(snap.val());
+    try{ if(list.length) localStorage.setItem(CACHE, JSON.stringify(list)); else localStorage.removeItem(CACHE); }catch(e){}
+    apply(list);
+  }, function(err){ console.warn('Hero banners unavailable - keeping the current hero.', err); });
+})();
+</script>
 </body>
 </html>
