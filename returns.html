@@ -741,6 +741,21 @@ button.btn-ghost:hover{color:var(--gold); border-bottom-color:var(--gold);}
   .ok-ring svg{stroke-dashoffset:0;}
 }
 </style>
+<style>
+/* Refund & Return Policy (details) */
+.rp-card{padding:clamp(24px,3.4vw,40px);}
+.rp-card h2{margin:0 0 8px;font-family:'Playfair Display',serif;font-weight:500;font-size:clamp(24px,2.8vw,32px);line-height:1.2;}
+.rp-lede{margin:0 0 6px;font-size:15px;line-height:1.7;color:var(--text-soft);max-width:760px;}
+.rp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 36px;margin-top:8px;}
+.rp-item{padding:20px 0 0;margin-top:20px;border-top:1px solid var(--line);}
+.rp-item h3{margin:0 0 8px;font-family:inherit;font-size:15.5px;font-weight:650;color:var(--text);}
+.rp-item p{margin:0 0 10px;font-size:14.5px;line-height:1.75;color:var(--text-soft);}
+.rp-item p:last-child{margin-bottom:0;}
+.rp-item strong{color:var(--text);font-weight:600;}
+.rp-item a,.rp-note a{color:var(--gold);font-weight:600;text-decoration:none;border-bottom:1px solid rgba(var(--gold-rgb),.4);}
+.rp-note{margin:26px 0 0;font-size:13px;line-height:1.7;color:var(--text-faint);}
+@media(max-width:760px){.rp-grid{grid-template-columns:1fr;}}
+</style>
 </head>
 <body>
 <script src="nav.js"></script>
@@ -939,6 +954,27 @@ button.btn-ghost:hover{color:var(--gold); border-bottom-color:var(--gold);}
   </section>
 
   <!-- ================= 5. NEED DIRECT ASSISTANCE ================= -->
+  <!-- ================= REFUND & RETURN POLICY (details) ================= -->
+  <section class="section" id="return-policy" aria-labelledby="rp-h2" style="padding-top:clamp(24px,3.4vw,40px);">
+    <div class="container">
+      <article class="glass-card rp-card reveal">
+        <h2 id="rp-h2">Refund &amp; Return Policy</h2>
+        <p class="rp-lede">Every NIKORA order is covered by our 30-Day Money-Back Guarantee. This page explains who is eligible, how to start a return and when your refund arrives.</p>
+        <div class="rp-grid">
+        <div class="rp-item"><h3>30-day money-back window</h3><p>You can ask for a refund within <strong>30 days</strong> of receiving your order. Contact us or use the return form above and we will confirm whether your item is eligible.</p></div>
+        <div class="rp-item"><h3>Eligible items</h3><p>Items that are <strong>unopened and unused, in their original packaging</strong>, with all accessories and the charger included. Used or opened items are not eligible for change-of-mind returns, but items that are defective or damaged are always covered (see below).</p></div>
+        <div class="rp-item"><h3>How to start a return</h3><p>Use the return form on this page with your <strong>Order ID</strong> (it starts with #NK-), or email <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a>. We will reply with return instructions. Please wait for them before sending anything back.</p></div>
+        <div class="rp-item"><h3>Return shipping costs</h3><p>For change-of-mind returns, <strong>customers are responsible for return shipping</strong>. If your item is defective, damaged in shipping or lost, we cover it with a free reshipment or a full refund, your choice.</p></div>
+        <div class="rp-item"><h3>When you get your refund</h3><p>After your return arrives and is checked in, we refund the full purchase price to your <strong>original payment method within 5&ndash;7 business days</strong>. Your bank may take a little longer to show it.</p></div>
+        <div class="rp-item"><h3>Defective, damaged or lost orders</h3><p>Tell us as soon as you notice a problem and include photos if the item is damaged. If tracking has been inactive for more than 14 days, or your parcel has been in transit for more than 30 days, it counts as lost and we reship for free or refund you in full.</p></div>
+        <div class="rp-item"><h3>Cancelling an order</h3><p>Email us with your order number as soon as possible. If the order has not been dispatched yet, we will cancel it and refund you. After dispatch, you can use the 30-day guarantee instead.</p></div>
+        <div class="rp-item"><h3>Need help?</h3><p>Our team is available Monday&ndash;Sunday, 8am&ndash;10pm EST. See the <a href="faq.html">FAQ Center</a> or <a href="contact.html">contact support</a>.</p></div>
+        </div>
+        <p class="rp-note">Effective October 2026. This policy works together with our <a href="guarantee.html">30-Day Guarantee</a>, <a href="shipping.html">Shipping Policy</a> and <a href="terms.html">Terms of Service</a>. Nothing here limits any consumer rights that cannot legally be excluded.</p>
+      </article>
+    </div>
+  </section>
+
   <section class="section" id="assistance" aria-labelledby="help-h2" style="padding-top:clamp(24px,3.4vw,40px);">
     <div class="container">
       <div class="section-head reveal">
@@ -992,28 +1028,33 @@ button.btn-ghost:hover{color:var(--gold); border-bottom-color:var(--gold);}
       <div class="footer-col">
         <a href="index.html" class="logo" style="font-size:22px;">NIK<em>ora</em></a>
         <p style="margin-top:14px;">Smart care. Instant glow. Beauty tech designed around the routine you actually have time for.</p>
+        <p><a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a><br>Mon&ndash;Sun, 8am&ndash;10pm EST</p>
       </div>
       <div class="footer-col">
-        <h5>Shop</h5>
-        <a href="catalog.html">Full Catalog</a>
+        <h5>Explore NIKORA</h5>
         <a href="index.html">Home</a>
-        <a href="reviews.html">Verified Reviews</a>
+        <a href="catalog.html">Collection</a>
+        <a href="science.html">The Science</a>
+        <a href="reviews.html">Customer Reviews</a>
+        <a href="about.html">About NIKORA</a>
       </div>
       <div class="footer-col">
-        <h5>Support</h5>
+        <h5>Customer Care</h5>
         <a href="track-order.html">Track Order</a>
-        <a href="guarantee.html">Guarantee</a>
-        <a href="returns.html">Start a Return</a>
-        <a href="faq.html">FAQ</a>
+        <a href="returns.html">Returns &amp; Refunds</a>
+        <a href="guarantee.html">30-Day Guarantee</a>
+        <a href="faq.html">FAQ Center</a>
+        <a href="contact.html">Contact Support</a>
       </div>
       <div class="footer-col">
-        <h5>Company</h5>
-        <a href="science.html">Science</a>
-        <a href="mailto:nikora.support@gmail.com">Contact Support</a>
-        <p>nikora.support@gmail.com</p>
-        <p>Mon&ndash;Sun, 8am&ndash;10pm EST</p>
+        <h5>Legal</h5>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms of Service</a>
+        <a href="shipping.html">Shipping Policy</a>
+        <a href="returns.html#return-policy">Refund &amp; Return Policy</a>
       </div>
     </div>
+    <p class="footer-disclaimer" style="margin:28px 0 0;font-size:12px;line-height:1.7;opacity:.75;max-width:920px;"><strong>Disclaimer:</strong> NIKORA devices are cosmetic tools intended for personal home skincare and are not medical devices. They are not intended to diagnose, treat, cure, or prevent any medical condition or disease.</p>
     <div class="footer-bottom">
       <span>&copy; 2026 NIKORA. All rights reserved.</span>
     </div>
@@ -1029,7 +1070,7 @@ button.btn-ghost:hover{color:var(--gold); border-bottom-color:var(--gold);}
     <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="ship-progress-wrap">
-    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on every order (7&ndash;15 business days)</div>
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on every order (5&ndash;12 business days)</div>
     <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
   </div>
   <div class="cart-items" id="cart-items-list"></div>
@@ -1452,7 +1493,7 @@ function renderCart(){
   text.classList.toggle('unlocked', unlocked);
   fill.classList.toggle('unlocked', unlocked);
   text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
-    ? 'FREE Express Shipping on every order (7\u201315 business days)'
+    ? 'FREE Express Shipping on every order (5\u201312 business days)'
     : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
 
   renderCartRecs(cart);
