@@ -561,6 +561,28 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
 .card-add-btn{display:flex; align-items:center; justify-content:center; gap:8px;}
 .card-add-btn svg{width:15px; height:15px; stroke:currentColor; fill:none;}
 </style>
+<style id="nk-promo-css">
+/* ===== Catalog top promo banner (Firebase /site_content/banners/catalog) ===== */
+.nk-promo-wrap{margin-bottom:clamp(16px,2.4vw,26px)}
+.nk-promo-wrap[hidden]{display:none!important}
+.nk-promo{position:relative;display:flex;align-items:center;min-height:clamp(210px,24vw,290px);border-radius:28px;overflow:hidden;background:#0B0B0E;border:1px solid rgba(255,255,255,.1);box-shadow:0 24px 60px -28px rgba(0,0,0,.55);animation:nkPromoIn .5s ease both}
+.nk-promo-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.nk-promo::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,11,14,.86) 0%,rgba(11,11,14,.45) 55%,rgba(11,11,14,.08) 100%)}
+.nk-promo-copy{position:relative;z-index:2;margin:clamp(14px,2.6vw,30px);padding:clamp(18px,2.6vw,30px);width:min(520px,100%);border-radius:22px;background:rgba(11,11,14,.42);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#F7F4F0}
+.nk-promo-title{margin:0 0 8px;font-family:'Playfair Display',serif;font-weight:500;font-size:clamp(22px,3vw,36px);line-height:1.12;color:#fff}
+.nk-promo-sub{margin:0 0 18px;font-size:clamp(13.5px,1.4vw,15.5px);line-height:1.55;color:rgba(247,244,240,.8)}
+.nk-promo-title:last-child,.nk-promo-sub:last-child{margin-bottom:0}
+.nk-promo-btn{display:inline-flex;align-items:center;gap:9px;padding:12px 24px;border-radius:100px;background:#C89B54;color:#17120a;font-size:13px;font-weight:700;letter-spacing:.02em;text-decoration:none;transition:transform .2s ease,box-shadow .2s ease,filter .2s ease}
+.nk-promo-btn:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 10px 26px -8px rgba(200,155,84,.65)}
+.nk-promo-btn:focus-visible{outline:2px solid #C89B54;outline-offset:3px}
+.nk-promo-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@keyframes nkPromoIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:760px){
+  .nk-promo{border-radius:22px;align-items:flex-end}
+  .nk-promo::after{background:linear-gradient(0deg,rgba(11,11,14,.9) 0%,rgba(11,11,14,.4) 65%,rgba(11,11,14,.1) 100%)}
+}
+@media(prefers-reduced-motion:reduce){.nk-promo{animation:none}.nk-promo-btn:hover{transform:none}}
+</style>
 </head>
 <body>
 <script src="nav.js"></script>
@@ -570,6 +592,9 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
     <h1>The full <em>collection</em></h1>
     <p>Every NIKORA device in one place — search, filter by category or price, and sort to find your next ritual essential.</p>
   </div>
+
+  <!-- ================= TOP PROMO BANNER (data: Firebase /site_content/banners/catalog; hidden unless active) ================= -->
+  <section class="container nk-promo-wrap" id="nk-promo" aria-label="Promotion" hidden></section>
 
   <div class="container toolbar-wrap">
     <div class="toolbar">
@@ -630,6 +655,7 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
         <a href="guarantee.html">30-Day Guarantee</a>
         <a href="faq.html">FAQ Center</a>
         <a href="contact.html">Contact Support</a>
+        <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a>
       </div>
       <div class="footer-col">
         <h5>Legal</h5>
@@ -1755,5 +1781,56 @@ if(document.readyState === 'loading'){
 </script>
 
 <script src="bestsellers.js"></script>
+<script>
+/* ===== NIKORA catalog promo banner: Firebase /site_content/banners/catalog (managed in nikora-admin) ===== */
+(function(){
+  'use strict';
+  var root = document.getElementById('nk-promo'); if(!root) return;
+  var CACHE = 'nikora_catalog_banner', sig = '';
+  function el(tag, cls, txt){ var e = document.createElement(tag); if(cls) e.className = cls; if(txt != null) e.textContent = txt; return e; }
+  function safeImg(u){ return typeof u === 'string' && /^https:\/\/\S+$/i.test(u.trim()) ? u.trim() : ''; }
+  function safeLink(v){
+    if(typeof v !== 'string') return ''; v = v.trim();
+    if(!v || v.indexOf('//') === 0) return '';
+    return /^(https:\/\/\S+|#[\w-]*|\/[^\s]*|[\w\-\/]+\.html(\?[^\s#]*)?(#\S*)?)$/i.test(v) ? v : '';
+  }
+  function clean(b){
+    if(!b || typeof b !== 'object' || b.active !== true) return null;
+    var img = safeImg(b.imageUrl); if(!img) return null;
+    return { imageUrl: img, title: String(b.title || '').slice(0, 120), subtitle: String(b.subtitle || '').slice(0, 280),
+             buttonText: String(b.buttonText || '').slice(0, 40), buttonLink: safeLink(b.buttonLink) };
+  }
+  function render(b){
+    var s = JSON.stringify(b || null); if(s === sig) return; sig = s;
+    root.textContent = '';
+    if(!b){ root.hidden = true; return; }
+    var card = el('div', 'nk-promo');
+    var im = el('img', 'nk-promo-img'); im.alt = ''; im.decoding = 'async'; im.src = b.imageUrl; card.appendChild(im);
+    var hasBtn = b.buttonText && b.buttonLink;
+    if(b.title || b.subtitle || hasBtn){
+      var c = el('div', 'nk-promo-copy');
+      if(b.title) c.appendChild(el('h2', 'nk-promo-title', b.title));
+      if(b.subtitle) c.appendChild(el('p', 'nk-promo-sub', b.subtitle));
+      if(hasBtn){
+        var a = el('a', 'nk-promo-btn', b.buttonText); a.href = b.buttonLink; if(/^https:/i.test(b.buttonLink)) a.rel = 'noopener';
+        a.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>');
+        c.appendChild(a);
+      }
+      card.appendChild(c);
+    }
+    root.appendChild(card); root.hidden = false;
+  }
+  var cached = null; try{ cached = JSON.parse(localStorage.getItem(CACHE) || 'null'); }catch(e){}
+  render(clean(cached));                                    /* instant paint from the last known banner */
+  var d = (typeof db !== 'undefined' && db) ? db : null;
+  if(!d && window.firebase && firebase.apps && firebase.apps.length) d = firebase.database();
+  if(!d) return;
+  d.ref('site_content/banners/catalog').on('value', function(snap){
+    var b = clean(snap.val());
+    try{ if(b) localStorage.setItem(CACHE, JSON.stringify(b)); else localStorage.removeItem(CACHE); }catch(e){}
+    render(b);
+  }, function(err){ console.warn('Catalog banner unavailable.', err); });
+})();
+</script>
 </body>
 </html>
