@@ -798,7 +798,7 @@ h1.c-title em{font-style:italic; color:var(--gold);}
         <h2 id="cta-h2">Ready to Experience <em>Clinical Skincare</em> at Home?</h2>
         <p>Red light, EMS microcurrents and warmth, in a five-minute daily ritual, backed by a 30-day money-back guarantee.</p>
         <a class="btn-primary" href="catalog.html">Shop Collection <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <span class="cta-fine">Free Express Shipping &middot; 7&ndash;15 business days &middot; Real-time tracking</span>
+        <span class="cta-fine">Free Express Shipping &middot; 5&ndash;12 business days &middot; Real-time tracking</span>
       </div>
     </div>
   </section>
@@ -812,28 +812,33 @@ h1.c-title em{font-style:italic; color:var(--gold);}
       <div class="footer-col">
         <a href="index.html" class="logo" style="font-size:22px;">NIK<em>ora</em></a>
         <p style="margin-top:14px;">Smart care. Instant glow. Beauty tech designed around the routine you actually have time for.</p>
+        <p><a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a><br>Mon&ndash;Sun, 8am&ndash;10pm EST</p>
       </div>
       <div class="footer-col">
-        <h5>Shop</h5>
-        <a href="catalog.html">Full Catalog</a>
+        <h5>Explore NIKORA</h5>
         <a href="index.html">Home</a>
-        <a href="reviews.html">Verified Reviews</a>
+        <a href="catalog.html">Collection</a>
+        <a href="science.html">The Science</a>
+        <a href="reviews.html">Customer Reviews</a>
+        <a href="about.html">About NIKORA</a>
       </div>
       <div class="footer-col">
-        <h5>Support</h5>
+        <h5>Customer Care</h5>
         <a href="track-order.html">Track Order</a>
-        <a href="guarantee.html">Guarantee</a>
-        <a href="returns.html">Start a Return</a>
-        <a href="faq.html">FAQ</a>
+        <a href="returns.html">Returns &amp; Refunds</a>
+        <a href="guarantee.html">30-Day Guarantee</a>
+        <a href="faq.html">FAQ Center</a>
+        <a href="contact.html">Contact Support</a>
       </div>
       <div class="footer-col">
-        <h5>Company</h5>
-        <a href="science.html">Science</a>
-        <a href="contact.html">Contact Support</a>
-        <p>nikora.support@gmail.com</p>
-        <p>Mon&ndash;Sun, 8am&ndash;10pm EST</p>
+        <h5>Legal</h5>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms of Service</a>
+        <a href="shipping.html">Shipping Policy</a>
+        <a href="returns.html#return-policy">Refund &amp; Return Policy</a>
       </div>
     </div>
+    <p class="footer-disclaimer" style="margin:28px 0 0;font-size:12px;line-height:1.7;opacity:.75;max-width:920px;"><strong>Disclaimer:</strong> NIKORA devices are cosmetic tools intended for personal home skincare and are not medical devices. They are not intended to diagnose, treat, cure, or prevent any medical condition or disease.</p>
     <div class="footer-bottom">
       <span>&copy; 2026 NIKORA. All rights reserved.</span>
     </div>
@@ -849,7 +854,7 @@ h1.c-title em{font-style:italic; color:var(--gold);}
     <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="ship-progress-wrap">
-    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on every order (7&ndash;15 business days)</div>
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on every order (5&ndash;12 business days)</div>
     <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
   </div>
   <div class="cart-items" id="cart-items-list"></div>
@@ -1272,7 +1277,7 @@ function renderCart(){
   text.classList.toggle('unlocked', unlocked);
   fill.classList.toggle('unlocked', unlocked);
   text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
-    ? 'FREE Express Shipping on every order (7\u201315 business days)'
+    ? 'FREE Express Shipping on every order (5\u201312 business days)'
     : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
 
   renderCartRecs(cart);
