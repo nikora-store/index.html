@@ -51,6 +51,9 @@
     hours: 'Concierge support: Mon\u2013Sun, 8am\u201310pm EST',
     shipNote: 'Free Express Shipping on every order',
 
+    /* Health & cosmetic-device disclaimer shown in the footer on every page (payment gateways and regulators expect it) */
+    disclaimer: 'NIKORA devices are cosmetic tools intended for personal home skincare and are not medical devices. They are not intended to diagnose, treat, cure, or prevent any medical condition or disease.',
+
     /* Desktop header bar */
     header: [
       { label: 'Home',        href: 'index.html' },
@@ -69,29 +72,34 @@
         { label: 'Home',             href: 'index.html' },
         { label: 'Collection',       href: 'catalog.html' },
         { label: 'The Science',      href: 'science.html' },
-        { label: 'Customer Reviews', href: 'reviews.html' }
+        { label: 'Customer Reviews', href: 'reviews.html' },
+        { label: 'About NIKORA',     href: 'about.html' }
       ] },
       { title: 'Customer Care', icon: 'box', links: [
-        { label: 'Track Order',       href: 'track-order.html' },
-        { label: 'Returns Portal',    href: 'returns.html' },
+        { label: 'Track Order',      href: 'track-order.html' },
+        { label: 'Returns & Refunds', href: 'returns.html' },
         { label: '30-Day Guarantee', href: 'guarantee.html' },
-        { label: 'FAQ Center',        href: 'faq.html' },
-        { label: 'Contact Support',   href: 'contact.html' }
+        { label: 'FAQ Center',       href: 'faq.html' },
+        { label: 'Contact Support',  href: 'contact.html' }
       ] },
       { title: 'Legal & Concierge', icon: 'shield', links: [
-        { label: 'Privacy Policy & Terms', href: 'privacy.html' },
-        { label: 'AI Beauty Concierge',    action: 'ai', icon: 'sparkle' },
-        { label: 'Support Email',          href: 'mailto:nikora.support@gmail.com' }
+        { label: 'Privacy Policy',          href: 'privacy.html' },
+        { label: 'Terms of Service',        href: 'terms.html' },
+        { label: 'Shipping Policy',         href: 'shipping.html' },
+        { label: 'Refund & Return Policy',  href: 'returns.html#return-policy' },
+        { label: 'AI Beauty Concierge',     action: 'ai', icon: 'sparkle' },
+        { label: 'Support Email',           href: 'mailto:nikora.support@gmail.com' }
       ] }
     ],
 
     /* Legal / support row shown in the footer's bottom bar */
     legal: [
-      { label: 'Privacy Policy & Terms', href: 'privacy.html' },
-      { label: '30-Day Guarantee',      href: 'guarantee.html' },
-      { label: 'Returns Portal',         href: 'returns.html' },
-      { label: 'Contact Support',        href: 'contact.html' },
-      { label: 'Support Email',          href: 'mailto:nikora.support@gmail.com' }
+      { label: 'Privacy Policy',         href: 'privacy.html' },
+      { label: 'Terms of Service',       href: 'terms.html' },
+      { label: 'Shipping Policy',        href: 'shipping.html' },
+      { label: 'Refund & Return Policy', href: 'returns.html#return-policy' },
+      { label: '30-Day Guarantee',       href: 'guarantee.html' },
+      { label: 'Contact Support',        href: 'contact.html' }
     ],
 
     /* pages that live "inside" another page's section (highlights the parent in the bar) */
@@ -170,6 +178,10 @@
   '  fill:var(--nkn-logo-primary);color:var(--nkn-logo-accent);transition:fill .35s ease,color .35s ease;}',
   '.nkn-d-head .nkn-logo{--nkn-logo-h:50px;}',
   '.nkn-footer .nkn-logo{--nkn-logo-h:78px;}',
+
+  /* ---- health / cosmetic-device disclaimer ---- */
+  '.nkn-f-disclaimer{margin:30px 0 26px;max-width:940px;font-size:12px;line-height:1.75;color:var(--nkn-faint);}',
+  '.nkn-f-disclaimer strong{color:var(--nkn-soft);font-weight:600;}',
 
   /* ---- footer contact lines + social icons (content comes from Firebase /site_content) ---- */
   '.nkn-f-brand .nkn-f-contact{margin-top:14px;font-size:13px;line-height:1.7;color:var(--nkn-soft);}',
@@ -367,6 +379,7 @@
         '<div class="nkn-f-brand">' + logoHtml() + '<p>' + esc(CONFIG.tagline) + '</p><p class="nkn-f-hours">' + esc(hoursText()) + '</p><p class="nkn-f-hours">' + esc(CONFIG.shipNote) + '</p>' + footerContactHtml() + footerSocialHtml() + '</div>' +
         cols +
       '</div>' +
+      '<p class="nkn-f-disclaimer"><strong>Disclaimer:</strong> ' + esc(CONFIG.disclaimer) + '</p>' +
       '<div class="nkn-f-bottom"><span>' + copyrightHtml() + '</span>' + legalHtml() + '</div>' +
     '</div>';
   }
