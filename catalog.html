@@ -1585,32 +1585,7 @@ function getFilteredSortedProducts(){
 }
 
 function productCardHtml(p){
-  var hasSale = p.oldPrice && p.oldPrice > p.price;
-  var saveAmount = hasSale ? (p.oldPrice - p.price).toFixed(2) : '0.00';
-  var badges = '';
-  NKBestsellers.badges(p).forEach(function(t){ badges += '<span class="badge-bestseller">' + escapeHtml(t) + '</span>'; });
-  if(hasSale) badges += '<span class="badge-sale">Save $' + saveAmount + '</span>';
-  if(p.lowStock) badges += '<span class="badge-lowstock">Only 3 Left in Stock</span>';
-
-  var priceHtml = hasSale
-    ? '<span class="card-price-now">$' + p.price.toFixed(2) + '</span><span class="card-price-old" style="opacity:0.5; text-decoration:line-through;">$' + p.oldPrice.toFixed(2) + '</span>'
-    : '<span class="card-price-now">$' + p.price.toFixed(2) + '</span>';
-
-  var mainImg = NKBestsellers.imagesOf(p)[0] || p.img;
-  return '<div class="glass-card product-card" data-bs-card data-product-id="' + p.id + '">' +
-    '<a href="product.html?id=' + p.id + '" class="card-media" aria-label="' + escapeHtml(p.name) + '">' +
-      '<div class="card-badges">' + badges + '</div>' +
-      '<img data-bs-main data-bs-src0="' + escapeHtml(mainImg) + '" src="' + escapeHtml(mainImg) + '" alt="' + escapeHtml(p.name) + '" loading="lazy">' +
-    '</a>' +
-    NKBestsellers.thumbsHtml(p) +
-    '<div class="card-body">' +
-      '<div class="card-cat">' + escapeHtml(p.category) + '</div>' +
-      '<a href="product.html?id=' + p.id + '" class="card-title">' + escapeHtml(p.name) + '</a>' +
-      '<p class="card-desc">' + escapeHtml(p.desc) + '</p>' +
-      '<div class="card-price-row">' + priceHtml + '</div>' +
-      '<button type="button" class="card-add-btn" data-action="add-to-cart" data-id="' + p.id + '" data-name="' + escapeHtml(p.name) + '" data-price="' + p.price + '"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/><path d="M14 9v4M12 11h4"/></svg>Add to Cart</button>' +
-    '</div>' +
-  '</div>';
+  return NKCard.html(p, { addAttr: 'data-action="add-to-cart"' });   /* shared template: product-card.js (identical on index.html) */
 }
 
 function renderGrid(){
@@ -1638,7 +1613,7 @@ function renderCategoryTabs(){
 
 /* ---------------- Tactile card spotlight + 3D tilt/press (same mechanic as index.html) ---------------- */
 function initTactileCards(){
-  var cards = document.querySelectorAll('.glass-card');
+  var cards = document.querySelectorAll('.glass-card:not(.nk-card)');
   for(var i=0;i<cards.length;i++){
     (function(card){
       if(card.dataset.tactileBound) return;
@@ -1780,6 +1755,7 @@ if(document.readyState === 'loading'){
 }
 </script>
 
+<script src="product-card.js"></script>
 <script src="bestsellers.js"></script>
 <script>
 /* ===== NIKORA catalog promo banner: Firebase /site_content/banners/catalog (managed in nikora-admin) ===== */
