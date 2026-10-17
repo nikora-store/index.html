@@ -860,33 +860,39 @@ details[open] > .ck-sum-toggle svg{transform:rotate(180deg);}
 .ck-policy li b{color:var(--text); font-weight:650;}
 .ck-policy li::before{content:""; flex:none; width:6px; height:6px; margin-top:7px; border-radius:50%; background:var(--gold);}
 
-/* ---- NIKORA trust micro-badges: frosted glass cards, gradient-stroke inline SVG, neon rose hover ---- */
+/* ---- NIKORA trust badges: theme-aware cards. Light = cream #FDFBF7 + gold icons, Dark = obsidian glass + warm gold ---- */
 .ck-badges{display:grid; gap:12px; margin:22px 0 0; padding:0; list-style:none;}
-.ck-badges.row{grid-template-columns:repeat(3,1fr); margin:18px 0 0;}
-@media (max-width:760px){ .ck-badges.row{grid-template-columns:1fr;} }
 .ck-badge{
+  --b-bg:#FDFBF7; --b-border:rgba(139,106,52,.24);
+  --b-shadow:0 12px 28px -20px rgba(60,45,30,.35), inset 0 1px 0 rgba(255,255,255,.9);
+  --b-hover-border:rgba(197,155,86,.75); --b-hover-shadow:0 0 0 1px rgba(197,155,86,.28), 0 16px 34px -18px rgba(139,106,52,.5), inset 0 1px 0 #fff;
+  --b-glow:radial-gradient(120% 140% at 0% 0%, rgba(197,155,86,.16), transparent 62%);
+  --b-tile-bg:linear-gradient(135deg,#FFF8EA 0%,#F4E3C1 100%); --b-tile-border:rgba(197,155,86,.5); --b-tile-shadow:inset 0 1px 0 rgba(255,255,255,.85);
+  --b-icon:#7A5420; --b-icon-fill:rgba(197,155,86,.24); --b-dot:#C59B56; --b-icon-glow:none; --b-icon-glow-hover:none;
   position:relative; display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:18px; overflow:hidden; isolation:isolate;
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.18);
+  background:var(--b-bg); border:1px solid var(--b-border); box-shadow:var(--b-shadow);
   -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
-  box-shadow:0 14px 34px -22px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.10);
-  transition:transform .35s cubic-bezier(.2,.8,.2,1), border-color .3s ease, box-shadow .35s ease;
+  transition:transform .35s cubic-bezier(.2,.8,.2,1), border-color .3s ease, box-shadow .35s ease, background-color .35s ease;
 }
-.ck-badge::after{content:""; position:absolute; inset:0; z-index:-1; border-radius:inherit; opacity:0; transition:opacity .35s ease;
-  background:radial-gradient(120% 140% at 0% 0%, rgba(255,82,123,.22), transparent 62%);}
-.ck-badge:hover{transform:scale(1.04); border-color:rgba(255,82,123,.78);
-  box-shadow:0 0 0 1px rgba(255,82,123,.38), 0 0 30px -2px rgba(255,82,123,.55), 0 18px 40px -20px rgba(139,30,74,.8), inset 0 1px 0 rgba(255,255,255,.16);}
+[data-theme="dark"] .ck-badge{
+  --b-bg:linear-gradient(160deg, rgba(26,21,15,.80) 0%, rgba(11,11,14,.84) 100%); --b-border:rgba(229,186,115,.22);
+  --b-shadow:0 14px 34px -22px rgba(0,0,0,.7), inset 0 1px 0 rgba(229,186,115,.14);
+  --b-hover-border:rgba(229,186,115,.7); --b-hover-shadow:0 0 0 1px rgba(229,186,115,.3), 0 0 28px -4px rgba(229,186,115,.4), 0 18px 40px -20px rgba(0,0,0,.8), inset 0 1px 0 rgba(229,186,115,.2);
+  --b-glow:radial-gradient(120% 140% at 0% 0%, rgba(229,186,115,.18), transparent 62%);
+  --b-tile-bg:linear-gradient(135deg, rgba(229,186,115,.20) 0%, rgba(11,11,14,.92) 100%); --b-tile-border:rgba(229,186,115,.38); --b-tile-shadow:inset 0 1px 0 rgba(229,186,115,.18), 0 0 18px -8px rgba(229,186,115,.5);
+  --b-icon:#E5BA73; --b-icon-fill:rgba(229,186,115,.16); --b-dot:#F2D49B; --b-icon-glow:drop-shadow(0 0 4px rgba(229,186,115,.5)); --b-icon-glow-hover:drop-shadow(0 0 8px rgba(229,186,115,.8));
+}
+.ck-badge::after{content:""; position:absolute; inset:0; z-index:-1; border-radius:inherit; opacity:0; transition:opacity .35s ease; background:var(--b-glow);}
+.ck-badge:hover{transform:scale(1.03); border-color:var(--b-hover-border); box-shadow:var(--b-hover-shadow);}
 .ck-badge:hover::after{opacity:1;}
 .ck-badge .bi{flex:none; width:48px; height:48px; display:grid; place-items:center; border-radius:15px;
-  background:linear-gradient(135deg,#0B0B0E 0%,#3B1224 58%,#8B1E4A 100%); border:1px solid rgba(255,255,255,.14);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 0 18px -6px rgba(255,82,123,.55);}
-.ck-badge .bi svg{width:30px; height:30px; fill:none; stroke:url(#nk-rose-grad); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 0 5px rgba(255,82,123,.7)); transition:filter .35s ease;}
-.ck-badge:hover .bi svg{filter:drop-shadow(0 0 9px rgba(255,120,160,.95));}
-.ck-badge .bi svg .fill{fill:rgba(255,82,123,.18); stroke:none;}
-.ck-badge .bi svg .dot{fill:#FF8FB1; stroke:none;}
+  background:var(--b-tile-bg); border:1px solid var(--b-tile-border); box-shadow:var(--b-tile-shadow); transition:background .35s ease, border-color .35s ease;}
+.ck-badge .bi svg{width:30px; height:30px; fill:none; stroke:var(--b-icon); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; filter:var(--b-icon-glow); transition:filter .35s ease, stroke .35s ease;}
+.ck-badge:hover .bi svg{filter:var(--b-icon-glow-hover);}
+.ck-badge .bi svg .fill{fill:var(--b-icon-fill); stroke:none;}
+.ck-badge .bi svg .dot{fill:var(--b-dot); stroke:none;}
 .ck-badge .bt{display:block; font-size:13.5px; font-weight:650; line-height:1.3; color:var(--text);}
 .ck-badge .bs{display:block; margin-top:2px; font-size:12px; line-height:1.4; color:var(--text-soft);}
-:root:not([data-theme="dark"]) .ck-badge{background:rgba(255,255,255,0.62); border-color:rgba(139,30,74,0.22); box-shadow:0 14px 30px -22px rgba(59,18,36,.45), inset 0 1px 0 rgba(255,255,255,.7);}
 @media (prefers-reduced-motion:reduce){ .ck-badge, .ck-badge .bi svg{transition:none;} .ck-badge:hover{transform:none;} .ck-pay-load i{animation:none;} }
 </style>
 <script src="https://js.stripe.com/v3/"></script>
@@ -1019,7 +1025,6 @@ window.NK_CONFIG = fetch('/api/checkout/config', { cache: 'no-store' }).then(fun
           <p class="ck-banner" id="ck-banner" role="alert" hidden></p>
 
           <div id="ck-submit-wrap">
-            <div class="ck-badges row" id="ck-badges-pay" aria-label="Security and guarantees"></div>
             <button type="submit" class="ck-submit" id="ck-submit" style="margin-top:18px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg><span id="ck-submit-text">Complete Order</span><span class="sep" aria-hidden="true">&middot;</span><span id="ck-submit-total"></span></button>
             <p class="ck-legal">By placing your order you agree to our <a href="privacy.html">Privacy Policy &amp; Terms</a>.<br>Questions? <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a></p>
           </div>
