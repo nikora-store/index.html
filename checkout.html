@@ -2159,7 +2159,48 @@ function ckRecFromServer(j){
 function ckFinish(j){
   var rec = ckRecFromServer(j);
   ckComplete(rec);
+  ckNotifyAgent(rec);                                   /* fire-and-forget: never blocks or breaks the confirmation screen */
   if(rec.emailSent === false) ckEmailFailed(rec.customer.email);
+}
+
+/* ---------------- AI Agent fulfillment webhook (background, fire-and-forget) ----------------
+   Called once from ckFinish() after the order is paid and saved, for every payment path (card, Apple/Google Pay, PayPal,
+   3-D Secure return). It runs after ckComplete(), so the customer is already on the confirmation screen; any failure here
+   is swallowed and can never affect the order, Firebase or the redirect. No card data is ever included. */
+var AI_AGENT_WEBHOOK = "YOUR_WEBHOOK_URL_HERE";          /* https URL of your agent workflow; while it is not a real https URL nothing is sent */
+
+function ckBuildAgentPayload(rec){
+  var c = rec.customer || {}, a = c.address || {};
+  return {
+    orderId: rec.orderId,
+    customerName: c.name || '',
+    email: c.email || '',
+    shippingAddress: { line1: a.line1 || '', line2: a.line2 || '', city: a.city || '', state: a.state || '', postalCode: a.postalCode || '', country: a.country || '' },
+    items: (rec.items || []).map(function(i){
+      var qty = Number(i.quantity != null ? i.quantity : i.qty) || 1, price = Number(i.price) || 0;
+      return { productId: String(i.id), variant: String(i.variant || 'default'), title: String(i.title || i.name || ''),
+               quantity: qty, unitPrice: price, lineTotal: i.lineTotal != null ? Number(i.lineTotal) : Math.round(price * qty * 100) / 100 };
+    }),
+    totalAmount: Number(rec.total) || 0,
+    timestamp: new Date().toISOString()
+  };
+}
+function ckNotifyAgent(rec){
+  try{
+    if(!/^https:\/\//i.test(AI_AGENT_WEBHOOK)) return;            /* placeholder not replaced yet: do nothing */
+    var key = 'nikora_agent_sent_' + rec.orderId;
+    if(safeSession.getItem(key)) return;                           /* once per order, even if the success handler runs twice */
+    safeSession.setItem(key, '1');
+    var body = JSON.stringify(ckBuildAgentPayload(rec));
+    var beacon = function(){                                       /* last resort when fetch is blocked: text/plain avoids a CORS preflight */
+      try{ if(navigator.sendBeacon) navigator.sendBeacon(AI_AGENT_WEBHOOK, new Blob([body], { type: 'text/plain;charset=UTF-8' })); }catch(e2){}
+    };
+    try{
+      /* keepalive lets the request finish even if the customer navigates away; we never await it */
+      fetch(AI_AGENT_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body,
+        keepalive: true, credentials: 'omit', referrerPolicy: 'no-referrer' }).catch(beacon);
+    }catch(e1){ beacon(); }
+  }catch(e){ /* never let the webhook affect checkout */ }
 }
 /* after payment the order is created by the server (webhook or this call, whichever is first). Polls briefly while Stripe is still "processing". */
 function ckStripeComplete(piId, tries){
