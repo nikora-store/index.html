@@ -18,7 +18,7 @@
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Catalog — NIKORA</title>
-<meta name="description" content="Shop the full NIKORA collection: facial wands, sculptors, LED therapy masks, body devices and glow ritual bundles.">
+<meta name="description" content="Shop the NIKORA K-Beauty collection: Korean skincare, gentle beauty-tech devices and glass skin ritual sets, filtered by skin concern.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -148,6 +148,51 @@ button{font-family:inherit;cursor:pointer;}
 .cat-tab:hover{border-color:var(--gold); color:var(--text);}
 .cat-tab.active{background:var(--gold); border-color:var(--gold); color:#241c0f;}
 .result-count{font-size:12px; color:var(--text-faint); padding:0 2px;}
+
+/* ---------------- SKIN CONCERN FILTER + CARD TAGS ---------------- */
+.concern-row{gap:12px;}
+.concern-label{font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--text-faint);}
+.concern-chips{display:flex; gap:8px; flex-wrap:wrap;}
+.concern-chip{
+  padding:7px 14px; border-radius:100px; border:1px solid rgba(var(--gold-rgb),.45); background:transparent;
+  color:var(--gold); font-size:12.5px; font-weight:600; letter-spacing:.02em; transition:all .2s ease;
+}
+.concern-chip:hover{background:rgba(var(--gold-rgb),.12);}
+.concern-chip.active{background:var(--gold); border-color:var(--gold); color:#241c0f;}
+.nk-tags{display:flex; flex-wrap:wrap; gap:6px; padding:2px 18px 18px;}
+.nk-tag{
+  padding:4px 10px; border-radius:100px; border:1px solid rgba(var(--gold-rgb),.4); background:rgba(var(--gold-rgb),.08);
+  color:var(--gold); font-size:11px; font-weight:600; letter-spacing:.02em; transition:all .2s ease;
+}
+.nk-tag:hover,.nk-tag.active{background:var(--gold); border-color:var(--gold); color:#241c0f;}
+
+/* ---------------- ROUTINE RECOMMENDATION ---------------- */
+.routine-section{padding-top:6px; padding-bottom:26px;}
+.routine-box{background:var(--card-bg); border:1px solid var(--card-border); border-radius:20px; box-shadow:var(--shadow-ambient);}
+.routine-box > summary{
+  list-style:none; cursor:pointer; display:flex; flex-direction:column; gap:4px; padding:18px 22px; border-radius:20px;
+}
+.routine-box > summary::-webkit-details-marker{display:none;}
+.routine-title{font-family:'Playfair Display',serif; font-size:20px; font-weight:500; color:var(--text);}
+.routine-title::after{content:"+"; float:right; color:var(--gold); font-family:'Montserrat',sans-serif; font-weight:400; font-size:22px; line-height:1;}
+.routine-box[open] .routine-title::after{content:"\2212";}
+.routine-sub{font-size:13px; color:var(--text-soft);}
+.routine-inner{padding:0 22px 22px; border-top:1px solid var(--line);}
+.routine-tabs{display:flex; gap:8px; flex-wrap:wrap; margin:18px 0 14px;}
+.routine-intro{margin:0 0 14px; font-size:13.5px; color:var(--text-soft);}
+.routine-cols{display:grid; grid-template-columns:1fr 1fr; gap:22px;}
+.routine-col h4{margin:0 0 10px; font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--gold);}
+.routine-steps{margin:0; padding-left:20px; display:flex; flex-direction:column; gap:8px; font-size:13.5px; color:var(--text);}
+.routine-steps li::marker{color:var(--gold); font-weight:700;}
+.routine-steps a{color:var(--text); font-weight:600; border-bottom:1px solid rgba(var(--gold-rgb),.5); transition:color .2s ease;}
+.routine-steps a:hover{color:var(--gold);}
+.routine-steps span{color:var(--text-soft);}
+.routine-steps li.generic{color:var(--text-soft);}
+.routine-tip{margin:16px 0 0; padding:12px 14px; border-radius:12px; background:var(--surface-tint); font-size:12.5px; color:var(--text-soft);}
+.routine-actions{display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:16px;}
+.routine-set-link{font-size:12.5px; font-weight:600; color:var(--gold); border-bottom:1px solid rgba(var(--gold-rgb),.5);}
+.routine-fine{margin:14px 0 0; font-size:11.5px; color:var(--text-faint);}
+@media (max-width:720px){ .routine-cols{grid-template-columns:1fr;} }
 
 /* ---------------- MOBILE: search/filter bar scrolls with page, never sticks/floats ---------------- */
 @media (max-width:768px){
@@ -590,7 +635,7 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
 <main>
   <div class="container page-head">
     <h1>The full <em>collection</em></h1>
-    <p>Every NIKORA device in one place — search, filter by category or price, and sort to find your next ritual essential.</p>
+    <p>Korean skincare and gentle beauty tech in one place — filter by skin concern, category or price, or follow a routine made for your skin type.</p>
   </div>
 
   <!-- ================= TOP PROMO BANNER (data: Firebase /site_content/banners/catalog; hidden unless active) ================= -->
@@ -601,7 +646,7 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
       <div class="toolbar-row">
         <div class="search-field">
           <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-          <input type="text" id="search-input" placeholder="Search devices...">
+          <input type="text" id="search-input" placeholder="Search products or #tags...">
         </div>
         <div class="price-filter">
           <label for="price-range">Up to</label>
@@ -622,8 +667,29 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
           <div class="result-count" id="result-count"></div>
         </div>
       </div>
+      <div class="toolbar-row concern-row">
+        <span class="concern-label" id="concern-label">Skin concern</span>
+        <div class="concern-chips" id="concern-chips" role="group" aria-labelledby="concern-label"></div>
+      </div>
     </div>
   </div>
+
+  <!-- ================= ROUTINE RECOMMENDATION (steps are built by renderRoutine() from ROUTINES) ================= -->
+  <section class="routine-section" aria-label="Routine recommendation">
+    <div class="container">
+      <details class="routine-box" id="routine-box">
+        <summary>
+          <span class="routine-title">Routine Recommendation</span>
+          <span class="routine-sub">Not sure how to layer? Pick your skin type for a simple morning and evening order.</span>
+        </summary>
+        <div class="routine-inner">
+          <div class="routine-tabs" id="routine-tabs" role="tablist" aria-label="Skin type"></div>
+          <div id="routine-body"></div>
+          <p class="routine-fine">General cosmetic-care guidance, not medical advice. Patch-test new products and see a dermatologist for skin conditions.</p>
+        </div>
+      </details>
+    </div>
+  </section>
 
   <section class="grid-section">
     <div class="container">
@@ -752,20 +818,25 @@ var safeStorage = {
    catalog is a separate 11-item numeric-id array, so sharing the same
    key would corrupt one system or the other; this keeps both correct. */
 var DEFAULT_CATALOG = [
-  { id:1, name:"NIKORA RED Light & EMS Facial Wand 4-in-1", category:"Facial Wand", price:34.99, oldPrice:49.99, bestseller:true, desc:"Microcurrent, red light therapy, therapeutic warmth, and facial massage for youthful glow.", img:"https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600" },
-  { id:2, name:"3D EMS Gua Sha Sculptor", category:"Sculptors", price:24.99, oldPrice:34.99, bestseller:true, desc:"Advanced ergonomic electric Gua Sha with heat and microcurrent for facial contouring.", img:"https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=600" },
-  { id:3, name:"Hydro-Vacuum Pore Cleaner", category:"Cleansing", price:29.99, oldPrice:39.99, bestseller:false, desc:"Deep pore suction cleaner with water circulation and blue light sterilization.", img:"https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600" },
-  { id:4, name:"LED Therapy Mask 7-in-1 Pro", category:"LED Therapy", price:49.99, oldPrice:79.99, bestseller:true, lowStock:true, desc:"Professional 7-color light therapy mask targeting acne, collagen production, and hyperpigmentation.", img:"https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600" },
-  { id:5, name:"EMS Body Sculptor RF", category:"Body Care", price:59.99, oldPrice:89.99, bestseller:true, desc:"Radio frequency and electrical muscle stimulation device for body toning and firming.", img:"https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=600" },
-  { id:6, name:"Sonic Eye Massager", category:"Eye Care", price:19.99, oldPrice:29.99, bestseller:false, desc:"Thermal sonic vibration tool to reduce dark circles, eye bags, and fine lines.", img:"https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=600" },
-  { id:7, name:"Ultrasonic Skin Scrubber", category:"Cleansing", price:24.99, oldPrice:34.99, bestseller:false, desc:"High-frequency spatula for deep skin peeling, blackhead extraction, and serum infusion.", img:"https://images.unsplash.com/photo-1556228722-d119f018d480?w=600" },
-  { id:8, name:"Thermal Neck & Face Massager", category:"Sculptors", price:39.99, oldPrice:54.99, bestseller:false, desc:"Dolphin-tail lifting device targeting neck lines, jawline firmness, and double chin.", img:"https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=600" },
-  { id:9, name:"Cryo Ice Roller", category:"Cooling Therapy", price:19.99, oldPrice:24.99, bestseller:false, lowStock:true, desc:"Cold therapy facial roller for instant puffiness relief, redness calming, and pore shrinking.", img:"https://images.unsplash.com/photo-1512290900673-10705a3962d3?w=600" },
-  { id:10, name:"RF Anti-Aging Device", category:"Anti-Aging", price:69.99, oldPrice:99.99, bestseller:true, desc:"Ultimate multi-polar radiofrequency skin tightening and collagen remodeling device.", img:"https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600" },
-  { id:11, name:"NIKORA Ultimate Glow Ritual Set (Full Gadget Bundle)", category:"Bundles & Sets", price:149.99, oldPrice:219.99, bestseller:true, lowStock:true, desc:"Complete beauty gadget set: Facial Wand, LED Mask, Gua Sha Sculptor, and Sonic Eye Massager.", img:"https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600" }
+  { id:1, name:"NIKORA Electroporation & LED Skin Booster Wand", category:"Facial Wand", price:129.00, oldPrice:169.00, bestseller:true, desc:"Our hero beauty-tech wand: gentle electroporation-style infusion plus LED light, designed to help your K-Beauty ampoules and creams absorb for a visible glow.", img:"https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600", tags:["#Hydration", "#AntiAgingGlow"] },
+  { id:2, name:"Centella Barrier Soothing Ampoule 50ml", category:"Serums & Ampoules", price:28.00, oldPrice:35.00, bestseller:true, desc:"A lightweight Korean ampoule with Centella Asiatica that soothes and comforts the look of stressed, sensitive-feeling skin while supporting the skin barrier.", img:"https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600", tags:["#BarrierRepair", "#AcneCalming"] },
+  { id:3, name:"5-Ceramide Deep Moisture Repair Cream 80ml", category:"Moisturizers", price:34.00, oldPrice:42.00, bestseller:false, desc:"A rich yet breathable barrier cream with 5 ceramides that locks in moisture and leaves skin feeling soft, cushioned and comfortable all day.", img:"https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=600", tags:["#BarrierRepair", "#Hydration"] },
+  { id:4, name:"Advanced Snail Mucin & Peptide Power Essence", category:"Essences", price:29.00, oldPrice:36.00, bestseller:false, desc:"A bouncy Korean essence with snail mucin and peptides for deep hydration and a dewy, glass-like glow.", img:"https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=600", tags:["#Hydration", "#AntiAgingGlow"] },
+  { id:5, name:"Bio-Collagen Real Deep Overnight Mask Set", category:"Masks", price:24.00, oldPrice:32.00, bestseller:true, desc:"The viral overnight mask set with bio-collagen: apply before bed and wake up to plump, hydrated, refreshed-looking skin.", img:"https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600", tags:["#Hydration", "#AntiAgingGlow"] },
+  { id:6, name:"Rice Bran Gentle Exfoliating Enzyme Toner", category:"Toners", price:26.00, oldPrice:34.00, bestseller:false, desc:"A gentle Japanese-inspired enzyme toner with rice bran that helps buff away dullness for smoother, softer-looking texture.", img:"https://images.unsplash.com/photo-1556228722-d119f018d480?w=600", tags:["#AcneCalming", "#AntiAgingGlow"] },
+  { id:7, name:"Hyaluronic Acid Watery Sun Gel SPF50+", category:"Sun Care", price:22.00, oldPrice:28.00, bestseller:false, desc:"A watery, weightless sun gel with hyaluronic acid and SPF50+ broad protection that layers invisibly for an everyday glow.", img:"https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=600", tags:["#Hydration", "#AntiAgingGlow"] },
+  { id:8, name:"Cryo-Cooling Ice Globe Facial Tool", category:"Cooling Therapy", price:39.00, oldPrice:52.00, bestseller:false, desc:"A cryo-cooling facial globe for a refreshing massage that helps de-puff and contour the look of your face and eye area.", img:"https://images.unsplash.com/photo-1512290900673-10705a3962d3?w=600", tags:["#AcneCalming"] },
+  { id:9, name:"Red Light & Thermal Jawline Sculptor", category:"Sculptors", price:89.00, oldPrice:119.00, bestseller:false, desc:"A red light and gentle thermal sculpting tool designed for the jawline and neck, bringing a warm, spa-style lift ritual home.", img:"https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=600", tags:["#AntiAgingGlow"] },
+  { id:10, name:"The Ultimate Glass Skin & Barrier Ritual Set", category:"Bundles & Sets", price:159.00, oldPrice:215.00, bestseller:true, desc:"The complete Glass Skin ritual: Skin Booster Wand, Centella Barrier Soothing Ampoule, 5-Ceramide Deep Moisture Repair Cream and a NIKORA Mascot Silk Pouch.", img:"https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600", tags:["#BarrierRepair", "#Hydration", "#AntiAgingGlow"] }
 ];
 
+var CATALOG_VERSION = 'kbeauty-10-v1';   /* bump when DEFAULT_CATALOG changes so browsers drop the old cached catalog */
 function getCatalogProducts(){
+  if(safeStorage.getItem('nikora_catalog_version') !== CATALOG_VERSION){
+    safeStorage.setItem('nikora_catalog_version', CATALOG_VERSION);
+    safeStorage.setItem('nikora_catalog_products', JSON.stringify(DEFAULT_CATALOG));
+    return DEFAULT_CATALOG.slice();
+  }
   var stored = safeStorage.getItem('nikora_catalog_products');
   if(!stored){
     safeStorage.setItem('nikora_catalog_products', JSON.stringify(DEFAULT_CATALOG));
@@ -780,7 +851,7 @@ function getCatalogProducts(){
 }
 
 var ALL_PRODUCTS = getCatalogProducts();
-var CATEGORIES = ["All Devices", "Bestsellers", "Facial Wand", "Sculptors", "Cleansing", "LED Therapy", "Body Care", "Bundles & Sets"];
+var CATEGORIES = ["All Products", "Bestsellers", "Facial Wand", "Serums & Ampoules", "Essences", "Toners", "Moisturizers", "Masks", "Sun Care", "Cooling Therapy", "Sculptors", "Bundles & Sets"];
 
 /* Safety net: bestsellers.js (loaded at the end of <body>) replaces this stub. If that file is ever missing, the catalog keeps working without bestseller data. */
 if(!window.NKBestsellers){
@@ -797,7 +868,8 @@ if(!window.NKBestsellers){
 
 var state = {
   search: "",
-  category: "All Devices",
+  category: "All Products",
+  concern: "",
   maxPrice: 200,
   sort: "featured"
 };
@@ -1552,6 +1624,120 @@ function showToast(msg){
   toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2600);
 }
 
+/* ================= SKIN CONCERNS (filter chips, card tags, routine box) =================
+   Tags come from the product (p.tags, same names as lib/products.js SKIN_TAGS) or, when a product record has none
+   (e.g. an older Firebase copy), from SKIN_TAGS_BY_NAME below, keyed by exact product name. Keep both in sync. */
+var SKIN_CONCERNS = [
+  { key:'BarrierRepair', label:'#BarrierRepair', hint:'Comfort and moisture support for dry, tight or sensitive-feeling skin' },
+  { key:'Hydration',     label:'#Hydration',     hint:'Water-bound, plump, dewy-looking skin' },
+  { key:'AcneCalming',   label:'#AcneCalming',   hint:'Calming, lightweight care for oily or blemish-prone-feeling skin' },
+  { key:'AntiAgingGlow', label:'#AntiAgingGlow', hint:'Smoother-looking, firmer-feeling, radiant skin' }
+];
+var SKIN_TAGS_BY_NAME = {
+  "nikora electroporation & led skin booster wand": ["Hydration","AntiAgingGlow"],
+  "centella barrier soothing ampoule 50ml": ["BarrierRepair","AcneCalming"],
+  "5-ceramide deep moisture repair cream 80ml": ["BarrierRepair","Hydration"],
+  "advanced snail mucin & peptide power essence": ["Hydration","AntiAgingGlow"],
+  "bio-collagen real deep overnight mask set": ["Hydration","AntiAgingGlow"],
+  "rice bran gentle exfoliating enzyme toner": ["AcneCalming","AntiAgingGlow"],
+  "hyaluronic acid watery sun gel spf50+": ["Hydration","AntiAgingGlow"],
+  "cryo-cooling ice globe facial tool": ["AcneCalming"],
+  "red light & thermal jawline sculptor": ["AntiAgingGlow"],
+  "the ultimate glass skin & barrier ritual set": ["BarrierRepair","Hydration","AntiAgingGlow"]
+};
+function concernKey(t){ return String(t == null ? '' : t).replace(/^#/, '').trim(); }
+function tagsOf(p){
+  var list = (p && Array.isArray(p.tags) && p.tags.length) ? p.tags : (SKIN_TAGS_BY_NAME[String(p && p.name || '').toLowerCase()] || []);
+  return list.map(concernKey).filter(Boolean);
+}
+function concernMeta(key){
+  for(var i=0;i<SKIN_CONCERNS.length;i++){ if(SKIN_CONCERNS[i].key.toLowerCase() === String(key).toLowerCase()) return SKIN_CONCERNS[i]; }
+  return null;
+}
+function setConcern(key){
+  var m = key ? concernMeta(key) : null;
+  var next = m ? m.key : '';
+  state.concern = (state.concern === next) ? '' : next;      /* clicking the active chip clears it */
+  renderConcernChips();
+  renderGrid();
+}
+function renderConcernChips(){
+  var wrap = document.getElementById('concern-chips'); if(!wrap) return;
+  wrap.innerHTML = SKIN_CONCERNS.map(function(c){
+    var on = state.concern === c.key;
+    return '<button type="button" class="concern-chip' + (on ? ' active' : '') + '" data-concern="' + c.key + '" aria-pressed="' + (on ? 'true' : 'false') + '" title="' + escapeHtml(c.hint) + '">' + escapeHtml(c.label) + '</button>';
+  }).join('');
+}
+/* adds the clickable #tag chips to every rendered product card (works with the shared product-card.js template) */
+function decorateCardTags(grid){
+  var btns = grid.querySelectorAll('[data-action="add-to-cart"][data-id]');
+  for(var i=0;i<btns.length;i++){
+    var btn = btns[i], card = btn.closest('.nk-card') || btn.closest('article') || btn.parentNode;
+    if(!card || card.querySelector('.nk-tags')) continue;
+    var p = findProductById(btn.getAttribute('data-id')), tags = p ? tagsOf(p) : [];
+    if(!tags.length) continue;
+    var row = document.createElement('div');
+    row.className = 'nk-tags';
+    row.innerHTML = tags.map(function(k){
+      var m = concernMeta(k); if(!m) return '';
+      return '<button type="button" class="nk-tag' + (state.concern === m.key ? ' active' : '') + '" data-concern="' + m.key + '" title="' + escapeHtml(m.hint) + '">' + escapeHtml(m.label) + '</button>';
+    }).join('');
+    card.appendChild(row);
+  }
+}
+
+/* ---- Routine Recommendation: layering order by skin type. Steps with an id link to that product; text-only steps are generic. ---- */
+var ROUTINES = [
+  { key:'oily', label:'Oily / Sensitive', concern:'AcneCalming',
+    intro:'Light, calming layers that keep skin comfortable and balanced without feeling heavy.',
+    am:[ {text:'Gentle cleanser (your own)'}, {id:4, note:'a thin layer, pat in'}, {id:2, note:'2-3 drops'}, {id:3, note:'a thin layer'}, {id:8, note:'optional: 1-2 minutes to de-puff'}, {id:7, note:'last step, every morning'} ],
+    pm:[ {text:'Gentle cleanser (your own)'}, {id:6, note:'2-3 nights a week; skip if skin feels irritated'}, {id:4, note:'a thin layer'}, {id:2, note:'2-3 drops'}, {id:3, note:'a thin layer'} ],
+    tip:'Add one new product at a time and patch-test first. Skip devices on irritated or broken skin.' },
+  { key:'dry', label:'Dry / Barrier Repair', concern:'BarrierRepair',
+    intro:'Rich layering that restores comfort and locks moisture in, morning and night.',
+    am:[ {text:'Gentle cleanser (your own)'}, {id:4, note:'press in while skin is damp'}, {id:2, note:'2-3 drops'}, {id:3, note:'a generous layer'}, {id:7, note:'last step, every morning'} ],
+    pm:[ {text:'Creamy or oil cleanser (your own)'}, {id:4, note:'press in while skin is damp'}, {id:2, note:'layer twice if skin feels tight'}, {id:1, note:'optional: glide over the serum layer, follow the device manual'}, {id:3, note:'a generous layer'}, {id:5, note:'2-3 nights a week as the final step'} ],
+    tip:'Use the Enzyme Toner no more than once a week, or skip it while your skin barrier is recovering.' },
+  { key:'aging', label:'Aging / Glow', concern:'AntiAgingGlow',
+    intro:'Hydrating layers plus device time for a smoother-looking, radiant finish.',
+    am:[ {text:'Gentle cleanser (your own)'}, {id:4, note:'press in while skin is damp'}, {id:1, note:'optional: a few minutes, follow the device manual'}, {id:3, note:'a medium layer'}, {id:7, note:'last step, every morning'} ],
+    pm:[ {text:'Gentle cleanser (your own)'}, {id:6, note:'1-2 nights a week for smoother texture'}, {id:4, note:'press in while skin is damp'}, {id:2, note:'2-3 drops'}, {id:1, note:'glide over the serum layer, follow the device manual'}, {id:9, note:'a few evenings a week, follow the device manual'}, {id:3, note:'a medium layer'}, {id:5, note:'2 nights a week as the final step'} ],
+    tip:'Sunscreen is the most important glow step: reapply Sun Gel during the day if you are outdoors.' }
+];
+var routineKey = ROUTINES[0].key;
+function routineStepsHtml(steps){
+  return '<ol class="routine-steps">' + steps.map(function(st){
+    if(st.id != null){
+      var p = findProductById(st.id);
+      var name = p ? p.name : ('Product ' + st.id);
+      return '<li><a href="product.html?id=' + encodeURIComponent(st.id) + '">' + escapeHtml(name) + '</a>' + (st.note ? ' <span>&mdash; ' + escapeHtml(st.note) + '</span>' : '') + '</li>';
+    }
+    return '<li class="generic">' + escapeHtml(st.text) + '</li>';
+  }).join('') + '</ol>';
+}
+function renderRoutine(){
+  var tabs = document.getElementById('routine-tabs'), body = document.getElementById('routine-body');
+  if(!tabs || !body) return;
+  var r = ROUTINES[0];
+  for(var i=0;i<ROUTINES.length;i++){ if(ROUTINES[i].key === routineKey) r = ROUTINES[i]; }
+  tabs.innerHTML = ROUTINES.map(function(x){
+    var on = x.key === r.key;
+    return '<button type="button" class="cat-tab' + (on ? ' active' : '') + '" role="tab" aria-selected="' + (on ? 'true' : 'false') + '" data-routine="' + x.key + '">' + escapeHtml(x.label) + '</button>';
+  }).join('');
+  var cm = concernMeta(r.concern);
+  body.innerHTML =
+    '<p class="routine-intro">' + escapeHtml(r.intro) + '</p>' +
+    '<div class="routine-cols">' +
+      '<div class="routine-col"><h4>Morning</h4>' + routineStepsHtml(r.am) + '</div>' +
+      '<div class="routine-col"><h4>Evening</h4>' + routineStepsHtml(r.pm) + '</div>' +
+    '</div>' +
+    '<p class="routine-tip">' + escapeHtml(r.tip) + '</p>' +
+    '<div class="routine-actions">' +
+      (cm ? '<button type="button" class="concern-chip" data-routine-shop="' + cm.key + '">Shop ' + escapeHtml(cm.label) + ' picks</button>' : '') +
+      '<a class="routine-set-link" href="product.html?id=10">Or get it all in the Ultimate Glass Skin &amp; Barrier Ritual Set</a>' +
+    '</div>';
+}
+
 /* ================= 3. SEARCH / FILTER / SORT / RENDER ================= */
 function getFilteredSortedProducts(){
   var list = ALL_PRODUCTS.slice();
@@ -1560,12 +1746,18 @@ function getFilteredSortedProducts(){
 
   if(state.search.trim()){
     var q = state.search.trim().toLowerCase();
-    list = list.filter(function(p){ return p.name.toLowerCase().indexOf(q) !== -1; });
+    var qTag = q.replace(/^#/, '');
+    list = list.filter(function(p){
+      return p.name.toLowerCase().indexOf(q) !== -1 || tagsOf(p).some(function(t){ return t.toLowerCase().indexOf(qTag) !== -1; });
+    });
   }
   if(onBestsellers){
     list = list.filter(function(p){ return p.bestseller; });   // isBestseller from lib/products.js arrives here as `bestseller`
-  } else if(state.category && state.category !== 'All Devices'){
+  } else if(state.category && state.category !== 'All Products'){
     list = list.filter(function(p){ return p.category === state.category; });
+  }
+  if(state.concern){
+    list = list.filter(function(p){ return tagsOf(p).indexOf(state.concern) !== -1; });
   }
   list = list.filter(function(p){ return p.price <= state.maxPrice; });
 
@@ -1592,14 +1784,15 @@ function renderGrid(){
   var grid = document.getElementById('product-grid');
   var list = getFilteredSortedProducts();
 
-  document.getElementById('result-count').textContent = list.length + ' device' + (list.length === 1 ? '' : 's');
+  document.getElementById('result-count').textContent = list.length + ' product' + (list.length === 1 ? '' : 's');
 
   if(list.length === 0){
-    grid.innerHTML = '<div class="no-results">No devices match your search and filters. Try widening your price range or clearing the search.</div>';
+    grid.innerHTML = '<div class="no-results">No products match your search and filters. Try another skin concern, widen your price range or clear the search.</div>';
     return;
   }
 
   grid.innerHTML = list.map(productCardHtml).join('');
+  decorateCardTags(grid);
   initTactileCards();
 }
 
@@ -1707,7 +1900,26 @@ function bindEvents(){
     });
   });
 
+  document.getElementById('concern-chips').addEventListener('click', function(e){
+    var chip = e.target.closest('[data-concern]');
+    if(chip) setConcern(chip.getAttribute('data-concern'));
+  });
+
+  document.getElementById('routine-box').addEventListener('click', function(e){
+    var tab = e.target.closest('[data-routine]');
+    if(tab){ routineKey = tab.getAttribute('data-routine'); renderRoutine(); return; }
+    var shop = e.target.closest('[data-routine-shop]');
+    if(shop){
+      state.concern = '';                                   /* always apply (never toggle off) from the routine box */
+      setConcern(shop.getAttribute('data-routine-shop'));
+      var g = document.getElementById('product-grid');
+      if(g && g.scrollIntoView) g.scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+  });
+
   document.getElementById('product-grid').addEventListener('click', function(e){
+    var tagBtn = e.target.closest('[data-concern]');
+    if(tagBtn){ e.preventDefault(); e.stopPropagation(); setConcern(tagBtn.getAttribute('data-concern')); return; }
     var addBtn = e.target.closest('[data-action="add-to-cart"]');
     if(addBtn){
       e.preventDefault();
@@ -1738,7 +1950,11 @@ function init(){
   var qFilter = (location.search.match(/[?&]filter=([a-z]+)/) || [])[1];   // deep links used by the home page's "Shop all bestsellers" / "View all bundles" buttons
   if(qFilter === 'bestsellers') state.category = 'Bestsellers';
   else if(qFilter === 'bundles') state.category = 'Bundles & Sets';
+  var qConcern = (location.search.match(/[?&]concern=#?([A-Za-z]+)/) || [])[1];   // deep link: catalog.html?concern=Hydration
+  if(qConcern && concernMeta(qConcern)) state.concern = concernMeta(qConcern).key;
   renderCategoryTabs();
+  renderConcernChips();
+  renderRoutine();
   renderGrid();
   renderCart();
   renderTrustBadges();
