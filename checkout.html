@@ -1249,20 +1249,73 @@ var NK_ICONS = {
 
 /* Fallback pool so the recommendations strip is NEVER empty (used until Firebase '/products' answers, or if it fails/is empty). */
 var NK_FALLBACK = [
-  { id:'1',  name:'NIKORA RED Light & EMS Facial Wand 4-in-1', price:34.99, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
-  { id:'2',  name:'3D EMS Gua Sha Sculptor', price:24.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400' },
-  { id:'3',  name:'Hydro-Vacuum Pore Cleaner', price:29.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
-  { id:'4',  name:'LED Therapy Mask 7-in-1 Pro', price:49.99, category:'LED Therapy', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
-  { id:'5',  name:'EMS Body Sculptor RF', price:59.99, category:'Body Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
-  { id:'6',  name:'Sonic Eye Massager', price:19.99, category:'Eye Care', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
-  { id:'7',  name:'Ultrasonic Skin Scrubber', price:24.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
-  { id:'8',  name:'Thermal Neck & Face Massager', price:39.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' }
+  { id:'1', name:"COSRX Advanced Snail 96 Mucin Power Essence", brand:"COSRX", price:25.00, category:"Essences", img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
+  { id:'2', name:"Anua Heartleaf 77% Soothing Toner 250ml", brand:"Anua", price:22.00, category:"Toners", img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
+  { id:'3', name:"Beauty of Joseon Relief Sun: Rice + Probiotics SPF50+", brand:"Beauty of Joseon", price:18.00, category:"Sun Care", img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' },
+  { id:'4', name:"Skin1004 Madagascar Centella Ampoule 100ml", brand:"Skin1004", price:24.00, category:"Serums & Ampoules", img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
+  { id:'5', name:"Laneige Lip Sleeping Mask Berry", brand:"Laneige", price:24.00, category:"Lip Care", img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'6', name:"Biodance Bio-Collagen Real Deep Mask Set", brand:"Biodance", price:19.00, category:"Masks", img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
+  { id:'7', name:"Round Lab Birch Juice Moisturizing Cream 80ml", brand:"Round Lab", price:28.00, category:"Moisturizers", img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'8', name:"NIKORA Electroporation & LED Skin Booster Wand", brand:"NIKORA Beauty Tech", price:129.00, category:"Facial Wand", img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
+  { id:'9', name:"NIKORA Cryo-Cooling Ice Globe Sculptor", brand:"NIKORA Beauty Tech", price:39.00, category:"Cooling Therapy", img:'https://images.unsplash.com/photo-1512290900673-10705a3962d3?w=400' },
+  { id:'10', name:"The NIKORA x K-Beauty Glass Skin Ritual Set", brand:"NIKORA Bundles", price:159.00, category:"Bundles & Sets", img:'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400' }
 ];
 
 function nkEsc(str){
   var d = document.createElement('div');
   d.textContent = str == null ? '' : str;
   return d.innerHTML;
+}
+
+
+/* ---- recommendation engine: complementary pairing between K-Beauty skincare and NIKORA beauty tech ----
+   skincare in the bag or being viewed  ->  the Booster Wand / Cryo Globe come first
+   a device in the bag or being viewed  ->  the K-Beauty essentials (COSRX Snail, Anua Toner, Beauty of Joseon SPF) come first
+   ids are the catalog ids '1'-'10' (lib/products.js slugs are accepted too). Products it does not know (added in the admin panel) go last. */
+var NK_SLUG_IDS = { 'cosrx-snail-mucin':'1', 'anua-heartleaf-toner':'2', 'boj-relief-sun':'3', 'skin1004-centella-ampoule':'4', 'laneige-lip-sleeping-mask':'5',
+  'biodance-collagen-mask':'6', 'roundlab-birch-cream':'7', 'nikora-booster-wand':'8', 'nikora-cryo-globe':'9', 'nikora-glass-skin-bundle':'10' };
+var NK_ROLE = { '1':'skin', '2':'skin', '3':'skin', '4':'skin', '5':'skin', '6':'skin', '7':'skin', '8':'device', '9':'device', '10':'bundle' };
+var NK_BUNDLE_PARTS = { '10': ['8', '1', '4', '6'] };        /* Glass Skin Ritual Set = Booster Wand + COSRX + Skin1004 + Biodance mask */
+var NK_REC_ORDER = {
+  skin:   ['8','9','1','2','3','4','7','6','5','10'],        /* skincare only: devices first (Wand, then Cryo Globe) */
+  device: ['1','2','3','4','7','6','5','9','8','10'],        /* device only: essentials first (COSRX, Anua, Beauty of Joseon) */
+  both:   ['3','1','2','4','7','9','8','6','5','10'],        /* both: finish the routine (SPF, essence, toner ...), then the other device */
+  none:   ['8','1','2','3','9','4','7','6','5','10']         /* empty bag: hero wand, then the essentials */
+};
+var NK_LEGACY_NAMES = ["NIKORA RED Light & EMS Facial Wand 4-in-1","3D EMS Gua Sha Sculptor","Hydro-Vacuum Pore Cleaner","LED Therapy Mask 7-in-1 Pro","EMS Body Sculptor RF","Sonic Eye Massager","Ultrasonic Skin Scrubber","Thermal Neck & Face Massager","Cryo Ice Roller","RF Anti-Aging Device","NIKORA Ultimate Glow Ritual Set (Full Gadget Bundle)"];
+/* Until the admin panel re-syncs Firebase, an old-catalog /products node must never feed the recommendations, the thumbnails or the price check. */
+function nkDropLegacy(list){
+  for(var i=0;i<list.length;i++){ if(NK_LEGACY_NAMES.indexOf(list[i].name) !== -1) return NK_FALLBACK.slice(); }
+  return list;
+}
+function nkKey(id){ var k = String(id == null ? '' : id); return NK_SLUG_IDS[k] || k; }
+function nkRoleOf(p){
+  var r = NK_ROLE[nkKey(p && p.id)];
+  if(r) return r;
+  if(p && (/^NIKORA Tech$|^NIKORA Beauty Tech$/i.test(p.brand || '') || p.category === 'Facial Wand' || p.category === 'Cooling Therapy')) return 'device';
+  return (p && p.category === 'Bundles & Sets') ? 'bundle' : 'skin';
+}
+function nkOwned(id){                                          /* ids a cart line already covers (a bundle covers its parts) */
+  var k = nkKey(id), out = [k];
+  (NK_BUNDLE_PARTS[k] || []).forEach(function(x){ out.push(x); });
+  return out;
+}
+function nkSortRecs(cands, contextIds){
+  var skin = false, device = false;
+  contextIds.forEach(function(id){
+    var r = nkRoleOf({ id: id, category: (nkFindLite(id) || {}).category, brand: (nkFindLite(id) || {}).brand });
+    if(r === 'skin') skin = true; else if(r === 'device') device = true; else { skin = true; device = true; }
+  });
+  var order = NK_REC_ORDER[skin && device ? 'both' : (skin ? 'skin' : (device ? 'device' : 'none'))];
+  function rank(p, idx){ var i = order.indexOf(nkKey(p.id)); return i === -1 ? 100 + idx : i; }
+  return cands.map(function(p, idx){ return { p: p, r: rank(p, idx) }; })
+    .sort(function(a, b){ return a.r - b.r; })
+    .map(function(x){ return x.p; });
+}
+function nkFindLite(id){                                       /* product record for role detection, without the full nkFind fallbacks */
+  for(var i=0;i<NK_PRODUCTS.length;i++){ if(String(NK_PRODUCTS[i].id) === String(id)) return NK_PRODUCTS[i]; }
+  for(var j=0;j<NK_FALLBACK.length;j++){ if(String(NK_FALLBACK[j].id) === nkKey(id)) return NK_FALLBACK[j]; }
+  return null;
 }
 
 /* ---- product data (normalises catalog {name,img}, index overrides {title,imgUrl}, product {images[]}) ---- */
@@ -1272,7 +1325,7 @@ function nkNormalize(p, key){
   var price = Number(p.price);
   if(!name || !(price > 0)) return null;
   var img = (Array.isArray(p.images) && p.images[0]) || p.img || p.imgUrl || '';
-  return { id: String(p.id != null ? p.id : key), name: String(name), price: price, img: String(img || ''), category: p.category || '' };
+  return { id: String(p.id != null ? p.id : key), name: String(name), brand: p.brand ? String(p.brand) : '', price: price, img: String(img || ''), category: p.category || '' };
 }
 function nkListFromObject(obj){
   var out = [];
@@ -1372,7 +1425,10 @@ window.addToCart = function(id, title, price){
   openCart();
 };
 /* Recommendation add: adds WITHOUT closing or re-opening the drawer. */
+var NK_REC_LAST = 0;
 function addRecommended(id){
+  if(Date.now() - NK_REC_LAST < 350) return;          /* a double-tap must not add the next (shifted) card too */
+  NK_REC_LAST = Date.now();
   var p = nkFind(id);
   if(!p) return;
   cartAdd(p.id, p.name, p.price, 1);
@@ -1449,16 +1505,16 @@ function renderCartRecs(cart){
   if(!section || !grid) return;
 
   var excluded = {};
-  cart.forEach(function(c){ excluded[String(c.id)] = true; });
+  cart.forEach(function(c){ nkOwned(c.id).forEach(function(k){ excluded[k] = true; }); });
   var current = (typeof CURRENT_PRODUCT !== 'undefined' && CURRENT_PRODUCT) ? CURRENT_PRODUCT : null;
-  if(current) excluded[String(current.id)] = true;               /* product page: skip the item being viewed */
+  if(current) nkOwned(current.id).forEach(function(k){ excluded[k] = true; });               /* product page: skip the item being viewed */
 
   var pool = NK_PRODUCTS.length ? NK_PRODUCTS : NK_FALLBACK;
-  var candidates = pool.filter(function(p){ return !excluded[p.id]; });
-  if(current && current.category){
-    candidates = candidates.filter(function(p){ return p.category === current.category; })
-      .concat(candidates.filter(function(p){ return p.category !== current.category; }));
-  }
+  var candidates = pool.filter(function(p){ return !excluded[nkKey(p.id)]; });
+  /* pair skincare with devices and devices with skincare, based on the bag and the product being viewed */
+  var context = cart.map(function(c){ return c.id; });
+  if(current) context.push(current.id);
+  candidates = nkSortRecs(candidates, context);
   var picks = candidates.slice(0, NK_MAX_RECS);
 
   section.style.display = 'block';                               /* the recommendations section is NEVER hidden */
@@ -1591,7 +1647,7 @@ function initCartSync(){
   }
   if(typeof firebaseReady !== 'undefined' && firebaseReady){
     db.ref('products').on('value', function(snap){
-      var list = nkListFromObject(snap.val());
+      var list = nkDropLegacy(nkListFromObject(snap.val()));
       if(list.length){ NK_PRODUCTS = list; }
       renderCart();
     }, function(err){ console.warn('Cart products sync error — using local data.', err); });
@@ -1877,14 +1933,16 @@ var CK_TAX_RATE = 0.08;                          /* estimated sales-tax rate: sh
 var CK_DELIVERY_BUSINESS_DAYS = [6, 15];         /* 1-3 business days processing + 5-12 business days shipping */
 var CK_EMAIL_CONFIRMATIONS = true;               /* the server sends the confirmation email (Resend) once payment succeeds */
 var CK_FALLBACK_IMG = {
-  "1": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400",
-  "2": "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400",
-  "3": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400",
-  "4": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400",
+  "1": "https://images.unsplash.com/photo-1556228722-d119f018d480?w=400",
+  "2": "https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400",
+  "3": "https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400",
+  "4": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400",
   "5": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400",
-  "6": "https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400",
-  "7": "https://images.unsplash.com/photo-1556228722-d119f018d480?w=400",
-  "8": "https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400"
+  "6": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400",
+  "7": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400",
+  "8": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400",
+  "9": "https://images.unsplash.com/photo-1512290900673-10705a3962d3?w=400",
+  "10": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400"
 };
 var CK_LAST_KEY = 'nikora_last_order';
 var CK_EMAIL_ENDPOINT = '/api/send-email';        /* Vercel serverless function (api/send-email.js) */
@@ -2090,7 +2148,7 @@ function ckSetBusy(on){
 function ckPreflight(){
   if(typeof firebaseReady === 'undefined' || !firebaseReady) return Promise.reject(new Error('firebase-unavailable'));
   return ckWithTimeout(db.ref('products').once('value'), 9000).then(function(snap){
-    var live = (typeof nkListFromObject === 'function') ? nkListFromObject(snap.val()) : [];
+    var live = (typeof nkListFromObject === 'function') ? nkDropLegacy(nkListFromObject(snap.val())) : [];
     if(live.length){
       var byId = {}; live.forEach(function(p){ byId[String(p.id)] = p; });
       var changed = false;
