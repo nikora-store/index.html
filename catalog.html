@@ -18,7 +18,7 @@
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Catalog — NIKORA</title>
-<meta name="description" content="Shop the NIKORA K-Beauty collection: Korean skincare, gentle beauty-tech devices and glass skin ritual sets, filtered by skin concern.">
+<meta name="description" content="Shop COSRX, Anua, Beauty of Joseon, Skin1004, Laneige, Biodance and Round Lab with NIKORA beauty tech, filtered by skin concern.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -646,7 +646,7 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
       <div class="toolbar-row">
         <div class="search-field">
           <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-          <input type="text" id="search-input" placeholder="Search products or #tags...">
+          <input type="text" id="search-input" placeholder="Search products, brands or #tags...">
         </div>
         <div class="price-filter">
           <label for="price-range">Up to</label>
@@ -818,19 +818,22 @@ var safeStorage = {
    catalog is a separate 11-item numeric-id array, so sharing the same
    key would corrupt one system or the other; this keeps both correct. */
 var DEFAULT_CATALOG = [
-  { id:1, name:"NIKORA Electroporation & LED Skin Booster Wand", category:"Facial Wand", price:129.00, oldPrice:169.00, bestseller:true, desc:"Our hero beauty-tech wand: gentle electroporation-style infusion plus LED light, designed to help your K-Beauty ampoules and creams absorb for a visible glow.", img:"https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600", tags:["#Hydration", "#AntiAgingGlow"] },
-  { id:2, name:"Centella Barrier Soothing Ampoule 50ml", category:"Serums & Ampoules", price:28.00, oldPrice:35.00, bestseller:true, desc:"A lightweight Korean ampoule with Centella Asiatica that soothes and comforts the look of stressed, sensitive-feeling skin while supporting the skin barrier.", img:"https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600", tags:["#BarrierRepair", "#AcneCalming"] },
-  { id:3, name:"5-Ceramide Deep Moisture Repair Cream 80ml", category:"Moisturizers", price:34.00, oldPrice:42.00, bestseller:false, desc:"A rich yet breathable barrier cream with 5 ceramides that locks in moisture and leaves skin feeling soft, cushioned and comfortable all day.", img:"https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=600", tags:["#BarrierRepair", "#Hydration"] },
-  { id:4, name:"Advanced Snail Mucin & Peptide Power Essence", category:"Essences", price:29.00, oldPrice:36.00, bestseller:false, desc:"A bouncy Korean essence with snail mucin and peptides for deep hydration and a dewy, glass-like glow.", img:"https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=600", tags:["#Hydration", "#AntiAgingGlow"] },
-  { id:5, name:"Bio-Collagen Real Deep Overnight Mask Set", category:"Masks", price:24.00, oldPrice:32.00, bestseller:true, desc:"The viral overnight mask set with bio-collagen: apply before bed and wake up to plump, hydrated, refreshed-looking skin.", img:"https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600", tags:["#Hydration", "#AntiAgingGlow"] },
-  { id:6, name:"Rice Bran Gentle Exfoliating Enzyme Toner", category:"Toners", price:26.00, oldPrice:34.00, bestseller:false, desc:"A gentle Japanese-inspired enzyme toner with rice bran that helps buff away dullness for smoother, softer-looking texture.", img:"https://images.unsplash.com/photo-1556228722-d119f018d480?w=600", tags:["#AcneCalming", "#AntiAgingGlow"] },
-  { id:7, name:"Hyaluronic Acid Watery Sun Gel SPF50+", category:"Sun Care", price:22.00, oldPrice:28.00, bestseller:false, desc:"A watery, weightless sun gel with hyaluronic acid and SPF50+ broad protection that layers invisibly for an everyday glow.", img:"https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=600", tags:["#Hydration", "#AntiAgingGlow"] },
-  { id:8, name:"Cryo-Cooling Ice Globe Facial Tool", category:"Cooling Therapy", price:39.00, oldPrice:52.00, bestseller:false, desc:"A cryo-cooling facial globe for a refreshing massage that helps de-puff and contour the look of your face and eye area.", img:"https://images.unsplash.com/photo-1512290900673-10705a3962d3?w=600", tags:["#AcneCalming"] },
-  { id:9, name:"Red Light & Thermal Jawline Sculptor", category:"Sculptors", price:89.00, oldPrice:119.00, bestseller:false, desc:"A red light and gentle thermal sculpting tool designed for the jawline and neck, bringing a warm, spa-style lift ritual home.", img:"https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=600", tags:["#AntiAgingGlow"] },
-  { id:10, name:"The Ultimate Glass Skin & Barrier Ritual Set", category:"Bundles & Sets", price:159.00, oldPrice:215.00, bestseller:true, desc:"The complete Glass Skin ritual: Skin Booster Wand, Centella Barrier Soothing Ampoule, 5-Ceramide Deep Moisture Repair Cream and a NIKORA Mascot Silk Pouch.", img:"https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600", tags:["#BarrierRepair", "#Hydration", "#AntiAgingGlow"] }
+  { id:1, brand:"COSRX", name:"COSRX Advanced Snail 96 Mucin Power Essence", category:"Essences", price:25.00, oldPrice:29.00, bestseller:true, desc:"A lightweight Korean essence with snail secretion filtrate that hydrates and leaves skin looking smooth, bouncy and glowy.", img:"https://images.unsplash.com/photo-1556228722-d119f018d480?w=600", tags:["#Hydration", "#BarrierRepair"] },
+  { id:2, brand:"Anua", name:"Anua Heartleaf 77% Soothing Toner", category:"Toners", price:22.00, oldPrice:28.00, bestseller:false, desc:"A soothing toner built around heartleaf extract that calms the look of stressed, oily or sensitive-feeling skin and preps it for the rest of your routine.", img:"https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=600", tags:["#AcneCalming", "#Hydration"] },
+  { id:3, brand:"Beauty of Joseon", name:"Beauty of Joseon Relief Sun: Rice + Probiotics SPF50+", category:"Sun Care", price:18.00, oldPrice:24.00, bestseller:true, desc:"A lightweight daily sunscreen with rice extract and probiotics, SPF50+ and PA++++, that wears comfortably under makeup with a soft, dewy finish.", img:"https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=600", tags:["#AntiAgingGlow"] },
+  { id:4, brand:"Skin1004", name:"Skin1004 Madagascar Centella Ampoule", category:"Serums & Ampoules", price:24.00, oldPrice:30.00, bestseller:false, desc:"A single-focus Centella Asiatica ampoule that soothes and comforts the look of irritated-feeling skin and supports a healthy-looking skin barrier.", img:"https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600", tags:["#BarrierRepair", "#AcneCalming"] },
+  { id:5, brand:"Laneige", name:"Laneige Lip Sleeping Mask Berry", category:"Lip Care", price:24.00, oldPrice:29.00, bestseller:false, desc:"The cult overnight lip treatment in Berry: a creamy mask that leaves lips feeling soft, smooth and moisturized by morning.", img:"https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=600", tags:["#Hydration"] },
+  { id:6, brand:"Biodance", name:"Biodance Bio-Collagen Real Deep Mask Set", category:"Masks", price:19.00, oldPrice:25.00, bestseller:false, desc:"A bio-collagen hydrogel mask set that melts onto skin overnight for a plump, hydrated and refreshed look by morning.", img:"https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600", tags:["#Hydration", "#AntiAgingGlow"] },
+  { id:7, brand:"Round Lab", name:"Round Lab Birch Juice Moisturizing Cream", category:"Moisturizers", price:28.00, oldPrice:34.00, bestseller:false, desc:"A cushiony moisturizing cream with birch tree sap that seals in hydration and leaves skin feeling soft and comfortable.", img:"https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=600", tags:["#BarrierRepair", "#Hydration"] },
+  { id:8, brand:"NIKORA Tech", name:"NIKORA Electroporation & LED Skin Booster Wand", category:"Facial Wand", price:129.00, oldPrice:169.00, bestseller:true, desc:"Our hero beauty-tech wand: gentle electroporation-style infusion plus LED light, designed to help your K-Beauty essences and ampoules absorb for a visible glow.", img:"https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600", tags:["#Hydration", "#AntiAgingGlow"] },
+  { id:9, brand:"NIKORA Tech", name:"NIKORA Cryo-Cooling Ice Globe Sculptor", category:"Cooling Therapy", price:39.00, oldPrice:52.00, bestseller:false, desc:"A cryo-cooling facial globe for a refreshing sculpting massage that helps de-puff and contour the look of your face and neck.", img:"https://images.unsplash.com/photo-1512290900673-10705a3962d3?w=600", tags:["#AcneCalming"] },
+  { id:10, brand:"NIKORA", name:"The NIKORA Glass Skin Barrier Set", category:"Bundles & Sets", price:159.00, oldPrice:215.00, bestseller:true, desc:"The complete Glass Skin ritual: NIKORA Booster Wand, COSRX Snail 96 Mucin Power Essence, Skin1004 Madagascar Centella Ampoule and a Biodance Bio-Collagen Real Deep Mask Set.", img:"https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600", tags:["#BarrierRepair", "#Hydration", "#AntiAgingGlow"] }
 ];
 
-var CATALOG_VERSION = 'kbeauty-10-v1';   /* bump when DEFAULT_CATALOG changes so browsers drop the old cached catalog */
+var CATALOG_VERSION = 'kbeauty-brands-v1';   /* bump when DEFAULT_CATALOG changes so browsers drop the old cached catalog */
+var LEGACY_NAMES = ["NIKORA RED Light & EMS Facial Wand 4-in-1","3D EMS Gua Sha Sculptor","Hydro-Vacuum Pore Cleaner","LED Therapy Mask 7-in-1 Pro","EMS Body Sculptor RF","Sonic Eye Massager","Ultrasonic Skin Scrubber","Thermal Neck & Face Massager","Cryo Ice Roller","RF Anti-Aging Device","NIKORA Ultimate Glow Ritual Set (Full Gadget Bundle)"];
+/* until the admin panel re-syncs Firebase, an old-catalog /products node must not replace the new products on screen */
+function dropLegacyCatalog(arr){ return arr.some(function(p){ return p && LEGACY_NAMES.indexOf(p.name) !== -1; }) ? DEFAULT_CATALOG.slice() : arr; }
 function getCatalogProducts(){
   if(safeStorage.getItem('nikora_catalog_version') !== CATALOG_VERSION){
     safeStorage.setItem('nikora_catalog_version', CATALOG_VERSION);
@@ -851,7 +854,7 @@ function getCatalogProducts(){
 }
 
 var ALL_PRODUCTS = getCatalogProducts();
-var CATEGORIES = ["All Products", "Bestsellers", "Facial Wand", "Serums & Ampoules", "Essences", "Toners", "Moisturizers", "Masks", "Sun Care", "Cooling Therapy", "Sculptors", "Bundles & Sets"];
+var CATEGORIES = ["All Products", "Bestsellers", "Essences", "Toners", "Sun Care", "Serums & Ampoules", "Moisturizers", "Masks", "Lip Care", "Facial Wand", "Cooling Therapy", "Bundles & Sets"];
 
 /* Safety net: bestsellers.js (loaded at the end of <body>) replaces this stub. If that file is ever missing, the catalog keeps working without bestseller data. */
 if(!window.NKBestsellers){
@@ -941,7 +944,7 @@ function initFirebaseProductsSync(){
 
   db.ref('products').on('value', function(snap){
     var data = snap.val();
-    var arr = productsArrayFromFirebaseObject(data);
+    var arr = dropLegacyCatalog(productsArrayFromFirebaseObject(data));
     if(arr.length){
       ALL_PRODUCTS = NKBestsellers.apply(arr);   // lib/products.js ranks, prices and galleries win over stale Firebase flags
       saveCatalogProducts(ALL_PRODUCTS); // keep the offline cache current too
@@ -1007,20 +1010,73 @@ var NK_ICONS = {
 
 /* Fallback pool so the recommendations strip is NEVER empty (used until Firebase '/products' answers, or if it fails/is empty). */
 var NK_FALLBACK = [
-  { id:'1',  name:'NIKORA RED Light & EMS Facial Wand 4-in-1', price:34.99, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
-  { id:'2',  name:'3D EMS Gua Sha Sculptor', price:24.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400' },
-  { id:'3',  name:'Hydro-Vacuum Pore Cleaner', price:29.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
-  { id:'4',  name:'LED Therapy Mask 7-in-1 Pro', price:49.99, category:'LED Therapy', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
-  { id:'5',  name:'EMS Body Sculptor RF', price:59.99, category:'Body Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
-  { id:'6',  name:'Sonic Eye Massager', price:19.99, category:'Eye Care', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
-  { id:'7',  name:'Ultrasonic Skin Scrubber', price:24.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
-  { id:'8',  name:'Thermal Neck & Face Massager', price:39.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' }
+  { id:'1', name:"COSRX Advanced Snail 96 Mucin Power Essence", brand:"COSRX", price:25.00, category:"Essences", img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
+  { id:'2', name:"Anua Heartleaf 77% Soothing Toner 250ml", brand:"Anua", price:22.00, category:"Toners", img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
+  { id:'3', name:"Beauty of Joseon Relief Sun: Rice + Probiotics SPF50+", brand:"Beauty of Joseon", price:18.00, category:"Sun Care", img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' },
+  { id:'4', name:"Skin1004 Madagascar Centella Ampoule 100ml", brand:"Skin1004", price:24.00, category:"Serums & Ampoules", img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
+  { id:'5', name:"Laneige Lip Sleeping Mask Berry", brand:"Laneige", price:24.00, category:"Lip Care", img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'6', name:"Biodance Bio-Collagen Real Deep Mask Set", brand:"Biodance", price:19.00, category:"Masks", img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
+  { id:'7', name:"Round Lab Birch Juice Moisturizing Cream 80ml", brand:"Round Lab", price:28.00, category:"Moisturizers", img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'8', name:"NIKORA Electroporation & LED Skin Booster Wand", brand:"NIKORA Beauty Tech", price:129.00, category:"Facial Wand", img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
+  { id:'9', name:"NIKORA Cryo-Cooling Ice Globe Sculptor", brand:"NIKORA Beauty Tech", price:39.00, category:"Cooling Therapy", img:'https://images.unsplash.com/photo-1512290900673-10705a3962d3?w=400' },
+  { id:'10', name:"The NIKORA x K-Beauty Glass Skin Ritual Set", brand:"NIKORA Bundles", price:159.00, category:"Bundles & Sets", img:'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400' }
 ];
 
 function nkEsc(str){
   var d = document.createElement('div');
   d.textContent = str == null ? '' : str;
   return d.innerHTML;
+}
+
+
+/* ---- recommendation engine: complementary pairing between K-Beauty skincare and NIKORA beauty tech ----
+   skincare in the bag or being viewed  ->  the Booster Wand / Cryo Globe come first
+   a device in the bag or being viewed  ->  the K-Beauty essentials (COSRX Snail, Anua Toner, Beauty of Joseon SPF) come first
+   ids are the catalog ids '1'-'10' (lib/products.js slugs are accepted too). Products it does not know (added in the admin panel) go last. */
+var NK_SLUG_IDS = { 'cosrx-snail-mucin':'1', 'anua-heartleaf-toner':'2', 'boj-relief-sun':'3', 'skin1004-centella-ampoule':'4', 'laneige-lip-sleeping-mask':'5',
+  'biodance-collagen-mask':'6', 'roundlab-birch-cream':'7', 'nikora-booster-wand':'8', 'nikora-cryo-globe':'9', 'nikora-glass-skin-bundle':'10' };
+var NK_ROLE = { '1':'skin', '2':'skin', '3':'skin', '4':'skin', '5':'skin', '6':'skin', '7':'skin', '8':'device', '9':'device', '10':'bundle' };
+var NK_BUNDLE_PARTS = { '10': ['8', '1', '4', '6'] };        /* Glass Skin Ritual Set = Booster Wand + COSRX + Skin1004 + Biodance mask */
+var NK_REC_ORDER = {
+  skin:   ['8','9','1','2','3','4','7','6','5','10'],        /* skincare only: devices first (Wand, then Cryo Globe) */
+  device: ['1','2','3','4','7','6','5','9','8','10'],        /* device only: essentials first (COSRX, Anua, Beauty of Joseon) */
+  both:   ['3','1','2','4','7','9','8','6','5','10'],        /* both: finish the routine (SPF, essence, toner ...), then the other device */
+  none:   ['8','1','2','3','9','4','7','6','5','10']         /* empty bag: hero wand, then the essentials */
+};
+var NK_LEGACY_NAMES = ["NIKORA RED Light & EMS Facial Wand 4-in-1","3D EMS Gua Sha Sculptor","Hydro-Vacuum Pore Cleaner","LED Therapy Mask 7-in-1 Pro","EMS Body Sculptor RF","Sonic Eye Massager","Ultrasonic Skin Scrubber","Thermal Neck & Face Massager","Cryo Ice Roller","RF Anti-Aging Device","NIKORA Ultimate Glow Ritual Set (Full Gadget Bundle)"];
+/* Until the admin panel re-syncs Firebase, an old-catalog /products node must never feed the recommendations, the thumbnails or the price check. */
+function nkDropLegacy(list){
+  for(var i=0;i<list.length;i++){ if(NK_LEGACY_NAMES.indexOf(list[i].name) !== -1) return NK_FALLBACK.slice(); }
+  return list;
+}
+function nkKey(id){ var k = String(id == null ? '' : id); return NK_SLUG_IDS[k] || k; }
+function nkRoleOf(p){
+  var r = NK_ROLE[nkKey(p && p.id)];
+  if(r) return r;
+  if(p && (/^NIKORA Tech$|^NIKORA Beauty Tech$/i.test(p.brand || '') || p.category === 'Facial Wand' || p.category === 'Cooling Therapy')) return 'device';
+  return (p && p.category === 'Bundles & Sets') ? 'bundle' : 'skin';
+}
+function nkOwned(id){                                          /* ids a cart line already covers (a bundle covers its parts) */
+  var k = nkKey(id), out = [k];
+  (NK_BUNDLE_PARTS[k] || []).forEach(function(x){ out.push(x); });
+  return out;
+}
+function nkSortRecs(cands, contextIds){
+  var skin = false, device = false;
+  contextIds.forEach(function(id){
+    var r = nkRoleOf({ id: id, category: (nkFindLite(id) || {}).category, brand: (nkFindLite(id) || {}).brand });
+    if(r === 'skin') skin = true; else if(r === 'device') device = true; else { skin = true; device = true; }
+  });
+  var order = NK_REC_ORDER[skin && device ? 'both' : (skin ? 'skin' : (device ? 'device' : 'none'))];
+  function rank(p, idx){ var i = order.indexOf(nkKey(p.id)); return i === -1 ? 100 + idx : i; }
+  return cands.map(function(p, idx){ return { p: p, r: rank(p, idx) }; })
+    .sort(function(a, b){ return a.r - b.r; })
+    .map(function(x){ return x.p; });
+}
+function nkFindLite(id){                                       /* product record for role detection, without the full nkFind fallbacks */
+  for(var i=0;i<NK_PRODUCTS.length;i++){ if(String(NK_PRODUCTS[i].id) === String(id)) return NK_PRODUCTS[i]; }
+  for(var j=0;j<NK_FALLBACK.length;j++){ if(String(NK_FALLBACK[j].id) === nkKey(id)) return NK_FALLBACK[j]; }
+  return null;
 }
 
 /* ---- product data (normalises catalog {name,img}, index overrides {title,imgUrl}, product {images[]}) ---- */
@@ -1030,7 +1086,7 @@ function nkNormalize(p, key){
   var price = Number(p.price);
   if(!name || !(price > 0)) return null;
   var img = (Array.isArray(p.images) && p.images[0]) || p.img || p.imgUrl || '';
-  return { id: String(p.id != null ? p.id : key), name: String(name), price: price, img: String(img || ''), category: p.category || '' };
+  return { id: String(p.id != null ? p.id : key), name: String(name), brand: p.brand ? String(p.brand) : '', price: price, img: String(img || ''), category: p.category || '' };
 }
 function nkListFromObject(obj){
   var out = [];
@@ -1130,7 +1186,10 @@ window.addToCart = function(id, title, price){
   openCart();
 };
 /* Recommendation add: adds WITHOUT closing or re-opening the drawer. */
+var NK_REC_LAST = 0;
 function addRecommended(id){
+  if(Date.now() - NK_REC_LAST < 350) return;          /* a double-tap must not add the next (shifted) card too */
+  NK_REC_LAST = Date.now();
   var p = nkFind(id);
   if(!p) return;
   cartAdd(p.id, p.name, p.price, 1);
@@ -1207,16 +1266,16 @@ function renderCartRecs(cart){
   if(!section || !grid) return;
 
   var excluded = {};
-  cart.forEach(function(c){ excluded[String(c.id)] = true; });
+  cart.forEach(function(c){ nkOwned(c.id).forEach(function(k){ excluded[k] = true; }); });
   var current = (typeof CURRENT_PRODUCT !== 'undefined' && CURRENT_PRODUCT) ? CURRENT_PRODUCT : null;
-  if(current) excluded[String(current.id)] = true;               /* product page: skip the item being viewed */
+  if(current) nkOwned(current.id).forEach(function(k){ excluded[k] = true; });               /* product page: skip the item being viewed */
 
   var pool = NK_PRODUCTS.length ? NK_PRODUCTS : NK_FALLBACK;
-  var candidates = pool.filter(function(p){ return !excluded[p.id]; });
-  if(current && current.category){
-    candidates = candidates.filter(function(p){ return p.category === current.category; })
-      .concat(candidates.filter(function(p){ return p.category !== current.category; }));
-  }
+  var candidates = pool.filter(function(p){ return !excluded[nkKey(p.id)]; });
+  /* pair skincare with devices and devices with skincare, based on the bag and the product being viewed */
+  var context = cart.map(function(c){ return c.id; });
+  if(current) context.push(current.id);
+  candidates = nkSortRecs(candidates, context);
   var picks = candidates.slice(0, NK_MAX_RECS);
 
   section.style.display = 'block';                               /* the recommendations section is NEVER hidden */
@@ -1349,7 +1408,7 @@ function initCartSync(){
   }
   if(typeof firebaseReady !== 'undefined' && firebaseReady){
     db.ref('products').on('value', function(snap){
-      var list = nkListFromObject(snap.val());
+      var list = nkDropLegacy(nkListFromObject(snap.val()));
       if(list.length){ NK_PRODUCTS = list; }
       renderCart();
     }, function(err){ console.warn('Cart products sync error — using local data.', err); });
@@ -1634,16 +1693,16 @@ var SKIN_CONCERNS = [
   { key:'AntiAgingGlow', label:'#AntiAgingGlow', hint:'Smoother-looking, firmer-feeling, radiant skin' }
 ];
 var SKIN_TAGS_BY_NAME = {
-  "nikora electroporation & led skin booster wand": ["Hydration","AntiAgingGlow"],
-  "centella barrier soothing ampoule 50ml": ["BarrierRepair","AcneCalming"],
-  "5-ceramide deep moisture repair cream 80ml": ["BarrierRepair","Hydration"],
-  "advanced snail mucin & peptide power essence": ["Hydration","AntiAgingGlow"],
-  "bio-collagen real deep overnight mask set": ["Hydration","AntiAgingGlow"],
-  "rice bran gentle exfoliating enzyme toner": ["AcneCalming","AntiAgingGlow"],
-  "hyaluronic acid watery sun gel spf50+": ["Hydration","AntiAgingGlow"],
-  "cryo-cooling ice globe facial tool": ["AcneCalming"],
-  "red light & thermal jawline sculptor": ["AntiAgingGlow"],
-  "the ultimate glass skin & barrier ritual set": ["BarrierRepair","Hydration","AntiAgingGlow"]
+  "cosrx advanced snail 96 mucin power essence": ["Hydration", "BarrierRepair"],
+  "anua heartleaf 77% soothing toner": ["AcneCalming", "Hydration"],
+  "beauty of joseon relief sun: rice + probiotics spf50+": ["AntiAgingGlow"],
+  "skin1004 madagascar centella ampoule": ["BarrierRepair", "AcneCalming"],
+  "laneige lip sleeping mask berry": ["Hydration"],
+  "biodance bio-collagen real deep mask set": ["Hydration", "AntiAgingGlow"],
+  "round lab birch juice moisturizing cream": ["BarrierRepair", "Hydration"],
+  "nikora electroporation & led skin booster wand": ["Hydration", "AntiAgingGlow"],
+  "nikora cryo-cooling ice globe sculptor": ["AcneCalming"],
+  "the nikora glass skin barrier set": ["BarrierRepair", "Hydration", "AntiAgingGlow"]
 };
 function concernKey(t){ return String(t == null ? '' : t).replace(/^#/, '').trim(); }
 function tagsOf(p){
@@ -1690,19 +1749,19 @@ function decorateCardTags(grid){
 var ROUTINES = [
   { key:'oily', label:'Oily / Sensitive', concern:'AcneCalming',
     intro:'Light, calming layers that keep skin comfortable and balanced without feeling heavy.',
-    am:[ {text:'Gentle cleanser (your own)'}, {id:4, note:'a thin layer, pat in'}, {id:2, note:'2-3 drops'}, {id:3, note:'a thin layer'}, {id:8, note:'optional: 1-2 minutes to de-puff'}, {id:7, note:'last step, every morning'} ],
-    pm:[ {text:'Gentle cleanser (your own)'}, {id:6, note:'2-3 nights a week; skip if skin feels irritated'}, {id:4, note:'a thin layer'}, {id:2, note:'2-3 drops'}, {id:3, note:'a thin layer'} ],
+    am:[ {text:'Gentle cleanser (your own)'}, {id:2, note:'on a pad or clean hands'}, {id:4, note:'2-3 drops'}, {id:7, note:'a thin layer'}, {id:9, note:'optional: a few minutes to de-puff'}, {id:3, note:'last step, every morning'} ],
+    pm:[ {text:'Gentle cleanser (your own)'}, {id:2, note:'on a pad or clean hands'}, {id:1, note:'a thin layer'}, {id:4, note:'2-3 drops'}, {id:7, note:'a thin layer'} ],
     tip:'Add one new product at a time and patch-test first. Skip devices on irritated or broken skin.' },
   { key:'dry', label:'Dry / Barrier Repair', concern:'BarrierRepair',
     intro:'Rich layering that restores comfort and locks moisture in, morning and night.',
-    am:[ {text:'Gentle cleanser (your own)'}, {id:4, note:'press in while skin is damp'}, {id:2, note:'2-3 drops'}, {id:3, note:'a generous layer'}, {id:7, note:'last step, every morning'} ],
-    pm:[ {text:'Creamy or oil cleanser (your own)'}, {id:4, note:'press in while skin is damp'}, {id:2, note:'layer twice if skin feels tight'}, {id:1, note:'optional: glide over the serum layer, follow the device manual'}, {id:3, note:'a generous layer'}, {id:5, note:'2-3 nights a week as the final step'} ],
-    tip:'Use the Enzyme Toner no more than once a week, or skip it while your skin barrier is recovering.' },
+    am:[ {text:'Gentle cleanser (your own)'}, {id:1, note:'press in while skin is damp'}, {id:4, note:'2-3 drops'}, {id:7, note:'a generous layer'}, {id:3, note:'last step, every morning'} ],
+    pm:[ {text:'Creamy or oil cleanser (your own)'}, {id:2, note:'press in with clean hands'}, {id:1, note:'press in while skin is damp'}, {id:4, note:'layer twice if skin feels tight'}, {id:8, note:'optional: glide over the essence layer, follow the device manual'}, {id:6, note:'as directed on the pack'}, {id:7, note:'a generous layer'}, {id:5, note:'on lips, as the very last step'} ],
+    tip:'Keep to gentle, fragrance-light layers while your skin barrier is recovering, and introduce new steps one at a time.' },
   { key:'aging', label:'Aging / Glow', concern:'AntiAgingGlow',
     intro:'Hydrating layers plus device time for a smoother-looking, radiant finish.',
-    am:[ {text:'Gentle cleanser (your own)'}, {id:4, note:'press in while skin is damp'}, {id:1, note:'optional: a few minutes, follow the device manual'}, {id:3, note:'a medium layer'}, {id:7, note:'last step, every morning'} ],
-    pm:[ {text:'Gentle cleanser (your own)'}, {id:6, note:'1-2 nights a week for smoother texture'}, {id:4, note:'press in while skin is damp'}, {id:2, note:'2-3 drops'}, {id:1, note:'glide over the serum layer, follow the device manual'}, {id:9, note:'a few evenings a week, follow the device manual'}, {id:3, note:'a medium layer'}, {id:5, note:'2 nights a week as the final step'} ],
-    tip:'Sunscreen is the most important glow step: reapply Sun Gel during the day if you are outdoors.' }
+    am:[ {text:'Gentle cleanser (your own)'}, {id:1, note:'press in while skin is damp'}, {id:8, note:'optional: a few minutes, follow the device manual'}, {id:7, note:'a medium layer'}, {id:3, note:'last step, every morning'} ],
+    pm:[ {text:'Gentle cleanser (your own)'}, {id:2, note:'press in with clean hands'}, {id:1, note:'press in while skin is damp'}, {id:4, note:'2-3 drops'}, {id:8, note:'glide over the serum layer, follow the device manual'}, {id:6, note:'as directed on the pack'}, {id:7, note:'a medium layer'}, {id:5, note:'on lips, as the very last step'} ],
+    tip:'Sunscreen is the most important glow step: reapply Relief Sun during the day if you are outdoors.' }
 ];
 var routineKey = ROUTINES[0].key;
 function routineStepsHtml(steps){
@@ -1734,7 +1793,7 @@ function renderRoutine(){
     '<p class="routine-tip">' + escapeHtml(r.tip) + '</p>' +
     '<div class="routine-actions">' +
       (cm ? '<button type="button" class="concern-chip" data-routine-shop="' + cm.key + '">Shop ' + escapeHtml(cm.label) + ' picks</button>' : '') +
-      '<a class="routine-set-link" href="product.html?id=10">Or get it all in the Ultimate Glass Skin &amp; Barrier Ritual Set</a>' +
+      '<a class="routine-set-link" href="product.html?id=10">Or get a wand, essence, ampoule and mask in The NIKORA Glass Skin Barrier Set</a>' +
     '</div>';
 }
 
@@ -1748,7 +1807,7 @@ function getFilteredSortedProducts(){
     var q = state.search.trim().toLowerCase();
     var qTag = q.replace(/^#/, '');
     list = list.filter(function(p){
-      return p.name.toLowerCase().indexOf(q) !== -1 || tagsOf(p).some(function(t){ return t.toLowerCase().indexOf(qTag) !== -1; });
+      return p.name.toLowerCase().indexOf(q) !== -1 || String(p.brand || '').toLowerCase().indexOf(q) !== -1 || tagsOf(p).some(function(t){ return t.toLowerCase().indexOf(qTag) !== -1; });
     });
   }
   if(onBestsellers){
