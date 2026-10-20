@@ -946,7 +946,7 @@ function initFirebaseProductsSync(){
     var data = snap.val();
     var arr = dropLegacyCatalog(productsArrayFromFirebaseObject(data));
     if(arr.length){
-      ALL_PRODUCTS = NKBestsellers.apply(arr);   // lib/products.js ranks, prices and galleries win over stale Firebase flags
+      ALL_PRODUCTS = NKBestsellers.apply(arr).map(nkApplyPromoFlag);   // lib/products.js ranks, prices and galleries win over stale Firebase flags; promo off = no strikethrough
       saveCatalogProducts(ALL_PRODUCTS); // keep the offline cache current too
       renderCategoryTabs();
       renderGrid();
@@ -1683,6 +1683,13 @@ function showToast(msg){
   toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2600);
 }
 
+/* ---- promo pricing: show the original price (strikethrough) and a discount badge ONLY while the promo is on ----
+   Admin panel saves price, originalPrice (+ legacy oldPrice) and promoEnabled to Firebase /products. Records without promoEnabled keep working
+   (a higher oldPrice still counts as a discount). promoEnabled:false or no original price above the price = standard retail price only. */
+function nkOrigPrice(p){ var o = Number(p && (p.originalPrice != null ? p.originalPrice : p.oldPrice)); return isFinite(o) ? o : 0; }
+function nkPromoActive(p){ return !!p && p.promoEnabled !== false && nkOrigPrice(p) > Number(p.price); }
+function nkApplyPromoFlag(p){ if(p){ p.oldPrice = nkPromoActive(p) ? nkOrigPrice(p) : null; } return p; }
+
 /* ================= SKIN CONCERNS (filter chips, card tags, routine box) =================
    Tags come from the product (p.tags, same names as lib/products.js SKIN_TAGS) or, when a product record has none
    (e.g. an older Firebase copy), from SKIN_TAGS_BY_NAME below, keyed by exact product name. Keep both in sync. */
@@ -1825,7 +1832,7 @@ function getFilteredSortedProducts(){
   } else if(state.sort === 'price-desc'){
     list.sort(function(a,b){ return b.price - a.price; });
   } else if(state.sort === 'sale'){
-    list = list.filter(function(p){ return p.oldPrice && p.oldPrice > p.price; });
+    list = list.filter(function(p){ return nkPromoActive(p); });
   } else if(onBestsellers || onBundles || state.sort === 'bestsellers'){
     // bestsellerRank 1, 2, 3 ... first, then unranked products by id (same order as the home page)
     list.sort(NKBestsellers.compare);
@@ -2020,7 +2027,7 @@ function init(){
   bindEvents();
   initCartSync();
   initFirebaseProductsSync(); // renders instantly from local cache above, then live-updates from the cloud
-  NKBestsellers.load().then(function(){ ALL_PRODUCTS = NKBestsellers.apply(ALL_PRODUCTS); renderGrid(); });   // re-render once /api/catalog has answered
+  NKBestsellers.load().then(function(){ ALL_PRODUCTS = NKBestsellers.apply(ALL_PRODUCTS).map(nkApplyPromoFlag); renderGrid(); });   // re-render once /api/catalog has answered
 }
 
 if(document.readyState === 'loading'){
