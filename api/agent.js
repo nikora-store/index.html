@@ -69,7 +69,8 @@ export default async function handler(req, res) {
       const v = getVariant(id, variant);
       if (!v) { problems.push('unknown_product:' + id + '/' + variant); continue; }
       if (!(qty >= 1 && qty <= 20)) { problems.push('bad_quantity:' + id); continue; }
-      if (it.price != null && cents(it.price) !== cents(v.price)) problems.push('price_mismatch:' + id);
+      /* no price comparison here: the order holds the price the customer actually paid, and prices can change in the admin panel after an order is placed */
+      if (it.price != null && !(Number(it.price) > 0)) problems.push('bad_price:' + id);
       cart.push({ id, variant, quantity: qty });
     }
     if (!cart.length) problems.push('empty_order');
