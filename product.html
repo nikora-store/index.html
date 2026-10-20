@@ -1402,6 +1402,13 @@ function escapeAttr(str){
   return String(str == null ? '' : str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+/* ---- promo pricing: show the original price (strikethrough) and a discount badge ONLY while the promo is on ----
+   Admin panel saves price, originalPrice (+ legacy oldPrice) and promoEnabled to Firebase /products. Records without promoEnabled keep working
+   (a higher oldPrice still counts as a discount). promoEnabled:false or no original price above the price = standard retail price only. */
+function nkOrigPrice(p){ var o = Number(p && (p.originalPrice != null ? p.originalPrice : p.oldPrice)); return isFinite(o) ? o : 0; }
+function nkPromoActive(p){ return !!p && p.promoEnabled !== false && nkOrigPrice(p) > Number(p.price); }
+function nkApplyPromoFlag(p){ if(p){ p.oldPrice = nkPromoActive(p) ? nkOrigPrice(p) : null; } return p; }
+
 /* ---- brand + skin-concern tags (product.brand / product.tags from lib/products.js; name lookup covers records that predate those fields) ---- */
 var CONCERN_LABELS = { BarrierRepair:'#BarrierRepair', Hydration:'#Hydration', AcneCalming:'#AcneCalming', AntiAgingGlow:'#AntiAgingGlow' };
 var CONCERN_HINTS = { BarrierRepair:'Comfort and moisture support for dry, tight or sensitive-feeling skin', Hydration:'Water-bound, plump, dewy-looking skin', AcneCalming:'Calming, lightweight care for oily or blemish-prone-feeling skin', AntiAgingGlow:'Smoother-looking, firmer-feeling, radiant skin' };
@@ -1447,13 +1454,13 @@ function renderProduct(){
   document.getElementById('p-title').textContent = p.name;
   document.getElementById('p-subtitle').textContent = getSubtitle(p);
 
-  var hasDiscount = p.oldPrice && p.oldPrice > p.price;
+  var hasDiscount = nkPromoActive(p);
   document.getElementById('p-price-now').textContent = '$' + Number(p.price).toFixed(2);
   var oldEl = document.getElementById('p-price-old');
   var saveEl = document.getElementById('p-save-badge');
   if(hasDiscount){
-    oldEl.textContent = '$' + Number(p.oldPrice).toFixed(2);
-    saveEl.textContent = 'SAVE $' + (p.oldPrice - p.price).toFixed(2);
+    oldEl.textContent = '$' + nkOrigPrice(p).toFixed(2);
+    saveEl.textContent = 'SAVE $' + (nkOrigPrice(p) - p.price).toFixed(2);
     saveEl.style.display = 'inline-block';
   } else {
     oldEl.textContent = '';
