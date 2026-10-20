@@ -1857,6 +1857,11 @@ function storefrontProductsFromCache(){
   return out;
 }
 
+/* ---- promo pricing: strikethrough original price + discount badge ONLY while the promo is on (admin panel: promoEnabled / originalPrice) ---- */
+function nkOrigPrice(p){ var o = Number(p && (p.originalPrice != null ? p.originalPrice : p.oldPrice)); return isFinite(o) ? o : 0; }
+function nkPromoActive(p){ return !!p && p.promoEnabled !== false && nkOrigPrice(p) > Number(p.price); }
+function nkApplyPromoFlag(p){ if(p){ p.oldPrice = nkPromoActive(p) ? nkOrigPrice(p) : null; } return p; }
+
 function homeProductCardHtml(p){
   return window.NKCard.html(p, { addAttr: 'data-bs-add' });   /* shared template: product-card.js (identical on catalog.html) */
 }
@@ -1867,7 +1872,7 @@ function renderHomeGrid(gridId, sectionId, pick){
   if(!grid || !window.NKBestsellers) return;
   var section = document.getElementById(sectionId);
   window.NKBestsellers.load().then(function(){
-    var items = pick(window.NKBestsellers.apply(storefrontProductsFromCache()));
+    var items = pick(window.NKBestsellers.apply(storefrontProductsFromCache()).map(nkApplyPromoFlag));
     if(!items.length){ if(section) section.hidden = true; return; }
     if(section) section.hidden = false;
     grid.innerHTML = items.map(homeProductCardHtml).join('');
