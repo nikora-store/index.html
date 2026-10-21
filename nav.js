@@ -157,8 +157,8 @@
   '  --nkn-bar:var(--header-bg,rgba(250,247,242,.78)); --nkn-card:var(--card-bg,rgba(255,255,255,.65));',
   '  --nkn-border:var(--card-border,rgba(230,220,210,.6)); --nkn-panel:var(--surface-raised,rgba(255,255,255,.88));',
   '  --nkn-tint:var(--surface-tint,rgba(26,22,21,.04)); --nkn-rose:var(--rose,#D81E5B);',
-  '  --nkn-float-bg:rgba(250,247,242,.72); --nkn-float-bg-scrolled:rgba(250,247,242,.88); --nkn-float-edge:rgba(197,155,86,.34);',
-  '  --nkn-float-shadow:0 14px 34px -22px rgba(26,22,21,.34); --nkn-float-shadow-scrolled:0 18px 40px -20px rgba(26,22,21,.46); --nkn-float-notch:linear-gradient(90deg,transparent,#C89B54,transparent);',
+  '  --nkn-float-bg:rgba(250,247,242,.72); --nkn-float-bg-scrolled:rgba(250,247,242,.88); --nkn-float-edge:rgba(26,22,21,.09);',
+  '  --nkn-float-shadow:0 14px 34px -22px rgba(26,22,21,.34); --nkn-float-shadow-scrolled:0 18px 40px -20px rgba(26,22,21,.46);',
   '}',
   ':root[data-theme="dark"] .nkn-header,:root[data-theme="dark"] .nkn-overlay,:root[data-theme="dark"] .nkn-drawer,:root[data-theme="dark"] .nkn-footer{',
   '  --nkn-text:var(--text,#F7F4F0); --nkn-soft:var(--text-soft,rgba(247,244,240,.64)); --nkn-faint:var(--text-faint,rgba(247,244,240,.4));',
@@ -167,21 +167,19 @@
   '  --nkn-bar:var(--header-bg,rgba(13,11,18,.72)); --nkn-card:var(--card-bg,rgba(25,20,32,.55));',
   '  --nkn-border:var(--card-border,rgba(255,255,255,.08)); --nkn-panel:var(--surface-raised,rgba(30,25,38,.9));',
   '  --nkn-tint:var(--surface-tint,rgba(255,255,255,.05)); --nkn-rose:var(--rose,#FF527B);',
-  '  --nkn-float-bg:rgba(11,11,14,.66); --nkn-float-bg-scrolled:rgba(11,11,14,.86); --nkn-float-edge:rgba(200,155,84,.34);',
-  '  --nkn-float-shadow:0 20px 44px -24px rgba(0,0,0,.85); --nkn-float-shadow-scrolled:0 24px 48px -20px rgba(0,0,0,.9); --nkn-float-notch:linear-gradient(90deg,transparent,#C89B54,transparent);',
+  '  --nkn-float-bg:rgba(11,11,14,.66); --nkn-float-bg-scrolled:rgba(11,11,14,.86); --nkn-float-edge:rgba(255,255,255,.09);',
+  '  --nkn-float-shadow:0 20px 44px -24px rgba(0,0,0,.85); --nkn-float-shadow-scrolled:0 24px 48px -20px rgba(0,0,0,.9);',
   '}',
 
   /* ---- header bar (glass) ---- */
   /* Floating curved header: docks to the top edge, floats clear of the side edges, soft 20px bottom corners, frosted glass,
-     gold hairline + a small gold notch tab at the bottom centre. Every colour is a theme variable (see --nkn-float-* above). */
+     faint neutral hairline edge (no gold bar anywhere on the header: gold is reserved for the logo, the theme pill and the nav indicator). Every colour is a theme variable (see --nkn-float-* above). */
   '.nkn-header{--nkn-header-r:20px;position:sticky;top:0;z-index:400;height:73px;box-sizing:border-box;color:var(--nkn-text);',
   '  margin:0 clamp(8px,2.2vw,28px);border:1px solid var(--nkn-float-edge);border-top:0;',
   '  border-radius:0 0 var(--nkn-header-r) var(--nkn-header-r);',
   '  background:var(--nkn-float-bg);-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);',
   '  box-shadow:var(--nkn-float-shadow);transition:background-color .3s ease,box-shadow .3s ease,border-color .3s ease;font-family:inherit;}',
   '.nkn-header.is-scrolled{background:var(--nkn-float-bg-scrolled);box-shadow:var(--nkn-float-shadow-scrolled);}',
-  '.nkn-header::after{content:\"\";position:absolute;left:50%;bottom:-1px;width:clamp(44px,6vw,72px);height:3px;transform:translateX(-50%);',
-  '  border-radius:3px 3px 0 0;background:var(--nkn-float-notch);opacity:.9;pointer-events:none;}',
   '@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.nkn-header{background:var(--nkn-float-bg-scrolled);}}',
   '.nkn-header *,.nkn-drawer *,.nkn-footer *{box-sizing:border-box;}',
   '.nkn-row{display:flex;align-items:center;justify-content:space-between;gap:24px;height:100%;padding:0 clamp(20px,4vw,48px);}',
@@ -222,15 +220,16 @@
 
   /* ---- desktop links ---- */
   '.nkn-primary{display:flex;align-items:center;gap:clamp(16px,1.9vw,28px);}',
-  '.nkn-link{position:relative;display:inline-flex;align-items:center;padding:6px 0;background:none;border:0;cursor:pointer;',
+  '.nkn-link{position:relative;display:inline-flex;align-items:center;padding:6px 0 9px;background:none;border:0;cursor:pointer;',
   '  font:inherit;font-size:13.5px;font-weight:500;letter-spacing:.02em;color:var(--nkn-soft);text-decoration:none;white-space:nowrap;transition:color .2s ease;}',
   '.nkn-link:hover,.nkn-link:focus-visible,.nkn-link.is-current{color:var(--nkn-text);}',
-  /* Elastic pill indicator: one <span class="nkn-ind"> inside .nkn-primary. nav.js sets its transform/width (px, measured from the link) and runs the
-     stretch-and-squish keyframes. Colour = brand gold (--nkn-logo-accent) with a translucent gloss + glow, so it reads on cream glass and on obsidian glass. */
-  '.nkn-primary{position:relative;}',
-  '.nkn-ind{--nkn-ind-h:5px;position:absolute;left:0;bottom:-6px;width:0;height:var(--nkn-ind-h);border-radius:999px;pointer-events:none;opacity:0;transform-origin:50% 50%;will-change:transform,width;',
-  '  background:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,0) 65%),var(--nkn-logo-accent);',
-  '  box-shadow:0 0 12px -1px rgba(var(--nkn-gold-rgb),.55);transition:opacity .25s ease;}',
+  /* Elastic pill indicator. .nkn-ind-track is exactly as wide as the links wrapper (first link "Home" -> last link "Contact") and sits on its bottom edge;
+     it clips the pill, so the pill can never leave that span, even while it stretches or overshoots. nav.js sets the pill's transform/width in px,
+     measured from the link (offsetLeft / offsetWidth), and runs the stretch-and-squish keyframes. Colour = brand gold #C89B54 (--nkn-logo-accent) + a translucent gloss. */
+  '.nkn-primary{--nkn-ind-h:5px;position:relative;}',
+  '.nkn-ind-track{position:absolute;left:0;right:0;bottom:0;height:var(--nkn-ind-h);overflow:hidden;pointer-events:none;}',
+  '.nkn-ind{position:absolute;left:0;top:0;width:0;height:100%;border-radius:999px;opacity:0;transform-origin:50% 50%;will-change:transform,width;',
+  '  background:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,0) 65%),var(--nkn-logo-accent);transition:opacity .25s ease;}',
   '.nkn-ind.is-on{opacity:1;}',
   '.nkn-ind.is-fx{transition:opacity .25s ease,transform .55s cubic-bezier(.68,-.55,.26,1.55),width .55s cubic-bezier(.68,-.55,.26,1.55);}',   /* only used when the Web Animations API is missing: plain spring, no squish */
   '.nkn-link:focus-visible,.nkn-d-link:focus-visible,.nkn-btn:focus-visible,.nkn-logo:focus-visible,.nkn-f-link:focus-visible{outline:2px solid var(--nkn-gold);outline-offset:3px;border-radius:6px;}',
@@ -355,7 +354,7 @@
     return '<header class="nkn-header" id="nkn-header">' +
       '<div class="nkn-row">' +
         logoHtml(' id="nkn-logo"') +
-        '<nav class="nkn-primary" aria-label="Primary">' + links + '<span class=\"nkn-ind\" aria-hidden=\"true\"></span></nav>' +
+        '<nav class="nkn-primary" aria-label="Primary">' + links + '<span class=\"nkn-ind-track\" aria-hidden=\"true\"><span class=\"nkn-ind\"></span></span></nav>' +
         '<div class="nkn-actions">' +
           themePill('') +
           '<button type="button" class="nkn-btn" id="open-cart-btn" aria-label="Open cart">' + ico('cart') + '<span class="nkn-badge" id="cart-count">0</span></button>' +
@@ -876,11 +875,16 @@
       if (!canAnimate) { put(t); return; }                          /* CSS spring fallback (.is-fx) */
       stop();
       put(t);                                                       /* final state is already in place, so the animation needs no fill */
-      var left = Math.min(f.x, t.x), right = Math.max(f.x + f.w, t.x + t.w);
+      /* Mid-flight shape: a compact rubber band, NOT a bar across the menu. It grows by half the distance (max 56px) beyond the wider of the two links,
+         is centred 45% of the way to the target, and is clamped to the links wrapper (Home .. Contact). */
+      var span = nav.offsetWidth, dist = Math.abs(t.x - f.x);
+      var sw = Math.min(span, Math.max(f.w, t.w) + Math.min(dist * 0.5, 56));
+      var mc = (f.x + f.w / 2) + ((t.x + t.w / 2) - (f.x + f.w / 2)) * 0.45;
+      var left = Math.max(0, Math.min(span - sw, mc - sw / 2)), width = sw;
       var dur = Math.round(Math.min(760, 440 + Math.abs(t.x - f.x) * 1.1));
       anim = ind.animate([
         { transform: tf(f.x, 1),    width: f.w + 'px',            easing: 'cubic-bezier(.4,0,.2,1)' },     /* stretch + squash */
-        { transform: tf(left, .45), width: (right - left) + 'px', easing: SPRING, offset: .38 },           /* settle with a spring */
+        { transform: tf(left, .45), width: width + 'px',          easing: SPRING, offset: .38 },           /* settle with a spring */
         { transform: tf(t.x, 1),    width: t.w + 'px' }
       ], { duration: dur });
       var mine = anim;
