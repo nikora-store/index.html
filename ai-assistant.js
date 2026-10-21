@@ -22,7 +22,13 @@
  *   { reply: "text" }  (a { content:[{text}] } shape is also accepted).
  *   On any error or timeout it silently falls back to the local engine.
  *
- * Public API: window.NikoraAssistant = { open, close, toggle, send, reset }
+ * PRODUCT KNOWLEDGE
+ *   Reads the active catalog live (window.NikoraSite, else Firebase /products) and merges it with built-in
+ *   expert notes, so every K-Beauty product and the NIKORA wand can be explained with its wand synergy. New
+ *   products added in the admin panel are picked up automatically. The system prompt sent to a live endpoint
+ *   is built from the same data.
+ *
+ * Public API: window.NikoraAssistant = { open, close, toggle, send, reset, ask, refreshProducts, systemPrompt }
  * All CSS is namespaced .nkai-* so it cannot clash with page styles.
  */
 (function () {
@@ -137,7 +143,7 @@
 
     { id: 'wand',
       k: [['how to use', 3], ['how do i use', 3], ['how should i use', 3], ['wand', 2], ['instruction', 2], ['routine', 2], ['get started', 2], ['step by step', 2], ['directions', 2], ['set up', 2]],
-      text: "Here's a simple routine for your **NIKORA SkinGlow Wand Pro**:\n- **Cleanse** your face and pat it dry.\n- **Prep:** use the device on clean skin with a water-based serum or conductive gel if your guide calls for one.\n- **Glide** slowly and keep the device moving. Start on the lowest intensity and increase gradually.\n- **Finish** with your moisturizer, plus sunscreen in the morning.\n\nMost routines take about **five minutes a day**. Always follow the schedule in your device's instruction guide for your exact model.",
+      text: "Here's a simple routine for your **NIKORA Electroporation & LED Skin Booster Wand**:\n- **Cleanse** your face and pat it dry.\n- **Prep:** use the device on clean skin with a water-based serum or conductive gel if your guide calls for one.\n- **Glide** slowly and keep the device moving. Start on the lowest intensity and increase gradually.\n- **Finish** with your moisturizer, plus sunscreen in the morning.\n\nMost routines take about **five minutes a day**. Always follow the schedule in your device's instruction guide for your exact model.",
       buttons: [B.faq], chips: ['How often should I use it?', 'Can I use it with retinol?', 'Is it safe for sensitive skin?'] },
 
     { id: 'frequency',
@@ -262,6 +268,261 @@
       buttons: [], chips: [] }
   ];
 
+  /* ======================================================================
+   * 4b. PRODUCT KNOWLEDGE (K-Beauty catalog + NIKORA device)
+   *     Built-in expert notes for the current catalog, merged at run time with the
+   *     LIVE /products data (name, price, description, id) from window.NikoraSite or
+   *     Firebase. A product added later in the admin panel is recognised automatically
+   *     and answered from its live name / brand / description plus the general wand guidance.
+   *     Cosmetic wording only: never a medical claim.
+   * ====================================================================== */
+  var DEVICE = 'NIKORA Electroporation & LED Skin Booster Wand';
+  var WAND_ABOUT = 'the **NIKORA 630nm red light & EMS wand**';
+  var KB = [
+    { ids: ['1', 'cosrx-snail-mucin'], short: 'COSRX Snail Mucin', keys: ['cosrx', 'snail', 'mucin', 'snail 96'], step: 'Infuse',
+      active: 'Snail Mucin (96% snail secretion filtrate)',
+      about: 'A lightweight Korean essence that hydrates and leaves skin looking smooth, bouncy and glowy.',
+      benefits: ['Deep, water-light hydration for dry, dehydrated or dull-looking skin', 'Smoother, plumper-looking skin with a glassy finish', 'Gentle, layer-friendly texture that suits most skin types'],
+      synergy: 'A water-based essence is the ideal conductive layer for the wand. LED warmth and EMS microcurrents temporarily make skin more receptive, so the hydration can sink in more effectively, while 630nm red light supports the collagen-building cells beneath for a plumper, glassier look.',
+      usage: 'After toner, smooth a generous layer onto clean skin, glide the wand over it for about 5 minutes, then seal with moisturizer.' },
+    { ids: ['2', 'anua-heartleaf-toner'], short: 'Anua Heartleaf Toner', keys: ['anua', 'heartleaf', 'heart leaf', 'houttuynia', '77'], step: 'Prep',
+      active: 'Heartleaf extract (77%)',
+      about: 'A soothing toner built around heartleaf extract that calms the look of stressed, oily or sensitive-feeling skin and preps it for the rest of your routine.',
+      benefits: ['Calming, balancing prep step for oily or sensitive-feeling skin', 'Refreshing hydration without a heavy feel', 'Gets skin ready to take up the essence that follows'],
+      synergy: 'Use it as step 1: it calms and hydrates the surface so the essence, the wand\'s warmth and its microcurrents can do their job on comfortable skin. If your skin is reactive, start with fewer, shorter wand sessions.',
+      usage: 'Cleanse, then pat the toner on with clean hands or a cotton pad, and move on to your essence or ampoule before the wand.' },
+    { ids: ['3', 'boj-relief-sun'], short: 'Beauty of Joseon Relief Sun', keys: ['beauty of joseon', 'joseon', 'boj', 'relief sun', 'rice probiotics', 'sunscreen', 'spf', 'sun cream'], step: 'Protect',
+      active: 'Rice extract + probiotics (SPF50+ PA++++)',
+      about: 'A lightweight daily sunscreen with rice extract and probiotics that wears comfortably under makeup with a soft, dewy finish.',
+      benefits: ['High-protection SPF50+ PA++++ for daily use', 'Light, dewy finish that sits well under makeup', 'Protects the glow your routine builds'],
+      synergy: 'Sunscreen is always the last morning step. Do your wand session first on clean skin with an essence, then moisturizer, then this. Red light is UV-free, but daily SPF protects the results you are building. Never use the device over sunscreen.',
+      usage: 'Apply as the final step every morning and reapply through the day as directed on the pack.' },
+    { ids: ['4', 'skin1004-centella-ampoule'], short: 'Skin1004 Centella Ampoule', keys: ['skin1004', 'centella', 'madagascar', 'cica', 'asiatica', 'gotu kola'], step: 'Infuse',
+      active: 'Centella Asiatica',
+      about: 'A single-focus Centella Asiatica ampoule that soothes and comforts the look of irritated-feeling skin and supports a healthy-looking skin barrier.',
+      benefits: ['Soothes and comforts stressed-looking skin', 'Supports a healthy-looking barrier', 'Lightweight and ideal for sensitive or breakout-prone-feeling skin'],
+      synergy: 'A great conductive medium for the wand. Warmth and microcurrents temporarily improve how the ampoule is taken up, and the gentle, UV-free red light pairs well with its calming focus. Build wand sessions up slowly if skin feels sensitive.',
+      usage: 'After toner, apply a thin, even layer, glide the wand for about 5 minutes, then follow with moisturizer.' },
+    { ids: ['5', 'laneige-lip-sleeping-mask'], short: 'Laneige Lip Sleeping Mask', keys: ['laneige', 'lip', 'lips', 'sleeping mask'], step: 'Overnight',
+      active: 'Overnight lip treatment (Berry)',
+      about: 'The cult overnight lip treatment in Berry: a creamy mask that leaves lips feeling soft, smooth and moisturized by morning.',
+      benefits: ['Soft, smooth, moisturized-feeling lips by morning', 'Rich, comforting texture for overnight wear', 'Berry scent and flavor'],
+      synergy: 'Lips sit outside the wand\'s treatment area (follow your device guide), so this is the perfect closing step of your night ritual: wand session, moisturizer, then lip mask.',
+      usage: 'Apply a thick layer on lips as the last step before bed and wipe off in the morning.' },
+    { ids: ['6', 'biodance-collagen-mask'], short: 'Biodance Bio-Collagen Mask', keys: ['biodance', 'bio collagen', 'collagen mask', 'hydrogel', 'real deep'], step: 'Treat',
+      active: 'Bio-collagen hydrogel',
+      about: 'A bio-collagen hydrogel mask set that melts onto skin overnight for a plump, hydrated and refreshed look by morning.',
+      benefits: ['Plump, hydrated, refreshed look by morning', 'Collagen-focused hydrogel that melts onto skin', 'A weekly treat step for dull or tired-looking skin'],
+      synergy: 'Do your wand session first. Skin primed by warmth and microcurrents is more receptive, so the mask\'s hydration can go further, and 630nm red light supports the cells that make collagen.',
+      usage: 'After your wand session and essence, apply the mask as directed on the pack. Many people use a mask step a few times a week.' },
+    { ids: ['7', 'roundlab-birch-cream'], short: 'Round Lab Birch Juice Cream', keys: ['round lab', 'roundlab', 'birch', 'birch juice', 'moisturizing cream'], step: 'Seal',
+      active: 'Birch tree sap',
+      about: 'A cushiony moisturizing cream with birch tree sap that seals in hydration and leaves skin feeling soft and comfortable.',
+      benefits: ['Seals in hydration after essences and ampoules', 'Soft, comfortable, cushiony finish', 'Supports a smooth, healthy-looking barrier'],
+      synergy: 'The lock-in step. After the wand has helped your essence absorb, this cream seals that hydration in so the glow lasts longer.',
+      usage: 'Apply as the last evening step, or before sunscreen in the morning.' },
+    { ids: ['8', 'nikora-booster-wand'], short: 'NIKORA Booster Wand', keys: ['booster wand', 'skin booster', 'electroporation', '630', 'red light', 'flagship', 'ems wand', 'led wand', 'nikora wand', 'the wand'], step: 'Activate', device: true,
+      active: '630nm red light + EMS microcurrents + LED warmth',
+      about: 'Our hero beauty-tech wand: 630nm red light, EMS microcurrents and gentle LED warmth in one five-minute ritual, designed to help your K-Beauty essences and ampoules absorb for a visible glow.',
+      benefits: ['630nm red light supports collagen synthesis and cellular (ATP) energy', 'EMS microcurrents tone facial muscles and enhance microcirculation', 'Warmth and current help essences and ampoules absorb more effectively'],
+      synergy: 'It is the engine of the ritual: pair it with any water-based essence or ampoule, such as COSRX Snail Mucin or Skin1004 Centella.',
+      usage: 'Cleanse, apply a water-based essence, glide slowly for about 5 minutes starting on low intensity, then moisturize.' },
+    { ids: ['9', 'nikora-cryo-globe'], short: 'NIKORA Cryo Ice Globe', keys: ['cryo', 'ice globe', 'globe', 'cooling', 'sculptor'], step: 'Cool',
+      active: 'Cryo-cooling massage',
+      about: 'A cryo-cooling facial globe for a refreshing sculpting massage that helps de-puff and contour the look of your face and neck.',
+      benefits: ['Refreshing massage that helps de-puff the look of the face', 'Sculpting glide for contour', 'A cooling finish to the ritual'],
+      synergy: 'The wand infuses and activates; the globe de-puffs and sculpts. Use it after your wand session for a cooling finish, or on its own in the morning.',
+      usage: 'Glide with gentle upward strokes over moisturized skin, keeping the globe moving.' },
+    { ids: ['10', 'nikora-glass-skin-bundle'], short: 'Glass Skin Ritual Set', keys: ['glass skin', 'ritual set', 'bundle', 'set'], step: 'Complete ritual', bundle: true,
+      active: 'Wand + COSRX Snail Mucin + Skin1004 Centella + Biodance mask',
+      about: 'The complete Glass Skin ritual: NIKORA Booster Wand, COSRX Snail 96 Mucin Power Essence, Skin1004 Madagascar Centella Ampoule and a Biodance Bio-Collagen Real Deep Mask Set.',
+      benefits: ['Everything you need for the Infuse, Activate and Treat steps', 'Hydration (snail mucin), soothing (Centella) and collagen-focused masking in one set', 'The simplest way to start the wand + actives routine'],
+      synergy: 'Use the essence and ampoule as your conductive layer for the wand, then finish with the Biodance mask for a glassy, plump-looking morning.',
+      usage: 'Follow the ritual: cleanse, essence or ampoule, 5 minutes with the wand, moisturizer, and a mask step as directed.' }
+  ];
+  var KB_CHIPS = ['Build my routine', 'Tell me about COSRX Snail Mucin', 'What does Centella do?'];
+  var GENERIC_SYNERGY = 'Water-based formulas work best with the wand: warmth and microcurrents temporarily make skin more receptive, so use it as your conductive layer, then moisturize.';
+  var ING = [
+    { re: /niacinamide|vitamin b3/i, name: 'Niacinamide', text: 'Niacinamide is a popular brightening, pore-refining and barrier-supporting active. Choose a **water-based niacinamide serum** and apply it before your wand session: warmth and microcurrents temporarily help it absorb more effectively. Patch test first, and start with fewer sessions if your skin is reactive.' },
+    { re: /peptide/i, name: 'Peptides', text: 'Peptide complexes are popular for a firmer, smoother-looking complexion. A **water-based peptide serum** is a great partner for the wand: the LED warmth and EMS microcurrents temporarily help it absorb, while 630nm red light supports the collagen-building cells beneath. The Biodance bio-collagen mask is our closest catalog match.' },
+    { re: /hyaluron|\bha\b/i, name: 'Hyaluronic acid', text: 'Hyaluronic acid binds water for a plump, hydrated look. It is water-based, so it works well under the wand, and a moisturizer such as Round Lab Birch Juice cream seals the hydration in afterwards.' }
+  ];
+  var LIVE = { list: null, at: 0, loading: null };
+  var PRODUCTS_TTL = 5 * 60 * 1000;
+
+  function normLive(raw) {
+    var out = [];
+    if (!raw || typeof raw !== 'object') return out;
+    Object.keys(raw).forEach(function (k) {
+      var p = raw[k];
+      if (!p || typeof p !== 'object' || p._deleted || p.hidden === true || p.active === false) return;
+      var name = p.name || p.title, price = Number(p.price);
+      if (!name || !(price > 0)) return;
+      var img = (Array.isArray(p.images) && p.images[0]) || p.img || p.image || '';
+      out.push({ id: String(p.id != null ? p.id : k), name: String(name), brand: p.brand ? String(p.brand) : '', category: p.category ? String(p.category) : '',
+        price: price, desc: String(p.desc || p.description || ''), tags: [].concat(p.tags || []).map(String), img: String(img) });
+    });
+    return out;
+  }
+  /* Source order: window.NikoraSite (if it exposes products) -> Firebase SDK already on the page -> public REST read. */
+  function fetchProducts() {
+    try {
+      var S = window.NikoraSite;
+      if (S) {
+        var v = typeof S.getProducts === 'function' ? S.getProducts() : (S.products || (S.content && S.content.products));
+        if (v && typeof v.then === 'function') return v.then(function (r) { var l = normLive(Array.isArray(r) ? r.reduce(function (m, x, i) { m[(x && x.id != null) ? x.id : i] = x; return m; }, {}) : r); return l.length ? l : Promise.reject(); });
+        var l0 = normLive(Array.isArray(v) ? v.reduce(function (m, x, i) { m[(x && x.id != null) ? x.id : i] = x; return m; }, {}) : v);
+        if (l0.length) return Promise.resolve(l0);
+      }
+    } catch (e) {}
+    try {
+      if (window.firebase && window.firebase.apps && window.firebase.apps.length && window.firebase.database) {
+        return window.firebase.database().ref('products').once('value').then(function (s) { return normLive(s.val()); });
+      }
+    } catch (e) {}
+    var base = (window.NIKORA_DB_URL || 'https://nikora-store-default-rtdb.firebaseio.com').replace(/\/+$/, '');
+    if (typeof fetch !== 'function') return Promise.reject();
+    return fetch(base + '/products.json').then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(normLive);
+  }
+  function loadProducts(force) {
+    if (LIVE.loading) return LIVE.loading;
+    if (!force && LIVE.list && Date.now() - LIVE.at < PRODUCTS_TTL) return Promise.resolve(LIVE.list);
+    LIVE.loading = fetchProducts().then(function (l) { if (l && l.length) { LIVE.list = l; LIVE.at = Date.now(); } LIVE.loading = null; return LIVE.list; })
+      .catch(function () { LIVE.loading = null; return LIVE.list; });
+    return LIVE.loading;
+  }
+
+  function kbFor(live) {
+    for (var i = 0; i < KB.length; i++) {
+      if (KB[i].ids.indexOf(String(live.id)) !== -1) return KB[i];
+    }
+    var n = norm(live.name);
+    for (var j = 0; j < KB.length; j++) {
+      var first = norm(KB[j].keys[0]).trim();
+      if (first && n.indexOf(' ' + first) !== -1) return KB[j];
+    }
+    return null;
+  }
+  /* One merged list: every live product (with its built-in notes when known) plus any built-in product Firebase did not return. */
+  function catalog() {
+    var out = [], used = {};
+    (LIVE.list || []).forEach(function (lp) {
+      var kb = kbFor(lp); if (kb) used[kb.ids[0]] = true;
+      out.push({ id: lp.id, name: lp.name, price: lp.price, live: lp, kb: kb });
+    });
+    KB.forEach(function (kb) { if (!used[kb.ids[0]]) out.push({ id: kb.ids[0], name: kb.short, price: null, live: null, kb: kb }); });
+    return out;
+  }
+  function entryKeys(e) {
+    if (e.kb) return e.kb.keys;
+    var ks = [], n = norm(e.name).trim();
+    if (n) ks.push(n);
+    n.split(' ').forEach(function (w) { if (w.length > 3 && !/^(with|from|that|your|nikora|cream|mask|set|the)$/.test(w)) ks.push(w); });
+    if (e.live && e.live.brand) ks.push(norm(e.live.brand).trim());
+    return ks;
+  }
+  function findProduct(t, usageIntent) {
+    var best = null, bestScore = 0;
+    catalog().forEach(function (e) {
+      var s = 0;
+      entryKeys(e).forEach(function (k) {
+        if (!k) return;
+        var generic = /^(set|bundle|lip|lips|globe|cooling|the wand|sculptor|77|630|red light|moisturizing cream)$/.test(k);
+        if (new RegExp('\\b' + escRe(k) + '\\b', 'i').test(t)) s += generic ? 1 : (k.length > 4 ? 3 : 2);
+      });
+      if (e.kb && e.kb.device && usageIntent) s = 0;                       /* "how do I use the wand" stays with the usage answer */
+      if (s > bestScore) { bestScore = s; best = e; }
+    });
+    return bestScore >= 2 ? best : null;
+  }
+  function money(n) { return n ? ' ($' + Number(n).toFixed(2) + ')' : ''; }
+  function productAnswer(e) {
+    var kb = e.kb, lp = e.live, title = (lp && lp.name) || (kb && kb.short) || e.name, parts = [];
+    var about = (kb && kb.about) || (lp && lp.desc) || 'A K-Beauty favorite from the NIKORA collection.';
+    parts.push('**' + title + '**' + money(lp && lp.price) + (kb ? ' | ' + kb.active : (lp && lp.brand ? ' | ' + lp.brand : '')) + '\n' + about);
+    if (kb) parts.push('**Why you will like it**\n' + kb.benefits.map(function (b) { return '- ' + b; }).join('\n'));
+    parts.push('**With your NIKORA wand**\n' + (kb ? kb.synergy : GENERIC_SYNERGY));
+    if (kb) parts.push('**How to use:** ' + kb.usage);
+    parts.push('Results vary, and these are cosmetic products. Patch test anything new first.');
+    var url = 'product.html?id=' + encodeURIComponent(e.id);
+    var chips = ['Build my routine'];
+    if (kb && !kb.device) chips.push('How do I use it with the wand?');
+    chips.push('Which products pair with this?');
+    return { text: parts.join('\n\n'), buttons: [{ label: 'View ' + (kb ? kb.short : title), href: url, icon: 'bag' }, B.catalog], chips: chips.slice(0, 3) };
+  }
+  function nameOf(id) { var c = catalog().filter(function (e) { return e.kb && e.kb.ids.indexOf(id) !== -1; })[0]; return c ? c.name : ''; }
+  function routineAnswer(t) {
+    var oily = /\b(oily|acne|breakout|blemish|pimple|sensitive|redness|irritat|combination)\b/.test(t);
+    var dry = /\b(dry|dehydrat|tight|flaky|barrier|dull|mature|aging|ageing|wrinkle|fine line)\b/.test(t);
+    var head, am, pm;
+    if (oily && !dry) {
+      head = 'Here is a calming routine for **oily or sensitive-feeling skin**:';
+      am = 'Cleanse, **Anua Heartleaf 77% Toner**, **Skin1004 Centella Ampoule**, a light moisturizer, then **Beauty of Joseon Relief Sun**.';
+      pm = 'Cleanse, Anua toner, **Skin1004 Centella Ampoule** as your conductive layer, then **5 minutes with the wand**, and finish with a light cream. Start with fewer sessions if skin is reactive.';
+    } else if (dry && !oily) {
+      head = 'Here is a hydrating routine for **dry or barrier-stressed skin**:';
+      am = 'Cleanse, **COSRX Snail 96 Mucin Essence**, **Round Lab Birch Juice Cream**, then **Beauty of Joseon Relief Sun**.';
+      pm = 'Cleanse, toner, a generous layer of **COSRX Snail Mucin** as your conductive layer, **5 minutes with the wand**, then **Round Lab Birch Juice Cream**. Add a **Biodance Bio-Collagen mask** a few times a week.';
+    } else {
+      head = 'Here is a simple, balanced **Prep, Infuse, Activate, Seal** routine:';
+      am = 'Cleanse, **Anua Heartleaf Toner**, **COSRX Snail Mucin**, moisturizer, then **Beauty of Joseon Relief Sun**.';
+      pm = 'Cleanse, toner, **COSRX Snail Mucin or Skin1004 Centella** as your conductive layer, **5 minutes with the wand**, then **Round Lab Birch Juice Cream**. Finish with the **Cryo Ice Globe** to de-puff, and add a **Biodance mask** a few times a week.';
+    }
+    return { text: head + '\n\n**Morning:** ' + am + '\n\n**Evening:** ' + pm + '\n\nThe wand is used in the evening on clean skin, never over sunscreen. Tell me your skin type or main concern and I will fine-tune it.',
+      buttons: [B.catalog, B.science], chips: ['Tell me about COSRX Snail Mucin', 'What does Centella do?', 'Is it safe for sensitive skin?'] };
+  }
+  function productList() {
+    var c = catalog().filter(function (e) { return !(e.kb && e.kb.bundle); }).slice(0, 12);
+    return c.map(function (e) { return '- **' + e.name + '**' + money(e.live && e.live.price); }).join('\n');
+  }
+  /* Returns an answer when the message is about a product, ingredient or routine; otherwise null. */
+  function skincareAnswer(raw, t) {
+    var usageIntent = /\b(how (do i|to|should i) use|instructions?|directions?|set up|get started|how often)\b/.test(t) && /\bwand\b/.test(t) && !/\b(cosrx|anua|joseon|skin1004|biodance|round lab|laneige)\b/.test(t);
+    var p = findProduct(t, usageIntent);
+    if (p) return productAnswer(p);
+    for (var i = 0; i < ING.length; i++) {
+      if (ING[i].re.test(raw)) return { text: ING[i].text, buttons: [B.catalog, B.science], chips: ['Build my routine', 'Tell me about Skin1004 Centella', 'How does red light work?'] };
+    }
+    var concern = /\b(oily|dry|sensitive|acne|combination|dull|aging|ageing|barrier|dehydrat)\b/.test(t);
+    var wants = /\b(routine|layer|layering|what order|which products?|recommend|suggest|what should i use|best (products?|serum|essence|toner|cream)|k beauty|skincare)\b/.test(t);
+    if (/\b(routine|layer|layering|what order|build my)\b/.test(t) && !usageIntent && (concern || /\b(skincare|k beauty|products|morning|night|evening|am|pm|build my)\b/.test(t))) return routineAnswer(t);
+    if (concern && wants) return routineAnswer(t);
+    if (/\b(which|what) (products?|k beauty|skincare)|\b(all|your) products\b|what do you (sell|carry|have)/.test(t)) {
+      return { text: 'Here is what is in the collection right now:\n' + productList() + '\n\nAsk me about any of them and I will explain the benefits and how they work with the wand.', buttons: [B.catalog], chips: KB_CHIPS };
+    }
+    return null;
+  }
+  /* A more helpful last resort than a support hand-off. */
+  function smartFallback(raw, t) {
+    var loose = null, best = 0;
+    catalog().forEach(function (e) {
+      var s = 0; entryKeys(e).forEach(function (k) { if (k && k.length > 3 && t.indexOf(' ' + norm(k).trim()) !== -1) s++; });
+      if (s > best) { best = s; loose = e; }
+    });
+    if (loose) return productAnswer(loose);
+    if (/\b(skin|serum|essence|toner|cream|ingredient|product|hydrat|moistur|glow|pores?|spf|mask|ampoule|cleanser)\b/.test(t)) {
+      return { text: 'Happy to help with that. I know every product in the collection and how each one works with the wand. Try naming a product or ingredient, or tell me your skin type and I will build a routine.\n\n' + productList(),
+        buttons: [B.catalog, B.faq], chips: KB_CHIPS };
+    }
+    return { text: 'I want to get this right. I can explain **any product or ingredient in our collection, build a routine for your skin type, and answer device, shipping, order and returns questions**. Try one of the options below, or rephrase and I will do my best.\n\nStill stuck? ' + SUPPORT_LINE,
+      buttons: [B.faq, B.email('Question for the NIKORA team')], chips: KB_CHIPS.concat(['Track my package']).slice(0, 3) };
+  }
+  /* System prompt for an optional live endpoint (the widget sends it with every request). */
+  function systemPrompt() {
+    var lines = catalog().map(function (e) {
+      var k = e.kb, lp = e.live;
+      return '- ' + e.name + (lp && lp.price ? ' ($' + lp.price.toFixed(2) + ')' : '') + ' [product.html?id=' + e.id + ']: ' + ((k && k.about) || (lp && lp.desc) || 'K-Beauty product.') +
+        (k ? ' Key active: ' + k.active + '. Routine step: ' + k.step + '. Synergy with the wand: ' + k.synergy : '');
+    });
+    return ['You are the NIKORA Beauty Concierge, a warm, expert K-Beauty and beauty-tech assistant for the NIKORA store.',
+      'FLAGSHIP DEVICE: ' + DEVICE + ': 630nm red light (collagen synthesis, ATP cellular energy), EMS microcurrents (facial muscle toning, microcirculation) and LED warmth. Warmth and current temporarily make skin more receptive, so water-based essences and ampoules can absorb more effectively.',
+      'ACTIVE CATALOG (live):', lines.join('\n'),
+      'GUIDANCE RULES: When asked about a product, ingredient or routine, answer directly and concisely: key benefits, then how it synergizes with the wand (conductive layer, absorption, step order), then how to use it. Routine order: Prep (toner), Infuse (essence/ampoule), Activate (wand ~5 min, evening, never over sunscreen), Seal (cream), SPF in the morning. Link products with [name](product.html?id=ID).',
+      'CLAIMS: cosmetic wording only. Never diagnose or give medical claims; say "results vary" and suggest a patch test. For pregnancy, pacemakers or implants, or skin conditions, advise checking with a doctor before using EMS.',
+      'STORE FACTS: 30-Day Money-Back Guarantee (unopened/unused items; change-of-mind return shipping paid by the customer); processing 1-3 business days, shipping 7-15 business days with tracking; visible results usually appear within 30-45 days of consistent daily use. You cannot look up or change orders.',
+      'SUPPORT: only hand off to nikora.support@gmail.com (Mon-Sun 8am-10pm EST, replies in 2-4 business hours) for order-specific, payment or account issues you cannot resolve, never for product or routine questions.'].join('\n');
+  }
+
   var FALLBACK = {
     text: ["I want to get this right, and I'm not completely sure I understood. I can help with **device routines, skin safety, shipping, order tracking, returns and the 30-day guarantee**.\n\nFor anything else, our team will gladly help. " + SUPPORT_LINE],
     buttons: [B.faq, B.email('Question for the NIKORA team')],
@@ -306,6 +567,10 @@
                buttons: [B.status, B.email('Return status question')], chips: ['When will I get my refund?', 'Talk to support'] };
     }
 
+    /* product, ingredient and routine questions are answered directly (before any support hand-off) */
+    var sk = skincareAnswer(raw, t);
+    if (sk) { lastIntent = 'skincare'; return sk; }
+
     /* short affirmations continue the previous topic */
     if (lastIntent && /^ (yes|yeah|yep|yup|sure|ok|okay|please|go on|more|tell me more|continue)( please| thanks)? $/.test(t)) {
       var prev = INTENTS.filter(function (i) { return i.id === lastIntent; })[0];
@@ -320,7 +585,7 @@
     });
     if (best && bestScore >= 2) { lastIntent = best.id; return pack(best); }
     lastIntent = null;
-    return { text: FALLBACK.text[0], buttons: FALLBACK.buttons.map(function (b) { return typeof b === 'function' ? b() : b; }), chips: FALLBACK.chips };
+    return smartFallback(raw, t);
   }
 
   /* ======================================================================
@@ -333,6 +598,7 @@
     var timer = setTimeout(function () { if (ctl) ctl.abort(); }, CFG.timeoutMs);
     var payload = {
       page: location.pathname,
+      system: systemPrompt(),
       messages: history.slice(-12).map(function (m) { return { role: m.r === 'u' ? 'user' : 'assistant', content: m.t }; })
     };
     return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: ctl ? ctl.signal : undefined })
@@ -644,7 +910,7 @@
     input.value = '';
     setChips([]); setBusy(true); showTyping();
     var started = Date.now();
-    askRemote(state.msgs).then(function (remote) {
+    loadProducts().then(function () { return askRemote(state.msgs); }).then(function (remote) {
       var out = remote ? { text: remote, buttons: [], chips: DEFAULT_CHIPS } : localAnswer(text);
       var base = REDUCED ? 120 : Math.min(1500, 520 + out.text.length * 3);
       var wait = Math.max(0, base - (Date.now() - started));
@@ -725,11 +991,15 @@
     }
     if (state.open) open({ quiet: true });
     scheduleNudge();
+    loadProducts();                                           /* warm the live product knowledge base */
   }
 
   window.NikoraAssistant = {
     open: function () { open(); }, close: function () { close(false); }, toggle: toggle,
-    send: send, reset: reset
+    send: send, reset: reset,
+    ask: function (q) { return localAnswer(q); },           /* returns { text, buttons, chips } without touching the UI */
+    refreshProducts: function () { return loadProducts(true); },
+    systemPrompt: systemPrompt
   };
 
   if (document.body) init();
