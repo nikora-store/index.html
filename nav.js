@@ -157,6 +157,8 @@
   '  --nkn-bar:var(--header-bg,rgba(250,247,242,.78)); --nkn-card:var(--card-bg,rgba(255,255,255,.65));',
   '  --nkn-border:var(--card-border,rgba(230,220,210,.6)); --nkn-panel:var(--surface-raised,rgba(255,255,255,.88));',
   '  --nkn-tint:var(--surface-tint,rgba(26,22,21,.04)); --nkn-rose:var(--rose,#D81E5B);',
+  '  --nkn-float-bg:rgba(250,247,242,.72); --nkn-float-bg-scrolled:rgba(250,247,242,.88); --nkn-float-edge:rgba(197,155,86,.34);',
+  '  --nkn-float-shadow:0 14px 34px -22px rgba(26,22,21,.34); --nkn-float-shadow-scrolled:0 18px 40px -20px rgba(26,22,21,.46); --nkn-float-notch:linear-gradient(90deg,transparent,#C89B54,transparent);',
   '}',
   ':root[data-theme="dark"] .nkn-header,:root[data-theme="dark"] .nkn-overlay,:root[data-theme="dark"] .nkn-drawer,:root[data-theme="dark"] .nkn-footer{',
   '  --nkn-text:var(--text,#F7F4F0); --nkn-soft:var(--text-soft,rgba(247,244,240,.64)); --nkn-faint:var(--text-faint,rgba(247,244,240,.4));',
@@ -165,12 +167,22 @@
   '  --nkn-bar:var(--header-bg,rgba(13,11,18,.72)); --nkn-card:var(--card-bg,rgba(25,20,32,.55));',
   '  --nkn-border:var(--card-border,rgba(255,255,255,.08)); --nkn-panel:var(--surface-raised,rgba(30,25,38,.9));',
   '  --nkn-tint:var(--surface-tint,rgba(255,255,255,.05)); --nkn-rose:var(--rose,#FF527B);',
+  '  --nkn-float-bg:rgba(11,11,14,.66); --nkn-float-bg-scrolled:rgba(11,11,14,.86); --nkn-float-edge:rgba(200,155,84,.34);',
+  '  --nkn-float-shadow:0 20px 44px -24px rgba(0,0,0,.85); --nkn-float-shadow-scrolled:0 24px 48px -20px rgba(0,0,0,.9); --nkn-float-notch:linear-gradient(90deg,transparent,#C89B54,transparent);',
   '}',
 
   /* ---- header bar (glass) ---- */
-  '.nkn-header{position:sticky;top:0;z-index:400;height:73px;box-sizing:border-box;color:var(--nkn-text);',
-  '  background:var(--nkn-bar);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);',
-  '  border-bottom:1px solid var(--nkn-line);font-family:inherit;}',
+  /* Floating curved header: docks to the top edge, floats clear of the side edges, soft 20px bottom corners, frosted glass,
+     gold hairline + a small gold notch tab at the bottom centre. Every colour is a theme variable (see --nkn-float-* above). */
+  '.nkn-header{--nkn-header-r:20px;position:sticky;top:0;z-index:400;height:73px;box-sizing:border-box;color:var(--nkn-text);',
+  '  margin:0 clamp(8px,2.2vw,28px);border:1px solid var(--nkn-float-edge);border-top:0;',
+  '  border-radius:0 0 var(--nkn-header-r) var(--nkn-header-r);',
+  '  background:var(--nkn-float-bg);-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);',
+  '  box-shadow:var(--nkn-float-shadow);transition:background-color .3s ease,box-shadow .3s ease,border-color .3s ease;font-family:inherit;}',
+  '.nkn-header.is-scrolled{background:var(--nkn-float-bg-scrolled);box-shadow:var(--nkn-float-shadow-scrolled);}',
+  '.nkn-header::after{content:\"\";position:absolute;left:50%;bottom:-1px;width:clamp(44px,6vw,72px);height:3px;transform:translateX(-50%);',
+  '  border-radius:3px 3px 0 0;background:var(--nkn-float-notch);opacity:.9;pointer-events:none;}',
+  '@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.nkn-header{background:var(--nkn-float-bg-scrolled);}}',
   '.nkn-header *,.nkn-drawer *,.nkn-footer *{box-sizing:border-box;}',
   '.nkn-row{display:flex;align-items:center;justify-content:space-between;gap:24px;height:100%;padding:0 clamp(20px,4vw,48px);}',
   /* NIKORA logo: bunny mascot as one inline SVG (stroke = gold outline, fill = face), recoloured by CSS variables, so it follows the theme toggle with no swap, jump or flash.
@@ -288,10 +300,10 @@
   '  .nkn-burger{display:grid;}',
   '  .nkn-row{gap:14px;}',
   '}',
-  '@media (max-width:600px){ .nkn-header .nkn-logo{--nkn-logo-h:40px;} .nkn-footer .nkn-logo{--nkn-logo-h:56px;} }',
+  '@media (max-width:600px){ .nkn-header{--nkn-header-r:16px;margin:0 8px;} .nkn-header .nkn-logo{--nkn-logo-h:40px;} .nkn-footer .nkn-logo{--nkn-logo-h:56px;} }',
   '@media (max-width:360px){ .nkn-header .nkn-pill{display:none;} .nkn-header .nkn-logo{--nkn-logo-h:36px;} }',
   '@media (prefers-reduced-motion:reduce){',
-  '  .nkn-drawer,.nkn-overlay,.nkn-link::after,.nkn-f-link,.nkn-logo-svg,.nkn-wordmark{transition-duration:.001s !important;transition-delay:0s !important;}',
+  '  .nkn-header,.nkn-drawer,.nkn-overlay,.nkn-link::after,.nkn-f-link,.nkn-logo-svg,.nkn-wordmark{transition-duration:.001s !important;transition-delay:0s !important;}',
   '  .nkn-drawer.active .nkn-d-sec{animation:none;}',
   '}'
   ].join('\n');
@@ -810,6 +822,11 @@
     if (window.MutationObserver) new MutationObserver(syncTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     badgeFromStorage();
     window.addEventListener('storage', badgeFromStorage);
+
+    var hdr = document.getElementById('nkn-header'), ticking = false;           /* floating header: stronger glass once the page scrolls */
+    function paintScroll() { ticking = false; if (hdr) hdr.classList.toggle('is-scrolled', (window.pageYOffset || document.documentElement.scrollTop || 0) > 8); }
+    window.addEventListener('scroll', function () { if (!ticking) { ticking = true; window.requestAnimationFrame(paintScroll); } }, { passive: true });
+    paintScroll();
   }
 
   /* ======================================================================
