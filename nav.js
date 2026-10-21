@@ -220,16 +220,19 @@
 
   /* ---- desktop links ---- */
   '.nkn-primary{display:flex;align-items:center;gap:clamp(16px,1.9vw,28px);}',
-  '.nkn-link{position:relative;display:inline-flex;align-items:center;padding:6px 0 9px;background:none;border:0;cursor:pointer;',
+  '.nkn-link{position:relative;display:inline-flex;align-items:center;padding:6px 0;background:none;border:0;cursor:pointer;',
   '  font:inherit;font-size:13.5px;font-weight:500;letter-spacing:.02em;color:var(--nkn-soft);text-decoration:none;white-space:nowrap;transition:color .2s ease;}',
   '.nkn-link:hover,.nkn-link:focus-visible,.nkn-link.is-current{color:var(--nkn-text);}',
-  /* Elastic pill indicator. .nkn-ind-track is exactly as wide as the links wrapper (first link "Home" -> last link "Contact") and sits on its bottom edge;
-     it clips the pill, so the pill can never leave that span, even while it stretches or overshoots. nav.js sets the pill's transform/width in px,
-     measured from the link (offsetLeft / offsetWidth), and runs the stretch-and-squish keyframes. Colour = brand gold #C89B54 (--nkn-logo-accent) + a translucent gloss. */
-  '.nkn-primary{--nkn-ind-h:5px;position:relative;}',
-  '.nkn-ind-track{position:absolute;left:0;right:0;bottom:0;height:var(--nkn-ind-h);overflow:hidden;pointer-events:none;}',
-  '.nkn-ind{position:absolute;left:0;top:0;width:0;height:100%;border-radius:999px;opacity:0;transform-origin:50% 50%;will-change:transform,width;',
-  '  background:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,0) 65%),var(--nkn-logo-accent);transition:opacity .25s ease;}',
+  /* Elastic DOME indicator: a flattened semi-circle rising from the header's bottom edge, centred under the active link.
+     .nkn-ind-track = a strip along the header's bottom edge, exactly as wide as the links wrapper (Home .. Contact, +10px so the glow is not cut) that clips the dome;
+     nav.js sets its bottom/left/right and the dome's transform + width (px, from the link's offsetLeft / offsetWidth), and runs the squish-and-stretch keyframes.
+     Dome = semi-ellipse (flat bottom, round top), 7px tall, translucent gold #C89B54 with a soft glow above it. Colours are fixed brand gold with translucent highlights, so both themes work. */
+  '.nkn-primary{--nkn-dome-h:7px;position:relative;}',
+  '.nkn-ind-track{position:absolute;left:0;right:0;bottom:0;height:22px;overflow:hidden;pointer-events:none;}',
+  '.nkn-ind{position:absolute;left:0;top:0;width:0;height:100%;opacity:0;transform-origin:50% 100%;will-change:transform,width;transition:opacity .25s ease;}',
+  '.nkn-ind::before{content:"";position:absolute;left:-10px;right:-10px;bottom:0;height:100%;background:radial-gradient(ellipse 50% 100% at 50% 100%,rgba(200,155,84,.5),rgba(200,155,84,0));}',
+  '.nkn-ind::after{content:"";position:absolute;left:0;right:0;bottom:0;height:var(--nkn-dome-h);border-radius:50% 50% 0 0 / 100% 100% 0 0;',
+  '  background:linear-gradient(180deg,rgba(255,244,214,.7),rgba(255,244,214,0) 70%),rgba(200,155,84,.92);box-shadow:0 0 10px rgba(200,155,84,.55);}',
   '.nkn-ind.is-on{opacity:1;}',
   '.nkn-ind.is-fx{transition:opacity .25s ease,transform .55s cubic-bezier(.68,-.55,.26,1.55),width .55s cubic-bezier(.68,-.55,.26,1.55);}',   /* only used when the Web Animations API is missing: plain spring, no squish */
   '.nkn-link:focus-visible,.nkn-d-link:focus-visible,.nkn-btn:focus-visible,.nkn-logo:focus-visible,.nkn-f-link:focus-visible{outline:2px solid var(--nkn-gold);outline-offset:3px;border-radius:6px;}',
@@ -912,33 +915,52 @@
   }
 
   /* ======================================================================
-   * 7b. ELASTIC PILL INDICATOR
-   * Follows the current page's link and previews the hovered / focused link. Position and width come from the link itself
-   * (offsetLeft / offsetWidth inside .nkn-primary), so it is exact for any label, font or breakpoint.
-   * Moving: the pill first STRETCHES toward the target (width grows to cover both links, height squashes to ~45%), then the trailing end
-   * catches up and it springs into the exact width/height of the target with cubic-bezier(.68,-.55,.26,1.55).
+   * 7b. ELASTIC DOME INDICATOR
+   * A flattened dome sitting on the header's bottom edge, centred under the current page's link; it previews the hovered / focused link.
+   * Position comes from the link itself (offsetLeft + offsetWidth / 2 inside .nkn-primary), so it is exact for any label, font or breakpoint, and it can
+   * only travel along the links wrapper (Home .. Contact).
+   * Moving: the dome flattens into a low, stretched wave that leans the way it is travelling (scaleY ~.32, wider, skewX), then springs back into the compact
+   * dome on the target link with cubic-bezier(.68,-.55,.26,1.55).
    * ====================================================================== */
   var SPRING = 'cubic-bezier(.68,-.55,.26,1.55)';
+  var DOME_W = 36;                                       /* resting width of the dome, px */
+  var DOME_PAD = 10;                                     /* the clipping strip reaches 10px past the wrapper so the glow is not cut at Home / Contact */
   var indicatorApi = null;
 
   function initIndicator(nav, ind) {
+    var track = ind.parentNode, hdr = document.getElementById('nkn-header');
     var reduce = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
     var canAnimate = typeof ind.animate === 'function';
     var anim = null, placed = false, hovered = null, raf = 0;
+    track.style.left = track.style.right = (-DOME_PAD) + 'px';
+    ind.style.left = DOME_PAD + 'px';                    /* so translateX(x) is measured from the wrapper's left edge */
 
-    function tf(x, sy) { return 'translateX(' + x + 'px) scaleY(' + sy + ')'; }
+    function tf(x, sy, sk) { return 'translateX(' + x + 'px) scaleY(' + sy + ') skewX(' + (sk || 0) + 'deg)'; }
     function currentLink() { return nav.querySelector('.nkn-link[aria-current="page"]') || nav.querySelector('.nkn-link.is-current'); }
-    function where() {                                   /* the pill as it is drawn right now (also mid-animation) */
-      var r = ind.getBoundingClientRect(), n = nav.getBoundingClientRect();
-      return { x: r.left - n.left, w: r.width };
+    function domeFor(link) {                             /* centred on the link's centre, kept inside the wrapper */
+      var span = nav.offsetWidth, c = link.offsetLeft + link.offsetWidth / 2;
+      return { x: Math.max(0, Math.min(span - DOME_W, c - DOME_W / 2)), w: DOME_W };
+    }
+    function layout() {                                  /* put the strip on the header's bottom edge, whatever the header / nav heights are */
+      if (hdr) track.style.bottom = (-(hdr.getBoundingClientRect().bottom - nav.getBoundingClientRect().bottom)) + 'px';
+    }
+    function where() {                                   /* the dome as it is drawn right now (also mid-animation) */
+      try {
+        var cs = getComputedStyle(ind), m = cs.transform === 'none' ? new DOMMatrixReadOnly() : new DOMMatrixReadOnly(cs.transform);
+        return { x: m.m41, w: parseFloat(cs.width) || 0 };
+      } catch (e) {
+        var r = ind.getBoundingClientRect(), n = nav.getBoundingClientRect();
+        return { x: r.left - n.left - DOME_PAD, w: r.width };
+      }
     }
     function stop() { if (anim) { anim.cancel(); anim = null; } }
-    function put(t) { ind.style.transform = tf(t.x, 1); ind.style.width = t.w + 'px'; }
+    function put(t) { ind.style.transform = tf(t.x, 1, 0); ind.style.width = t.w + 'px'; }
     function hide() { stop(); placed = false; ind.classList.remove('is-on', 'is-fx'); }
 
     function moveTo(link, animate) {
       if (!link || !nav.offsetWidth) { hide(); return; }          /* no active link, or the bar is collapsed into the burger */
-      var t = { x: link.offsetLeft, w: link.offsetWidth };
+      layout();
+      var t = domeFor(link);
       if (!placed || !animate || reduce.matches) {
         stop(); put(t); placed = true; ind.classList.add('is-on');
         if (!canAnimate) window.requestAnimationFrame(function () { ind.classList.add('is-fx'); });
@@ -949,17 +971,17 @@
       if (!canAnimate) { put(t); return; }                          /* CSS spring fallback (.is-fx) */
       stop();
       put(t);                                                       /* final state is already in place, so the animation needs no fill */
-      /* Mid-flight shape: a compact rubber band, NOT a bar across the menu. It grows by half the distance (max 56px) beyond the wider of the two links,
-         is centred 45% of the way to the target, and is clamped to the links wrapper (Home .. Contact). */
-      var span = nav.offsetWidth, dist = Math.abs(t.x - f.x);
-      var sw = Math.min(span, Math.max(f.w, t.w) + Math.min(dist * 0.5, 56));
+      /* Mid-flight shape: a low, stretched wave. Wider than the dome by 60% of the distance (max 70px), centred 45% of the way to the target,
+         clamped to the links wrapper, squashed to 32% height and leaning (skewX) in the direction of travel. */
+      var span = nav.offsetWidth, dist = Math.abs(t.x - f.x), dir = t.x >= f.x ? 1 : -1;
+      var sw = Math.min(span, Math.max(f.w, t.w) + Math.min(dist * 0.6, 70));
       var mc = (f.x + f.w / 2) + ((t.x + t.w / 2) - (f.x + f.w / 2)) * 0.45;
-      var left = Math.max(0, Math.min(span - sw, mc - sw / 2)), width = sw;
-      var dur = Math.round(Math.min(760, 440 + Math.abs(t.x - f.x) * 1.1));
+      var left = Math.max(0, Math.min(span - sw, mc - sw / 2));
+      var dur = Math.round(Math.min(760, 440 + dist * 1.1));
       anim = ind.animate([
-        { transform: tf(f.x, 1),    width: f.w + 'px',            easing: 'cubic-bezier(.4,0,.2,1)' },     /* stretch + squash */
-        { transform: tf(left, .45), width: width + 'px',          easing: SPRING, offset: .38 },           /* settle with a spring */
-        { transform: tf(t.x, 1),    width: t.w + 'px' }
+        { transform: tf(f.x, 1, 0),            width: f.w + 'px', easing: 'cubic-bezier(.4,0,.2,1)' },     /* flatten + stretch */
+        { transform: tf(left, .32, dir * 16),  width: sw + 'px',  easing: SPRING, offset: .38 },           /* spring back into the dome */
+        { transform: tf(t.x, 1, 0),            width: t.w + 'px' }
       ], { duration: dur });
       var mine = anim;
       mine.onfinish = mine.oncancel = function () { if (anim === mine) anim = null; };
@@ -974,7 +996,7 @@
     nav.addEventListener('focusout', function (e) { if (!e.relatedTarget || !nav.contains(e.relatedTarget)) { hovered = null; sync(true); } });
 
     function later() { if (!raf) raf = window.requestAnimationFrame(function () { raf = 0; sync(false); }); }
-    if (window.ResizeObserver) new ResizeObserver(later).observe(nav);   /* breakpoint changes, font loading, label changes */
+    if (window.ResizeObserver) { var ro = new ResizeObserver(later); ro.observe(nav); if (hdr) ro.observe(hdr); }   /* breakpoints, font loading, label / header height changes */
     window.addEventListener('resize', later);
     window.addEventListener('load', later);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(later);
