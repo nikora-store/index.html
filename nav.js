@@ -224,9 +224,15 @@
   '.nkn-primary{display:flex;align-items:center;gap:clamp(16px,1.9vw,28px);}',
   '.nkn-link{position:relative;display:inline-flex;align-items:center;padding:6px 0;background:none;border:0;cursor:pointer;',
   '  font:inherit;font-size:13.5px;font-weight:500;letter-spacing:.02em;color:var(--nkn-soft);text-decoration:none;white-space:nowrap;transition:color .2s ease;}',
-  '.nkn-link::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:var(--nkn-gold);transform:scaleX(0);transform-origin:left;transition:transform .28s ease;}',
   '.nkn-link:hover,.nkn-link:focus-visible,.nkn-link.is-current{color:var(--nkn-text);}',
-  '.nkn-link:hover::after,.nkn-link.is-current::after{transform:scaleX(1);}',
+  /* Elastic pill indicator: one <span class="nkn-ind"> inside .nkn-primary. nav.js sets its transform/width (px, measured from the link) and runs the
+     stretch-and-squish keyframes. Colour = brand gold (--nkn-logo-accent) with a translucent gloss + glow, so it reads on cream glass and on obsidian glass. */
+  '.nkn-primary{position:relative;}',
+  '.nkn-ind{--nkn-ind-h:5px;position:absolute;left:0;bottom:-6px;width:0;height:var(--nkn-ind-h);border-radius:999px;pointer-events:none;opacity:0;transform-origin:50% 50%;will-change:transform,width;',
+  '  background:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,0) 65%),var(--nkn-logo-accent);',
+  '  box-shadow:0 0 12px -1px rgba(var(--nkn-gold-rgb),.55);transition:opacity .25s ease;}',
+  '.nkn-ind.is-on{opacity:1;}',
+  '.nkn-ind.is-fx{transition:opacity .25s ease,transform .55s cubic-bezier(.68,-.55,.26,1.55),width .55s cubic-bezier(.68,-.55,.26,1.55);}',   /* only used when the Web Animations API is missing: plain spring, no squish */
   '.nkn-link:focus-visible,.nkn-d-link:focus-visible,.nkn-btn:focus-visible,.nkn-logo:focus-visible,.nkn-f-link:focus-visible{outline:2px solid var(--nkn-gold);outline-offset:3px;border-radius:6px;}',
 
   /* ---- right-hand actions ---- */
@@ -303,7 +309,7 @@
   '@media (max-width:600px){ .nkn-header{--nkn-header-r:16px;margin:0 8px;} .nkn-header .nkn-logo{--nkn-logo-h:40px;} .nkn-footer .nkn-logo{--nkn-logo-h:56px;} }',
   '@media (max-width:360px){ .nkn-header .nkn-pill{display:none;} .nkn-header .nkn-logo{--nkn-logo-h:36px;} }',
   '@media (prefers-reduced-motion:reduce){',
-  '  .nkn-header,.nkn-drawer,.nkn-overlay,.nkn-link::after,.nkn-f-link,.nkn-logo-svg,.nkn-wordmark{transition-duration:.001s !important;transition-delay:0s !important;}',
+  '  .nkn-header,.nkn-drawer,.nkn-overlay,.nkn-ind,.nkn-f-link,.nkn-logo-svg,.nkn-wordmark{transition-duration:.001s !important;transition-delay:0s !important;}',
   '  .nkn-drawer.active .nkn-d-sec{animation:none;}',
   '}'
   ].join('\n');
@@ -349,7 +355,7 @@
     return '<header class="nkn-header" id="nkn-header">' +
       '<div class="nkn-row">' +
         logoHtml(' id="nkn-logo"') +
-        '<nav class="nkn-primary" aria-label="Primary">' + links + '</nav>' +
+        '<nav class="nkn-primary" aria-label="Primary">' + links + '<span class=\"nkn-ind\" aria-hidden=\"true\"></span></nav>' +
         '<div class="nkn-actions">' +
           themePill('') +
           '<button type="button" class="nkn-btn" id="open-cart-btn" aria-label="Open cart">' + ico('cart') + '<span class="nkn-badge" id="cart-count">0</span></button>' +
@@ -827,12 +833,97 @@
     function paintScroll() { ticking = false; if (hdr) hdr.classList.toggle('is-scrolled', (window.pageYOffset || document.documentElement.scrollTop || 0) > 8); }
     window.addEventListener('scroll', function () { if (!ticking) { ticking = true; window.requestAnimationFrame(paintScroll); } }, { passive: true });
     paintScroll();
+
+    var pNav = document.querySelector('#nkn-header .nkn-primary'), pInd = pNav && pNav.querySelector('.nkn-ind');
+    if (pNav && pInd) indicatorApi = initIndicator(pNav, pInd);
+  }
+
+  /* ======================================================================
+   * 7b. ELASTIC PILL INDICATOR
+   * Follows the current page's link and previews the hovered / focused link. Position and width come from the link itself
+   * (offsetLeft / offsetWidth inside .nkn-primary), so it is exact for any label, font or breakpoint.
+   * Moving: the pill first STRETCHES toward the target (width grows to cover both links, height squashes to ~45%), then the trailing end
+   * catches up and it springs into the exact width/height of the target with cubic-bezier(.68,-.55,.26,1.55).
+   * ====================================================================== */
+  var SPRING = 'cubic-bezier(.68,-.55,.26,1.55)';
+  var indicatorApi = null;
+
+  function initIndicator(nav, ind) {
+    var reduce = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+    var canAnimate = typeof ind.animate === 'function';
+    var anim = null, placed = false, hovered = null, raf = 0;
+
+    function tf(x, sy) { return 'translateX(' + x + 'px) scaleY(' + sy + ')'; }
+    function currentLink() { return nav.querySelector('.nkn-link[aria-current="page"]') || nav.querySelector('.nkn-link.is-current'); }
+    function where() {                                   /* the pill as it is drawn right now (also mid-animation) */
+      var r = ind.getBoundingClientRect(), n = nav.getBoundingClientRect();
+      return { x: r.left - n.left, w: r.width };
+    }
+    function stop() { if (anim) { anim.cancel(); anim = null; } }
+    function put(t) { ind.style.transform = tf(t.x, 1); ind.style.width = t.w + 'px'; }
+    function hide() { stop(); placed = false; ind.classList.remove('is-on', 'is-fx'); }
+
+    function moveTo(link, animate) {
+      if (!link || !nav.offsetWidth) { hide(); return; }          /* no active link, or the bar is collapsed into the burger */
+      var t = { x: link.offsetLeft, w: link.offsetWidth };
+      if (!placed || !animate || reduce.matches) {
+        stop(); put(t); placed = true; ind.classList.add('is-on');
+        if (!canAnimate) window.requestAnimationFrame(function () { ind.classList.add('is-fx'); });
+        return;
+      }
+      var f = where();
+      if (Math.abs(f.x - t.x) < .5 && Math.abs(f.w - t.w) < .5) return;
+      if (!canAnimate) { put(t); return; }                          /* CSS spring fallback (.is-fx) */
+      stop();
+      put(t);                                                       /* final state is already in place, so the animation needs no fill */
+      var left = Math.min(f.x, t.x), right = Math.max(f.x + f.w, t.x + t.w);
+      var dur = Math.round(Math.min(760, 440 + Math.abs(t.x - f.x) * 1.1));
+      anim = ind.animate([
+        { transform: tf(f.x, 1),    width: f.w + 'px',            easing: 'cubic-bezier(.4,0,.2,1)' },     /* stretch + squash */
+        { transform: tf(left, .45), width: (right - left) + 'px', easing: SPRING, offset: .38 },           /* settle with a spring */
+        { transform: tf(t.x, 1),    width: t.w + 'px' }
+      ], { duration: dur });
+      var mine = anim;
+      mine.onfinish = mine.oncancel = function () { if (anim === mine) anim = null; };
+    }
+
+    function target() { return hovered || currentLink(); }
+    function sync(animate) { moveTo(target(), animate); }
+
+    nav.addEventListener('mouseover', function (e) { var a = e.target.closest && e.target.closest('.nkn-link'); if (a && nav.contains(a)) { hovered = a; sync(true); } });
+    nav.addEventListener('mouseleave', function () { hovered = null; sync(true); });
+    nav.addEventListener('focusin',  function (e) { var a = e.target.closest && e.target.closest('.nkn-link'); if (a) { hovered = a; sync(true); } });
+    nav.addEventListener('focusout', function (e) { if (!e.relatedTarget || !nav.contains(e.relatedTarget)) { hovered = null; sync(true); } });
+
+    function later() { if (!raf) raf = window.requestAnimationFrame(function () { raf = 0; sync(false); }); }
+    if (window.ResizeObserver) new ResizeObserver(later).observe(nav);   /* breakpoint changes, font loading, label changes */
+    window.addEventListener('resize', later);
+    window.addEventListener('load', later);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(later);
+
+    /* route change without a page load (back/forward, hash links, or NikoraNav.setRoute()): re-evaluate which link is current */
+    function reflectRoute() {
+      CURRENT = fileOf(location.pathname);
+      Array.prototype.forEach.call(nav.querySelectorAll('.nkn-link'), function (a) {
+        var st = state(a.getAttribute('href'));
+        a.classList.toggle('is-current', !!st);
+        if (st === 'page') a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+      });
+      sync(true);
+    }
+    window.addEventListener('popstate', reflectRoute);
+    window.addEventListener('hashchange', reflectRoute);
+
+    sync(false);                                                  /* first paint: placed directly, no flight from the left edge */
+    return { sync: sync, reflectRoute: reflectRoute };
   }
 
   /* ======================================================================
    * 8. PUBLIC API
    * ====================================================================== */
-  window.NikoraNav = { openMenu: openMenu, closeMenu: closeMenu, config: CONFIG, refreshSiteContent: fetchSite };
+  window.NikoraNav = { openMenu: openMenu, closeMenu: closeMenu, config: CONFIG, refreshSiteContent: fetchSite,
+    refreshIndicator: function () { if (indicatorApi) indicatorApi.sync(true); },
+    setRoute: function () { if (indicatorApi) indicatorApi.reflectRoute(); } };
   /* legacy global names used by older page code (pages' own definitions may delegate to these) */
   if (typeof window.openMobileMenu !== 'function')  window.openMobileMenu = openMenu;
   if (typeof window.closeMobileMenu !== 'function') window.closeMobileMenu = closeMenu;
