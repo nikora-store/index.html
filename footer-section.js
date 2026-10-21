@@ -1,89 +1,125 @@
-/* ==== NIKORA footer: ONLY the parts that changed in nav.js (header untouched) ====
- * 1) CSS: replace the footer rules inside the CSS array (from the "footer:" comment down to just before .nkn-f-grid) with block 1.
- * 2) JS: replace the WAVE / waveHtml block above buildFooterHtml() with block 2 (buildFooterHtml still starts with: return waveHtml() + '<div class="nkn-f-wrap">' + ...).
- * 3) JS: add watchFooterMotion() (block 3) above mountFooter(), and call  watchFooterMotion(el);  right after swapMailLinks(); at the end of mountFooter().
- * 4) In the @media (max-width:480px) rule: .nkn-footer{padding-top:calc(var(--nkn-wave-h) + 22px);}
+/* ==== NIKORA header indicator (dome): ONLY the parts that changed in nav.js ====
+ * 1) CSS: replace the old indicator rules (from the "Elastic pill indicator" comment through .nkn-ind.is-fx) with block 1.
+ *    Also set the .nkn-link padding back to  padding:6px 0  (the pill needed 9px at the bottom, the dome does not).
+ * 2) JS: replace section "7b" (everything from its comment down to just before "8. PUBLIC API") with block 2.
+ * 3) The markup is unchanged: <span class="nkn-ind-track"><span class="nkn-ind"></span></span> stays the last child of <nav class="nkn-primary">.
  */
 
 /* ---------- 1) CSS ---------- */
-  /* ---- footer: frosted glass with an asymmetric multi-layer wave top edge + two ambient glow orbs ----
-     Structure (see waveHtml()): .nkn-f-deco (decor, aria-hidden) = 2 glow orbs, glass strip clipped to the wave, glass body, SVG wave layers; .nkn-f-wrap = the content on top.
-     Gold is the fixed brand #C89B54 (--nkn-f-gold); everything else comes from the variables below, so both themes need no hardcoded white. */
-  '.nkn-footer{--nkn-f-gold:200,155,84;--nkn-f-glow2:214,140,118;--nkn-wave-h:clamp(48px,8vw,112px);',
-  '  --nkn-foot-bg:rgba(11,11,14,.045);--nkn-wave-a:.22;--nkn-wave-b:.14;--nkn-edge-a:.5;--nkn-edge-b:.26;--nkn-edge-c:.14;--nkn-glow-a:.2;--nkn-glow-b:.13;',
-  '  position:relative;isolation:isolate;display:block;width:100%;max-width:none;margin:12px 0 0;padding:calc(var(--nkn-wave-h) + 34px) 0 28px;color:var(--nkn-text);font-family:inherit;}',
-  ':root[data-theme="dark"] .nkn-footer{--nkn-foot-bg:rgba(11,11,14,.62);--nkn-wave-a:.2;--nkn-wave-b:.12;--nkn-edge-a:.42;--nkn-edge-b:.22;--nkn-edge-c:.12;--nkn-glow-a:.17;--nkn-glow-b:.11;}',
-  '.nkn-f-deco{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;}',
-  '.nkn-f-glow{position:absolute;z-index:0;aspect-ratio:1;border-radius:50%;will-change:transform,opacity;backface-visibility:hidden;',
-  '  animation:ambientGlowPulse var(--nkn-gd,15s) ease-in-out var(--nkn-gdl,0s) infinite;animation-play-state:paused;}',
-  '.nkn-f-glow-a{--nkn-gd:15s;--nkn-gx:9%;--nkn-gy:7%;left:-6%;top:0;width:clamp(260px,36vw,560px);background:radial-gradient(closest-side,rgba(var(--nkn-f-gold),var(--nkn-glow-a)),transparent);}',
-  '.nkn-f-glow-b{--nkn-gd:21s;--nkn-gdl:-8s;--nkn-gx:-10%;--nkn-gy:-8%;right:-5%;bottom:0;width:clamp(220px,30vw,460px);background:radial-gradient(closest-side,rgba(var(--nkn-f-glow2),var(--nkn-glow-b)),transparent);}',
-  '.nkn-f-glass-wave,.nkn-f-glass{position:absolute;left:0;right:0;z-index:1;background:var(--nkn-foot-bg);-webkit-backdrop-filter:blur(12px) saturate(140%);backdrop-filter:blur(12px) saturate(140%);}',
-  '.nkn-f-glass-wave{top:0;height:var(--nkn-wave-h);-webkit-clip-path:url(#nkn-wave-clip);clip-path:url(#nkn-wave-clip);}',
-  '.nkn-f-glass{top:var(--nkn-wave-h);bottom:0;}',
-  '.nkn-f-wave{position:absolute;left:0;top:0;z-index:2;display:block;width:100%;height:var(--nkn-wave-h);overflow:hidden;}',
-  /* Motion. Only whole elements are animated, and only with transform / opacity, so the browser can run it on the compositor (GPU):
-     each back wave is its own <svg> (a 5.6% overhang on both sides lets it drift sideways without ever showing an end), the two glow orbs are plain divs.
-     The front crest and the glass strip stay still: the glass is clipped to that curve and must keep registering with it. Animations only run while the
-     footer is on screen (.is-live, set by an IntersectionObserver in nav.js) and are switched off for prefers-reduced-motion. */
-  '.nkn-f-layer{left:-5.5556%;width:111.1111%;overflow:visible;transform-origin:50% 100%;will-change:transform;backface-visibility:hidden;',
-  '  animation:footerWaveFloat var(--nkn-wd,14s) ease-in-out var(--nkn-wdl,0s) infinite alternate;animation-play-state:paused;}',
-  '.nkn-f-layer-a{--nkn-wd:18s;--nkn-wdl:-7s;--nkn-wx:2.2%;--nkn-wy0:.9;--nkn-wy1:1.04;}',
-  '.nkn-f-layer-b{--nkn-wd:12s;--nkn-wdl:-3s;--nkn-wx:1.5%;--nkn-wy0:.93;--nkn-wy1:1.05;}',
-  '.nkn-footer.is-live .nkn-f-layer,.nkn-footer.is-live .nkn-f-glow{animation-play-state:running;}',
-  '@keyframes footerWaveFloat{0%{transform:translate3d(calc(var(--nkn-wx) * -1),0,0) scaleY(var(--nkn-wy0));}100%{transform:translate3d(var(--nkn-wx),0,0) scaleY(var(--nkn-wy1));}}',
-  '@keyframes ambientGlowPulse{0%,100%{opacity:.55;transform:translate3d(0,0,0) scale(.92);}50%{opacity:1;transform:translate3d(var(--nkn-gx),var(--nkn-gy),0) scale(1.08);}}',
-  '@media (prefers-reduced-motion:reduce){.nkn-f-layer,.nkn-f-glow{animation:none !important;}}',
-  '.nkn-f-wave .nkn-we{fill:none;vector-effect:non-scaling-stroke;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;}',
-  '.nkn-f-wave .nkn-we-a{stroke:rgba(var(--nkn-f-gold),var(--nkn-edge-c));}',
-  '.nkn-f-wave .nkn-we-b{stroke:rgba(var(--nkn-f-gold),var(--nkn-edge-b));}',
-  '.nkn-f-wave .nkn-we-f{stroke:rgba(var(--nkn-f-gold),var(--nkn-edge-a));}',
-  '.nkn-f-wrap{position:relative;z-index:3;max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,48px);}',
+  /* Elastic DOME indicator: a flattened semi-circle rising from the header's bottom edge, centred under the active link.
+     .nkn-ind-track = a strip along the header's bottom edge, exactly as wide as the links wrapper (Home .. Contact, +10px so the glow is not cut) that clips the dome;
+     nav.js sets its bottom/left/right and the dome's transform + width (px, from the link's offsetLeft / offsetWidth), and runs the squish-and-stretch keyframes.
+     Dome = semi-ellipse (flat bottom, round top), 7px tall, translucent gold #C89B54 with a soft glow above it. Colours are fixed brand gold with translucent highlights, so both themes work. */
+  '.nkn-primary{--nkn-dome-h:7px;position:relative;}',
+  '.nkn-ind-track{position:absolute;left:0;right:0;bottom:0;height:22px;overflow:hidden;pointer-events:none;}',
+  '.nkn-ind{position:absolute;left:0;top:0;width:0;height:100%;opacity:0;transform-origin:50% 100%;will-change:transform,width;transition:opacity .25s ease;}',
+  '.nkn-ind::before{content:"";position:absolute;left:-10px;right:-10px;bottom:0;height:100%;background:radial-gradient(ellipse 50% 100% at 50% 100%,rgba(200,155,84,.5),rgba(200,155,84,0));}',
+  '.nkn-ind::after{content:"";position:absolute;left:0;right:0;bottom:0;height:var(--nkn-dome-h);border-radius:50% 50% 0 0 / 100% 100% 0 0;',
+  '  background:linear-gradient(180deg,rgba(255,244,214,.7),rgba(255,244,214,0) 70%),rgba(200,155,84,.92);box-shadow:0 0 10px rgba(200,155,84,.55);}',
+  '.nkn-ind.is-on{opacity:1;}',
+  '.nkn-ind.is-fx{transition:opacity .25s ease,transform .55s cubic-bezier(.68,-.55,.26,1.55),width .55s cubic-bezier(.68,-.55,.26,1.55);}',   /* only used when the Web Animations API is missing: plain spring, no squish */
 
-/* ---------- 2) JS: wave builder ---------- */
-  /* Footer wave: three stacked, hand-drawn crests in one 1440 x 120 box. Asymmetric on purpose: high on the left (behind the brand block),
-     a long soft dip under the middle link columns, a gentler lift on the right. The front crest is also used (normalised to 0..1) as the clip-path of the
-     frosted-glass strip, so the glass follows the exact same curve; the two back crests are translucent gold tints that fade out downward. */
-  var WAVE = {
-    front: 'M0,40 C90,10 200,2 330,20 C470,40 560,80 740,86 C900,92 1020,70 1130,58 C1260,44 1350,40 1440,56',
-    mid:   'M0,32 C100,8 215,2 345,16 C490,32 585,74 760,80 C925,86 1030,62 1145,50 C1270,38 1355,34 1440,48',
-    back:  'M0,24 C110,2 230,-2 360,14 C510,34 600,70 780,76 C940,82 1040,56 1160,46 C1280,36 1360,32 1440,42'
-  };
-  function waveNorm(edge) { var i = 0; return edge.replace(/-?\d+(\.\d+)?/g, function (n) { return (+n / (i++ % 2 ? 120 : 1440)).toFixed(4); }); }
-  /* Extends a crest 80 units beyond both ends along its own end tangents (no kink), so a layer can drift sideways without showing its ends. */
-  function waveExt(edge) {
-    var n = edge.match(/-?\d+(?:\.\d+)?/g).map(Number), L = n.length;
-    var yl = n[1] - (n[3] - n[1]) / (n[2] - n[0]) * 80, yr = n[L - 1] + (n[L - 1] - n[L - 3]) / (n[L - 2] - n[L - 4]) * 80;
-    return 'M-80,' + yl.toFixed(1) + ' L' + edge.slice(1) + ' L1520,' + yr.toFixed(1);
-  }
-  function waveGrad(id, v) {
-    return '<linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1">' +
-      '<stop offset="0" style="stop-color:rgb(var(--nkn-f-gold));stop-opacity:var(' + v + ')"/>' +
-      '<stop offset="1" style="stop-color:rgb(var(--nkn-f-gold));stop-opacity:0"/></linearGradient>';
-  }
-  function waveHtml() {
-    var down = ' V120 H-80 Z', back = waveExt(WAVE.back), mid = waveExt(WAVE.mid);
-    function layer(cls, grad, v, d, edgeCls) {      /* one animated layer = one <svg>, so transform/opacity animate on the GPU */
-      return '<svg class="nkn-f-wave nkn-f-layer ' + cls + '" viewBox="-80 0 1600 120" preserveAspectRatio="none" focusable="false">' +
-        '<defs>' + waveGrad(grad, v) + '</defs><path d="' + d + down + '" fill="url(#' + grad + ')"/><path class="nkn-we ' + edgeCls + '" d="' + d + '"/></svg>';
+/* ---------- 2) JS ---------- */
+  /* ======================================================================
+   * 7b. ELASTIC DOME INDICATOR
+   * A flattened dome sitting on the header's bottom edge, centred under the current page's link; it previews the hovered / focused link.
+   * Position comes from the link itself (offsetLeft + offsetWidth / 2 inside .nkn-primary), so it is exact for any label, font or breakpoint, and it can
+   * only travel along the links wrapper (Home .. Contact).
+   * Moving: the dome flattens into a low, stretched wave that leans the way it is travelling (scaleY ~.32, wider, skewX), then springs back into the compact
+   * dome on the target link with cubic-bezier(.68,-.55,.26,1.55).
+   * ====================================================================== */
+  var SPRING = 'cubic-bezier(.68,-.55,.26,1.55)';
+  var DOME_W = 36;                                       /* resting width of the dome, px */
+  var DOME_PAD = 10;                                     /* the clipping strip reaches 10px past the wrapper so the glow is not cut at Home / Contact */
+  var indicatorApi = null;
+
+  function initIndicator(nav, ind) {
+    var track = ind.parentNode, hdr = document.getElementById('nkn-header');
+    var reduce = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+    var canAnimate = typeof ind.animate === 'function';
+    var anim = null, placed = false, hovered = null, raf = 0;
+    track.style.left = track.style.right = (-DOME_PAD) + 'px';
+    ind.style.left = DOME_PAD + 'px';                    /* so translateX(x) is measured from the wrapper's left edge */
+
+    function tf(x, sy, sk) { return 'translateX(' + x + 'px) scaleY(' + sy + ') skewX(' + (sk || 0) + 'deg)'; }
+    function currentLink() { return nav.querySelector('.nkn-link[aria-current="page"]') || nav.querySelector('.nkn-link.is-current'); }
+    function domeFor(link) {                             /* centred on the link's centre, kept inside the wrapper */
+      var span = nav.offsetWidth, c = link.offsetLeft + link.offsetWidth / 2;
+      return { x: Math.max(0, Math.min(span - DOME_W, c - DOME_W / 2)), w: DOME_W };
     }
-    return '<div class="nkn-f-deco" aria-hidden="true">' +
-      '<span class="nkn-f-glow nkn-f-glow-a"></span><span class="nkn-f-glow nkn-f-glow-b"></span>' +
-      '<div class="nkn-f-glass-wave"></div><div class="nkn-f-glass"></div>' +
-      layer('nkn-f-layer-a', 'nkn-wg-a', '--nkn-wave-a', back, 'nkn-we-a') +
-      layer('nkn-f-layer-b', 'nkn-wg-b', '--nkn-wave-b', mid, 'nkn-we-b') +
-      '<svg class="nkn-f-wave nkn-f-front" viewBox="0 0 1440 120" preserveAspectRatio="none" focusable="false">' +
-        '<defs><clipPath id="nkn-wave-clip" clipPathUnits="objectBoundingBox"><path d="' + waveNorm(WAVE.front) + ' V1 H0 Z"/></clipPath></defs>' +
-        '<path class="nkn-we nkn-we-f" d="' + WAVE.front + '"/></svg>' +
-    '</div>';
-  }
+    function layout() {                                  /* put the strip on the header's bottom edge, whatever the header / nav heights are */
+      if (hdr) track.style.bottom = (-(hdr.getBoundingClientRect().bottom - nav.getBoundingClientRect().bottom)) + 'px';
+    }
+    function where() {                                   /* the dome as it is drawn right now (also mid-animation) */
+      try {
+        var cs = getComputedStyle(ind), m = cs.transform === 'none' ? new DOMMatrixReadOnly() : new DOMMatrixReadOnly(cs.transform);
+        return { x: m.m41, w: parseFloat(cs.width) || 0 };
+      } catch (e) {
+        var r = ind.getBoundingClientRect(), n = nav.getBoundingClientRect();
+        return { x: r.left - n.left - DOME_PAD, w: r.width };
+      }
+    }
+    function stop() { if (anim) { anim.cancel(); anim = null; } }
+    function put(t) { ind.style.transform = tf(t.x, 1, 0); ind.style.width = t.w + 'px'; }
+    function hide() { stop(); placed = false; ind.classList.remove('is-on', 'is-fx'); }
 
+    function moveTo(link, animate) {
+      if (!link || !nav.offsetWidth) { hide(); return; }          /* no active link, or the bar is collapsed into the burger */
+      layout();
+      var t = domeFor(link);
+      if (!placed || !animate || reduce.matches) {
+        stop(); put(t); placed = true; ind.classList.add('is-on');
+        if (!canAnimate) window.requestAnimationFrame(function () { ind.classList.add('is-fx'); });
+        return;
+      }
+      var f = where();
+      if (Math.abs(f.x - t.x) < .5 && Math.abs(f.w - t.w) < .5) return;
+      if (!canAnimate) { put(t); return; }                          /* CSS spring fallback (.is-fx) */
+      stop();
+      put(t);                                                       /* final state is already in place, so the animation needs no fill */
+      /* Mid-flight shape: a low, stretched wave. Wider than the dome by 60% of the distance (max 70px), centred 45% of the way to the target,
+         clamped to the links wrapper, squashed to 32% height and leaning (skewX) in the direction of travel. */
+      var span = nav.offsetWidth, dist = Math.abs(t.x - f.x), dir = t.x >= f.x ? 1 : -1;
+      var sw = Math.min(span, Math.max(f.w, t.w) + Math.min(dist * 0.6, 70));
+      var mc = (f.x + f.w / 2) + ((t.x + t.w / 2) - (f.x + f.w / 2)) * 0.45;
+      var left = Math.max(0, Math.min(span - sw, mc - sw / 2));
+      var dur = Math.round(Math.min(760, 440 + dist * 1.1));
+      anim = ind.animate([
+        { transform: tf(f.x, 1, 0),            width: f.w + 'px', easing: 'cubic-bezier(.4,0,.2,1)' },     /* flatten + stretch */
+        { transform: tf(left, .32, dir * 16),  width: sw + 'px',  easing: SPRING, offset: .38 },           /* spring back into the dome */
+        { transform: tf(t.x, 1, 0),            width: t.w + 'px' }
+      ], { duration: dur });
+      var mine = anim;
+      mine.onfinish = mine.oncancel = function () { if (anim === mine) anim = null; };
+    }
 
-/* ---------- 3) JS: pause motion when the footer is off screen ---------- */
-  function watchFooterMotion(el) {                      /* animations run only while the footer is (nearly) on screen: saves battery and GPU on phones */
-    if (el._nkWatch) return; el._nkWatch = true;
-    if (!('IntersectionObserver' in window)) { el.classList.add('is-live'); return; }
-    new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) { el.classList.toggle('is-live', e.isIntersecting); });
-    }, { rootMargin: '120px 0px' }).observe(el);
+    function target() { return hovered || currentLink(); }
+    function sync(animate) { moveTo(target(), animate); }
+
+    nav.addEventListener('mouseover', function (e) { var a = e.target.closest && e.target.closest('.nkn-link'); if (a && nav.contains(a)) { hovered = a; sync(true); } });
+    nav.addEventListener('mouseleave', function () { hovered = null; sync(true); });
+    nav.addEventListener('focusin',  function (e) { var a = e.target.closest && e.target.closest('.nkn-link'); if (a) { hovered = a; sync(true); } });
+    nav.addEventListener('focusout', function (e) { if (!e.relatedTarget || !nav.contains(e.relatedTarget)) { hovered = null; sync(true); } });
+
+    function later() { if (!raf) raf = window.requestAnimationFrame(function () { raf = 0; sync(false); }); }
+    if (window.ResizeObserver) { var ro = new ResizeObserver(later); ro.observe(nav); if (hdr) ro.observe(hdr); }   /* breakpoints, font loading, label / header height changes */
+    window.addEventListener('resize', later);
+    window.addEventListener('load', later);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(later);
+
+    /* route change without a page load (back/forward, hash links, or NikoraNav.setRoute()): re-evaluate which link is current */
+    function reflectRoute() {
+      CURRENT = fileOf(location.pathname);
+      Array.prototype.forEach.call(nav.querySelectorAll('.nkn-link'), function (a) {
+        var st = state(a.getAttribute('href'));
+        a.classList.toggle('is-current', !!st);
+        if (st === 'page') a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+      });
+      sync(true);
+    }
+    window.addEventListener('popstate', reflectRoute);
+    window.addEventListener('hashchange', reflectRoute);
+
+    sync(false);                                                  /* first paint: placed directly, no flight from the left edge */
+    return { sync: sync, reflectRoute: reflectRoute };
   }
