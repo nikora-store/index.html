@@ -14,8 +14,8 @@
 })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Science — NIKORA | Red Light &amp; EMS Technology</title>
-<meta name="description" content="How NIKORA's 630nm Red Light Therapy, EMS Microcurrents and therapeutic warmth revitalize skin in 5-minute daily routines.">
+<title>The Science — NIKORA | 630nm Red Light, EMS &amp; Skincare Synergy</title>
+<meta name="description" content="How NIKORA's 630nm red light and EMS microcurrents work with Snail Mucin, Centella Asiatica and other K-Beauty actives for a visible glow.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -31,8 +31,8 @@
   --text:#1A1615;
   --text-soft: rgba(26,22,21,0.62);
   --text-faint: rgba(26,22,21,0.4);
-  --gold:#C59B56;
-  --gold-rgb:197,155,86;
+  --gold:#C89B54;
+  --gold-rgb:200,155,84;
   --rose:#D81E5B;
   --rose-rgb:216,30,91;
   --line: rgba(26,22,21,0.1);
@@ -42,15 +42,15 @@
   color-scheme: light;
 }
 [data-theme="dark"]{
-  --canvas:#0D0B12;
-  --canvas-rgb:13,11,18;
+  --canvas:#0B0B0E;
+  --canvas-rgb:11,11,14;
   --card-bg: rgba(25,20,32,0.55);
   --card-border: rgba(255,255,255,0.08);
   --text:#F7F4F0;
   --text-soft: rgba(247,244,240,0.64);
   --text-faint: rgba(247,244,240,0.38);
-  --gold:#E5BA73;
-  --gold-rgb:229,186,115;
+  --gold:#D4A95F;
+  --gold-rgb:212,169,95;
   --rose:#FF527B;
   --rose-rgb:255,82,123;
   --line: rgba(255,255,255,0.09);
@@ -75,7 +75,7 @@ body {
   transition:color .4s ease;
 }
 [data-theme="dark"] body {
-  background: linear-gradient(-45deg, #0D0B12, #170E1B, #2A0F1D, #0D0B12);
+  background: linear-gradient(-45deg, #0B0B0E, #170E1B, #2A0F1D, #0B0B0E);
   background-size: 400% 400%;
   animation: gradientShift 12s ease infinite;
 }
@@ -704,7 +704,69 @@ h1.sci-title em{font-style:italic; color:var(--gold);}
 .cta-fine{display:block; margin-top:18px; font-size:12px; color:var(--text-faint);}
 .cta-banner .btn-primary{padding:18px 36px;}
 
+
+/* ---------------- MECHANISMS / SPECTRUM / SYNERGY ---------------- */
+.mech-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; align-items:start;}
+.mech-card{padding:0; overflow:hidden;}
+.mech-btn{width:100%; text-align:left; background:none; border:none; color:var(--text); padding:24px 22px 20px; display:flex; flex-direction:column; gap:12px;}
+.mech-top{display:flex; align-items:center; justify-content:space-between;}
+.mech-chev{width:18px; height:18px; stroke:var(--text-faint); fill:none; stroke-width:2.2; stroke-linecap:round; transition:transform .25s ease;}
+.mech-btn[aria-expanded="true"] .mech-chev{transform:rotate(180deg);}
+.mech-btn h3{margin:0; font-family:'Playfair Display',serif; font-weight:500; font-size:19px;}
+.mech-btn p{margin:0; font-size:13px; line-height:1.55; color:var(--text-soft);}
+.mech-more{padding:0 22px 22px; font-size:13px; line-height:1.65; color:var(--text-soft); border-top:1px dashed var(--line); margin:0 22px; padding:14px 0 22px;}
+.mech-more b{color:var(--text);}
+.spec-card{padding:clamp(22px,3vw,36px); border-radius:28px;}
+.sp-svg{width:100%; height:auto; display:block;}
+.sp-axis{font-family:'Montserrat',sans-serif; font-size:10px; fill:var(--text-faint); font-weight:600;}
+.sp-mark circle{fill:var(--card-bg); stroke:var(--text-faint); stroke-width:2; transition:all .25s ease;}
+.sp-mark.on circle{fill:var(--gold); stroke:var(--gold); r:9;}
+.sp-mark line{stroke:var(--text-faint); stroke-width:1; stroke-dasharray:3 3;}
+.sp-mark.on line{stroke:var(--gold);}
+.sp-chips{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:18px 0 16px;}
+@media (max-width:640px){ .sp-chips{grid-template-columns:repeat(2,1fr);} }
+.sp-chip{text-align:left; padding:12px 14px; border-radius:16px; background:var(--card-bg); border:1px solid var(--line); color:var(--text); font-family:inherit; transition:border-color .25s ease, background .25s ease;}
+.sp-chip b{display:block; font-family:'Playfair Display',serif; font-size:19px; color:var(--gold);}
+.sp-chip span{font-size:10.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--text-soft);}
+.sp-chip[aria-selected="true"]{border-color:var(--gold); background:rgba(var(--gold-rgb),.14);}
+.sp-depth{height:8px; border-radius:100px; background:var(--line); overflow:hidden; margin:10px 0 8px;}
+.sp-depth i{display:block; height:100%; width:20%; background:linear-gradient(90deg,var(--gold),var(--rose)); transition:width .6s cubic-bezier(.2,.8,.2,1);}
+.sp-read{font-size:14px; line-height:1.65; color:var(--text-soft); margin:0;}
+.sp-read strong{color:var(--text);}
+.syn-grid{display:grid; grid-template-columns:1fr 1fr; gap:clamp(24px,4vw,48px); align-items:center; padding:clamp(22px,3.4vw,40px); border-radius:28px; margin-bottom:22px;}
+@media (max-width:860px){ .syn-grid{grid-template-columns:1fr;} }
+.syn-stage{position:relative; aspect-ratio:4/3; border-radius:22px; overflow:hidden; background:linear-gradient(160deg,#F2E9DC,#E2D2B8); border:1px solid var(--card-border);}
+[data-theme="dark"] .syn-stage{background:linear-gradient(160deg,#241a2e,#150f1e);}
+.syn-stage svg{position:absolute; inset:0; width:100%; height:100%;}
+.sy-scene{opacity:0; transition:opacity .5s ease;}
+.sy-scene.on{opacity:1;}
+.sy-layer{fill:rgba(var(--gold-rgb),.14); stroke:var(--gold); stroke-width:1.4;}
+.sy-layer.d{fill:rgba(var(--rose-rgb),.1);}
+.sy-drop{fill:var(--gold); animation:syDrop 2.6s ease-in infinite;}
+.sy-drop:nth-of-type(2n){animation-delay:.9s; fill:var(--rose);}
+.sy-drop:nth-of-type(3n){animation-delay:1.7s;}
+@keyframes syDrop{0%{transform:translateY(-14px); opacity:0;} 25%{opacity:1;} 100%{transform:translateY(58px); opacity:0;}}
+.sy-lbl{font-family:'Montserrat',sans-serif; font-size:10px; font-weight:600; letter-spacing:.06em; fill:var(--text-soft); text-transform:uppercase;}
+.syn-steps{display:grid; gap:10px;}
+.syn-step{display:flex; gap:14px; align-items:flex-start; text-align:left; padding:14px 16px; border-radius:16px; background:var(--card-bg); border:1px solid var(--line); color:var(--text); font-family:inherit; transition:border-color .25s ease, background .25s ease;}
+.syn-step i{flex:none; width:30px; height:30px; border-radius:50%; display:grid; place-items:center; font-style:normal; font-weight:700; font-size:13px; background:rgba(var(--gold-rgb),.16); color:var(--gold);}
+.syn-step b{display:block; font-size:14.5px; margin-bottom:2px;}
+.syn-step span{font-size:12.5px; line-height:1.5; color:var(--text-soft);}
+.syn-step[aria-selected="true"]{border-color:var(--gold); background:rgba(var(--gold-rgb),.12);}
+.syn-step[aria-selected="true"] i{background:var(--gold); color:#241c0f;}
+.syn-prods{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px;}
+.syn-prod{display:block; padding:20px 20px 18px;}
+.syn-prod small{display:block; font-size:10.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--gold); margin-bottom:6px;}
+.syn-prod h3{margin:0 0 6px; font-family:'Playfair Display',serif; font-weight:500; font-size:17px; line-height:1.3;}
+.syn-prod p{margin:0; font-size:12.5px; line-height:1.55; color:var(--text-soft);}
+.syn-prods[aria-busy="true"] .syn-prod{opacity:.55;}
+.syn-skel{min-height:132px; border-radius:22px; background:linear-gradient(90deg,var(--card-bg),rgba(var(--gold-rgb),.12),var(--card-bg)); background-size:200% 100%; animation:synSkel 1.6s ease-in-out infinite;}
+@keyframes synSkel{to{background-position:-200% 0;}}
+.syn-note{font-size:12.5px; line-height:1.6; color:var(--text-soft); margin:20px 0 0; text-align:center;}
+.metric-num.txt{font-size:clamp(34px,4vw,48px);}
+
 @media (prefers-reduced-motion: reduce){
+  .sy-drop,.syn-skel{animation:none !important;}
   .sv-ring,.sv-halo,.sv-pulse-track,.art-anim-a,.art-anim-b,.art-flow{animation:none !important;}
   html.js-on .reveal{opacity:1; transform:none; transition:none;}
 }
@@ -722,8 +784,8 @@ h1.sci-title em{font-style:italic; color:var(--gold);}
 
       <div class="sci-copy">
         <span class="sci-eyebrow reveal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6.2L4.6 18.4A2 2 0 006.3 21.5h11.4a2 2 0 001.7-3.1L14 9.2V3"/><path d="M7.5 14h9"/></svg>The NIKORA Science</span>
-        <h1 class="sci-title reveal" id="sci-h1">Engineered for <em>Visible Glow.</em> Backed by Clinical Science.</h1>
-        <p class="sci-sub reveal">Discover how 630nm Red Light Therapy and EMS Microcurrents revitalize cellular regeneration in 5-minute daily routines.</p>
+        <h1 class="sci-title reveal" id="sci-h1">Engineered for <em>Visible Glow.</em> Powered by Light, Current &amp; Actives.</h1>
+        <p class="sci-sub reveal">The NIKORA Beauty Tech wand pairs 630nm red light with EMS microcurrents, then works with Snail Mucin, Centella and other K-Beauty actives in a 5-minute daily ritual.</p>
         <div class="sci-ctas reveal">
           <a class="btn-primary" href="catalog.html">Explore Devices <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
           <a class="btn-ghost" href="#technologies">How it works</a>
@@ -765,13 +827,12 @@ h1.sci-title em{font-style:italic; color:var(--gold);}
               <text class="sv-text" x="18" y="30">EMS microcurrent</text>
             </g>
 
-            <!-- scene 3: non-invasive & UV-free -->
+            <!-- scene 3: skincare synergy -->
             <g class="sv-scene" data-scene="2">
-              <circle class="sv-halo" cx="200" cy="150" r="88"/>
-              <circle class="sv-halo" cx="200" cy="150" r="88" style="animation-delay:2s"/>
-              <path class="sv-shield" d="M200 58 L272 88 V150 C272 196 238 226 200 244 C162 226 128 196 128 150 V88 Z"/>
-              <path class="sv-check" d="M168 152 L192 176 L236 126"/>
-              <text class="sv-text" x="18" y="30">Gentle by design</text>
+              <path class="sy-layer" d="M40 140 H360 V170 H40Z"/><path class="sy-layer" d="M40 170 H360 V215 H40Z"/><path class="sy-layer d" d="M40 215 H360 V262 H40Z"/>
+              <path class="sv-wave" d="M60 120 H340"/>
+              <circle class="sy-drop" cx="110" cy="130" r="5"/><circle class="sy-drop" cx="170" cy="130" r="5"/><circle class="sy-drop" cx="230" cy="130" r="5"/><circle class="sy-drop" cx="290" cy="130" r="5"/>
+              <text class="sv-text" x="18" y="30">Absorption support</text>
             </g>
           </svg>
           <div class="sv-readout">
@@ -780,12 +841,12 @@ h1.sci-title em{font-style:italic; color:var(--gold);}
           </div>
         </div>
 
-        <p class="sv-desc" id="sv-desc">Deep-red 630nm light energizes the cells that build collagen and elastin.</p>
+        <p class="sv-desc" id="sv-desc">Clinical-range 630nm red light energizes the cells that build collagen and elastin.</p>
 
         <div class="sv-chips" role="tablist" aria-label="Key technology stats">
           <button type="button" class="sv-chip" role="tab" data-i="0" aria-selected="true"><b>630nm</b><span>Wave Range</span></button>
           <button type="button" class="sv-chip" role="tab" data-i="1" aria-selected="false"><b>3.3Hz</b><span>EMS Pulse</span></button>
-          <button type="button" class="sv-chip" role="tab" data-i="2" aria-selected="false"><b>100%</b><span>Non-Invasive</span></button>
+          <button type="button" class="sv-chip" role="tab" data-i="2" aria-selected="false"><b>Synergy</b><span>Wand + Actives</span></button>
         </div>
       </div>
 
@@ -797,8 +858,8 @@ h1.sci-title em{font-style:italic; color:var(--gold);}
     <div class="container">
       <div class="section-head reveal">
         <div>
-          <h2 id="tech-h2">Three technologies. <em>One ritual.</em></h2>
-          <p>Each NIKORA device layers proven technologies so a five-minute routine does the work of an appointment. Select a pillar to explore it.</p>
+          <h2 id="tech-h2">Three technologies. <em>One glow ritual.</em></h2>
+          <p>The NIKORA Electroporation &amp; LED Skin Booster Wand layers red light and microcurrents, then amplifies your K-Beauty routine. Select a pillar to explore it.</p>
         </div>
       </div>
 
@@ -806,20 +867,20 @@ h1.sci-title em{font-style:italic; color:var(--gold);}
         <button type="button" class="glass-card pillar-tab reveal" role="tab" id="tab-light" aria-controls="panel-light" aria-selected="true" data-pillar="light">
           <span class="pillar-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></span>
           <span class="pillar-num">Pillar 01</span>
-          <span class="pillar-name">Red Light Phototherapy</span>
-          <span class="pillar-tag">Collagen stimulation and visible wrinkle reduction.</span>
+          <span class="pillar-name">630nm Red Light</span>
+          <span class="pillar-tag">Collagen support and cellular energy.</span>
         </button>
         <button type="button" class="glass-card pillar-tab reveal" role="tab" id="tab-ems" aria-controls="panel-ems" aria-selected="false" data-pillar="ems" tabindex="-1">
           <span class="pillar-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h4l2.5-7 4 14 3-9 1.5 2H22"/></svg></span>
           <span class="pillar-num">Pillar 02</span>
           <span class="pillar-name">EMS Microcurrents</span>
-          <span class="pillar-tag">Facial muscle toning and a more lifted look.</span>
+          <span class="pillar-tag">Muscle toning and enhanced microcirculation.</span>
         </button>
-        <button type="button" class="glass-card pillar-tab reveal" role="tab" id="tab-warmth" aria-controls="panel-warmth" aria-selected="false" data-pillar="warmth" tabindex="-1">
+        <button type="button" class="glass-card pillar-tab reveal" role="tab" id="tab-synergy" aria-controls="panel-synergy" aria-selected="false" data-pillar="synergy" tabindex="-1">
           <span class="pillar-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s6 6.2 6 10.5A6 6 0 016 13.5C6 9.2 12 3 12 3z"/><path d="M9.5 14.5a2.5 2.5 0 002.5 2.5"/></svg></span>
           <span class="pillar-num">Pillar 03</span>
-          <span class="pillar-name">Therapeutic Warmth &amp; Sonic Massage</span>
-          <span class="pillar-tag">Lymphatic drainage and deeper serum absorption.</span>
+          <span class="pillar-name">Skincare Synergy</span>
+          <span class="pillar-tag">Warmth + current help actives absorb.</span>
         </button>
       </div>
 
@@ -827,15 +888,15 @@ h1.sci-title em{font-style:italic; color:var(--gold);}
       <div class="glass-card pillar-panel reveal" role="tabpanel" id="panel-light" aria-labelledby="tab-light">
         <div class="pp-grid">
           <div>
-            <div class="pp-kicker">Red Light Phototherapy &middot; 630nm</div>
+            <div class="pp-kicker">Clinical Red Light &middot; 630nm</div>
             <h3 class="pp-title">Wake up the cells that <em>build collagen.</em></h3>
-            <p class="pp-text">Low-level red light at 630nm reaches the upper layers of skin and energizes fibroblasts, the cells responsible for collagen and elastin. With consistent use, skin looks firmer, smoother and more even.</p>
+            <p class="pp-text">630nm red light reaches the epidermis and upper dermis, where mitochondria absorb it to produce more ATP. Fibroblasts with more energy make more collagen and elastin, so with consistent use skin looks firmer, smoother and more even.</p>
             <ul class="pp-list">
-              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Stimulates collagen and elastin production</li>
-              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Visibly softens fine lines and wrinkles</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Stimulates collagen synthesis and elastin production</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Boosts ATP, the cell&rsquo;s own energy currency</li>
               <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Restores a more radiant, even-looking complexion</li>
             </ul>
-            <div class="pp-specs"><span class="pp-spec">630nm wavelength</span><span class="pp-spec">5 min / day</span><span class="pp-spec">UV-free</span></div>
+            <div class="pp-specs"><span class="pp-spec">630nm wavelength</span><span class="pp-spec">ATP boost</span><span class="pp-spec">UV-free</span></div>
           </div>
           <div class="pp-art" aria-hidden="true">
             <svg viewBox="0 0 240 240" focusable="false">
@@ -859,13 +920,13 @@ h1.sci-title em{font-style:italic; color:var(--gold);}
           <div>
             <div class="pp-kicker">EMS Microcurrents &middot; 3.3Hz</div>
             <h3 class="pp-title">A workout for your face, <em>without effort.</em></h3>
-            <p class="pp-text">Gentle microcurrents echo the body&rsquo;s own bioelectric signals, helping facial muscles contract and release. The result is better tone and a lifted, defined contour with no needles and no downtime.</p>
+            <p class="pp-text">Gentle microcurrents echo the body&rsquo;s own bioelectric signals, prompting facial muscles to contract and release for better tone. The same stimulation encourages microcirculation, bringing fresh oxygen and nutrients to the skin.</p>
             <ul class="pp-list">
               <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tones and lifts facial muscles</li>
-              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Defines the jawline and cheek contours</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Enhances microcirculation for a fresher-looking glow</li>
               <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Comfortable, non-invasive sensation</li>
             </ul>
-            <div class="pp-specs"><span class="pp-spec">3.3Hz pulse</span><span class="pp-spec">Non-invasive</span><span class="pp-spec">No downtime</span></div>
+            <div class="pp-specs"><span class="pp-spec">3.3Hz pulse</span><span class="pp-spec">Microcirculation</span><span class="pp-spec">Non-invasive</span></div>
           </div>
           <div class="pp-art" aria-hidden="true">
             <svg viewBox="0 0 240 240" focusable="false">
@@ -883,32 +944,106 @@ h1.sci-title em{font-style:italic; color:var(--gold);}
       </div>
 
       <!-- panel 3 -->
-      <div class="glass-card pillar-panel" role="tabpanel" id="panel-warmth" aria-labelledby="tab-warmth" hidden>
+      <div class="glass-card pillar-panel" role="tabpanel" id="panel-synergy" aria-labelledby="tab-synergy" hidden>
         <div class="pp-grid">
           <div>
-            <div class="pp-kicker">Therapeutic Warmth &amp; Sonic Massage</div>
-            <h3 class="pp-title">Release, drain and <em>absorb.</em></h3>
-            <p class="pp-text">Soothing warmth relaxes the skin while sonic vibrations encourage lymphatic flow, easing the look of puffiness and helping your serums absorb more effectively into the skin.</p>
+            <div class="pp-kicker">Skincare Synergy &middot; Wand + Actives</div>
+            <h3 class="pp-title">Prepare the skin, then <em>feed it.</em></h3>
+            <p class="pp-text">Gentle LED warmth and EMS microcurrents temporarily make skin more receptive, so water-based essences and ampoules such as Snail Mucin and Centella Asiatica can be taken up more effectively.</p>
             <ul class="pp-list">
-              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Encourages lymphatic drainage</li>
-              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Helps serums absorb deeper</li>
-              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Relaxes facial tension and reduces the look of puffiness</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Warmth relaxes the surface and boosts local blood flow</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Microcurrents temporarily improve how actives travel into skin</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Pairs with hydrating, soothing and barrier-care formulas</li>
             </ul>
-            <div class="pp-specs"><span class="pp-spec">Gentle warmth</span><span class="pp-spec">Sonic vibration</span><span class="pp-spec">Serum-ready</span></div>
+            <div class="pp-specs"><span class="pp-spec">LED warmth</span><span class="pp-spec">EMS microcurrents</span><span class="pp-spec">Water-based actives</span></div>
           </div>
           <div class="pp-art" aria-hidden="true">
             <svg viewBox="0 0 240 240" focusable="false">
-              <path class="art-fill" d="M120 36 C120 36 176 98 176 134 A56 56 0 0 1 64 134 C64 98 120 36 120 36 Z"/>
-              <path class="art-s" d="M92 138 A28 28 0 0 0 120 166"/>
-              <path class="art-r art-flow" d="M34 108 Q16 136 34 164"/>
-              <path class="art-r art-flow" d="M16 92 Q-6 136 16 180"/>
-              <path class="art-r art-flow" d="M206 108 Q224 136 206 164"/>
-              <path class="art-r art-flow" d="M224 92 Q246 136 224 180"/>
-              <circle class="art-s art-anim-a" cx="120" cy="134" r="40"/>
+              <path class="art-fill" d="M120 30 C120 30 164 80 164 108 A44 44 0 0 1 76 108 C76 80 120 30 120 30 Z"/>
+              <path class="art-fill-r" d="M0 168 H240 V200 H0Z"/><path class="art-s" d="M0 200 H240 M0 232 H240"/>
+              <path class="art-r art-flow" d="M90 172 V228 M120 172 V228 M150 172 V228"/>
+              <circle class="art-s art-anim-a" cx="120" cy="108" r="30"/>
             </svg>
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ================= 2b. MECHANISMS ================= -->
+  <section class="section" id="mechanisms" aria-labelledby="mech-h2" style="padding-top:clamp(30px,4vw,50px);">
+    <div class="container">
+      <div class="section-head reveal"><div><h2 id="mech-h2">What happens <em>inside the skin.</em></h2><p>Four physiological mechanisms behind the glow. Tap a card to see how each one works.</p></div></div>
+      <div class="mech-grid" id="mech-grid">
+        <article class="glass-card mech-card reveal"><button type="button" class="mech-btn" aria-expanded="false" aria-controls="mech-1"><span class="mech-top"><span class="pillar-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8c4-4 12-4 16 0M4 16c4 4 12 4 16 0M7 12h10"/></svg></span><svg class="mech-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span><h3>Collagen Synthesis</h3><p>Red light signals fibroblasts to build collagen and elastin.</p></button><div class="mech-more" id="mech-1" hidden><b>How:</b> 630nm photons are absorbed in the skin, switching on fibroblasts. More active fibroblasts produce collagen and elastin, the proteins behind firm, bouncy-looking skin.</div></article>
+        <article class="glass-card mech-card reveal"><button type="button" class="mech-btn" aria-expanded="false" aria-controls="mech-2"><span class="mech-top"><span class="pillar-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></span><svg class="mech-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span><h3>ATP Cellular Energy</h3><p>More energy for skin cells to repair and renew.</p></button><div class="mech-more" id="mech-2" hidden><b>How:</b> Light is absorbed by an enzyme in the mitochondria (cytochrome c oxidase), which helps cells make more ATP. Energized cells carry out repair and renewal more efficiently.</div></article>
+        <article class="glass-card mech-card reveal"><button type="button" class="mech-btn" aria-expanded="false" aria-controls="mech-3"><span class="mech-top"><span class="pillar-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h4l2.5-7 4 14 3-9 1.5 2H22"/></svg></span><svg class="mech-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span><h3>Facial Muscle Toning</h3><p>Microcurrents train muscles for a lifted, defined look.</p></button><div class="mech-more" id="mech-3" hidden><b>How:</b> Low-level EMS pulses mimic the body&rsquo;s bioelectric signals so facial muscles contract and release, like a light workout that improves tone and contour.</div></article>
+        <article class="glass-card mech-card reveal"><button type="button" class="mech-btn" aria-expanded="false" aria-controls="mech-4"><span class="mech-top"><span class="pillar-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s6 6.2 6 10.5A6 6 0 016 13.5C6 9.2 12 3 12 3z"/></svg></span><svg class="mech-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span><h3>Enhanced Microcirculation</h3><p>Warmth and current bring fresh blood flow to the skin.</p></button><div class="mech-more" id="mech-4" hidden><b>How:</b> LED warmth and muscle activation widen tiny capillaries, delivering more oxygen and nutrients and helping clear metabolic waste, which gives a fresher, more radiant look.</div></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 2c. WAVELENGTH CHART ================= -->
+  <section class="section" id="spectrum" aria-labelledby="sp-h2" style="padding-top:clamp(30px,4vw,50px);">
+    <div class="container">
+      <div class="section-head reveal"><div><h2 id="sp-h2">Why <em>630nm?</em></h2><p>Different wavelengths reach different depths. Select one to compare. NIKORA uses 630nm red light and no UV.</p></div></div>
+      <div class="glass-card spec-card reveal" id="sp-card">
+        <svg class="sp-svg" viewBox="0 0 640 130" role="img" aria-label="Light spectrum from 380 to 900 nanometres with 630nm highlighted">
+          <defs><linearGradient id="spGrad" x1="0" x2="1"><stop offset="0" stop-color="#6b3fd4"/><stop offset=".22" stop-color="#2f6fe0"/><stop offset=".45" stop-color="#2fbf6b"/><stop offset=".62" stop-color="#e8d23a"/><stop offset=".8" stop-color="#f08a2c"/><stop offset="1" stop-color="#d81e1e"/></linearGradient>
+          <pattern id="spNir" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="rgba(128,128,128,.12)"/><rect width="2" height="8" fill="rgba(128,128,128,.3)"/></pattern></defs>
+          <rect x="0" y="52" width="394" height="26" rx="6" fill="url(#spGrad)"/><rect x="394" y="52" width="246" height="26" rx="6" fill="url(#spNir)"/>
+          <g class="sp-mark on" data-i="0"><line x1="86" y1="20" x2="86" y2="52"/><circle cx="86" cy="18" r="6"/></g>
+          <g class="sp-mark" data-i="1"><line x1="185" y1="20" x2="185" y2="52"/><circle cx="185" cy="18" r="6"/></g>
+          <g class="sp-mark" data-i="2"><line x1="308" y1="20" x2="308" y2="52"/><circle cx="308" cy="18" r="6"/></g>
+          <g class="sp-mark" data-i="3"><line x1="554" y1="20" x2="554" y2="52"/><circle cx="554" cy="18" r="6"/></g>
+          <text class="sp-axis" x="0" y="100">380nm</text><text class="sp-axis" x="150" y="100">500nm</text><text class="sp-axis" x="273" y="100">600nm</text><text class="sp-axis" x="394" y="100">700nm</text><text class="sp-axis" x="590" y="100">900nm</text>
+          <text class="sp-axis" x="0" y="122">Visible light</text><text class="sp-axis" x="460" y="122">Near-infrared</text>
+        </svg>
+        <div class="sp-chips" role="tablist" aria-label="Wavelengths">
+          <button type="button" class="sp-chip" role="tab" data-i="0" aria-selected="true"><b>450nm</b><span>Blue</span></button>
+          <button type="button" class="sp-chip" role="tab" data-i="1" aria-selected="false"><b>530nm</b><span>Green</span></button>
+          <button type="button" class="sp-chip" role="tab" data-i="2" aria-selected="false"><b>630nm</b><span>Red &middot; NIKORA</span></button>
+          <button type="button" class="sp-chip" role="tab" data-i="3" aria-selected="false"><b>830nm</b><span>Near-infrared</span></button>
+        </div>
+        <div class="sp-cap sv-cap">Relative skin depth (illustrative)</div>
+        <div class="sp-depth"><i id="sp-bar"></i></div>
+        <p class="sp-read" id="sp-read"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 2d. SKINCARE SYNERGY ================= -->
+  <section class="section" id="synergy" aria-labelledby="syn-h2" style="padding-top:clamp(30px,4vw,50px);">
+    <div class="container">
+      <div class="section-head reveal"><div><h2 id="syn-h2">The science of <em>synergy.</em></h2><p>Warmth and microcurrents temporarily open the way, so your actives can do more. Step through the ritual.</p></div></div>
+      <div class="glass-card syn-grid reveal" id="syn-card">
+        <div class="syn-stage" aria-hidden="true">
+          <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" focusable="false">
+            <path class="sy-layer" d="M30 150 H370 V180 H30Z"/><path class="sy-layer" d="M30 180 H370 V225 H30Z"/><path class="sy-layer d" d="M30 225 H370 V272 H30Z"/>
+            <text class="sy-lbl" x="40" y="169">Surface barrier</text><text class="sy-lbl" x="40" y="206">Epidermis</text><text class="sy-lbl" x="40" y="252">Dermis</text>
+            <g class="sy-scene on" data-s="0"><path class="art-s" d="M30 148 H370"/><circle class="sy-drop" cx="120" cy="120" r="5"/><circle class="sy-drop" cx="280" cy="120" r="5"/><text class="sy-lbl" x="30" y="40">Prep: toner calms the surface</text></g>
+            <g class="sy-scene" data-s="1"><path class="art-s" d="M30 148 H370"/><circle class="sy-drop" cx="90" cy="120" r="5"/><circle class="sy-drop" cx="150" cy="120" r="5"/><circle class="sy-drop" cx="210" cy="120" r="5"/><circle class="sy-drop" cx="270" cy="120" r="5"/><circle class="sy-drop" cx="330" cy="120" r="5"/><text class="sy-lbl" x="30" y="40">Infuse: a water-based essence</text></g>
+            <g class="sy-scene" data-s="2"><rect class="art-fill-r" x="130" y="76" width="140" height="16" rx="8"/><path class="art-r art-flow" d="M160 96 V145 M200 96 V145 M240 96 V145"/><circle class="sy-drop" cx="110" cy="130" r="5"/><circle class="sy-drop" cx="170" cy="130" r="5"/><circle class="sy-drop" cx="230" cy="130" r="5"/><circle class="sy-drop" cx="290" cy="130" r="5"/><circle class="art-r art-anim-a" cx="200" cy="165" r="40"/><text class="sy-lbl" x="30" y="40">Activate: 630nm + EMS</text></g>
+            <g class="sy-scene" data-s="3"><path class="art-s" d="M30 144 H370" style="stroke-width:5"/><text class="sy-lbl" x="30" y="40">Seal: cream locks it in</text></g>
+          </svg>
+        </div>
+        <div class="syn-steps" role="tablist" aria-label="Synergy ritual steps">
+          <button type="button" class="syn-step" role="tab" data-s="0" aria-selected="true"><i>1</i><div><b>Prep</b><span>Cleanse, then pat on a calming toner such as Anua Heartleaf 77%.</span></div></button>
+          <button type="button" class="syn-step" role="tab" data-s="1" aria-selected="false"><i>2</i><div><b>Infuse</b><span>Smooth on a water-based essence or ampoule, such as COSRX Snail 96 Mucin or Skin1004 Centella. It also lets the wand glide.</span></div></button>
+          <button type="button" class="syn-step" role="tab" data-s="2" aria-selected="false"><i>3</i><div><b>Activate</b><span>Glide the wand for about 5 minutes. LED warmth and EMS microcurrents temporarily make skin more receptive.</span></div></button>
+          <button type="button" class="syn-step" role="tab" data-s="3" aria-selected="false"><i>4</i><div><b>Seal</b><span>Lock in with Round Lab Birch Juice cream, and finish mornings with Beauty of Joseon SPF50+.</span></div></button>
+        </div>
+      </div>
+      <div class="syn-prods" id="syn-prods" aria-live="polite">
+        <a class="glass-card syn-prod reveal" href="product.html?id=8"><small>Device</small><h3>NIKORA Electroporation &amp; LED Skin Booster Wand</h3><p>630nm red light and EMS microcurrents in one hero wand.</p></a>
+        <a class="glass-card syn-prod reveal" href="product.html?id=1"><small>Snail Mucin</small><h3>COSRX Advanced Snail 96 Mucin Power Essence</h3><p>Lightweight essence for a hydrated, smooth, glowy look.</p></a>
+        <a class="glass-card syn-prod reveal" href="product.html?id=4"><small>Centella Asiatica</small><h3>Skin1004 Madagascar Centella Ampoule</h3><p>Soothes the look of irritated skin and supports the barrier.</p></a>
+        <a class="glass-card syn-prod reveal" href="product.html?id=2"><small>Heartleaf</small><h3>Anua Heartleaf 77% Soothing Toner</h3><p>A calming prep step for stressed or oily-feeling skin.</p></a>
+        <a class="glass-card syn-prod reveal" href="product.html?id=6"><small>Bio-Collagen</small><h3>Biodance Bio-Collagen Real Deep Mask</h3><p>Overnight hydrogel mask for a plump, refreshed morning look.</p></a>
+        <a class="glass-card syn-prod reveal" href="product.html?id=7"><small>Birch Sap</small><h3>Round Lab Birch Juice Moisturizing Cream</h3><p>Cushiony cream that seals in hydration after your ritual.</p></a>
+        <a class="glass-card syn-prod reveal" href="product.html?id=10"><small>Bundle</small><h3>The NIKORA x K-Beauty Glass Skin Ritual Set</h3><p>Wand, COSRX essence, Skin1004 ampoule and Biodance mask together.</p></a>
+      </div>
+      <p class="syn-note">Peptide complexes and Niacinamide serums are also popular partners: choose water-based formulas. Absorption support is temporary and results vary.</p>
     </div>
   </section>
 
@@ -917,53 +1052,35 @@ h1.sci-title em{font-style:italic; color:var(--gold);}
     <div class="container">
       <div class="section-head reveal">
         <div>
-          <h2 id="res-h2">Results you can <em>see.</em> Numbers you can trust.</h2>
-          <p>What consistent five-minute routines with NIKORA technology deliver.</p>
+          <h2 id="res-h2">Specs you can <em>verify.</em> Science you can trust.</h2>
+          <p>The real numbers behind the NIKORA Beauty Tech wand and the ritual around it.</p>
         </div>
       </div>
 
       <div class="metric-grid">
-        <div class="glass-card metric reveal">
-          <div class="metric-top">
-            <div class="metric-num" data-count="94" data-prefix="+" data-suffix="%">+94%</div>
-            <svg class="metric-ring" viewBox="0 0 60 60" aria-hidden="true"><circle class="trk" cx="30" cy="30" r="24"/><circle class="val" cx="30" cy="30" r="24" data-pct="94"/></svg>
-          </div>
-          <p class="metric-label"><strong>Improved Skin Firmness &amp; Elasticity</strong></p>
-        </div>
-        <div class="glass-card metric reveal">
-          <div class="metric-top">
-            <div class="metric-num" data-count="82" data-prefix="-" data-suffix="%">-82%</div>
-            <svg class="metric-ring" viewBox="0 0 60 60" aria-hidden="true"><circle class="trk" cx="30" cy="30" r="24"/><circle class="val" cx="30" cy="30" r="24" data-pct="82"/></svg>
-          </div>
-          <p class="metric-label"><strong>Reduction in Fine Lines</strong> within 4 Weeks</p>
-        </div>
-        <div class="glass-card metric reveal">
-          <div class="metric-top">
-            <div class="metric-num" data-count="98" data-prefix="" data-suffix="%">98%</div>
-            <svg class="metric-ring" viewBox="0 0 60 60" aria-hidden="true"><circle class="trk" cx="30" cy="30" r="24"/><circle class="val" cx="30" cy="30" r="24" data-pct="98"/></svg>
-          </div>
-          <p class="metric-label"><strong>Users Reported Instant Radiance</strong></p>
-        </div>
+        <div class="glass-card metric reveal"><div class="metric-top"><div class="metric-num" data-count="630" data-prefix="" data-suffix="nm">630nm</div></div><p class="metric-label"><strong>Clinical red light wavelength</strong> for collagen support and cellular energy</p></div>
+        <div class="glass-card metric reveal"><div class="metric-top"><div class="metric-num" data-count="5" data-prefix="" data-suffix=" min">5 min</div></div><p class="metric-label"><strong>Daily session</strong> in the Prep, Infuse, Activate, Seal ritual</p></div>
+        <div class="glass-card metric reveal"><div class="metric-top"><div class="metric-num txt">30&ndash;45 days</div></div><p class="metric-label"><strong>Typical time to visible results</strong> with consistent daily use</p></div>
       </div>
-      <p class="sci-note">Individual results vary with consistent daily use.</p>
+      <p class="sci-note">Cosmetic device, not a medical device. Individual results vary with consistent daily use.</p>
 
       <!-- comparison -->
-      <div class="glass-card compare reveal" role="table" aria-label="Standard skincare compared with NIKORA Deep-Cell Tech">
+      <div class="glass-card compare reveal" role="table" aria-label="Skincare alone compared with NIKORA Tech plus K-Beauty actives">
         <div class="compare-head" role="row">
-          <div class="compare-title" role="columnheader">Standard Skincare vs. <em>&nbsp;NIKORA Deep-Cell Tech</em></div>
-          <div class="col-h" role="columnheader"><span>Routine</span><strong>Standard Skincare</strong></div>
-          <div class="col-h nk" role="columnheader"><span>Technology</span><strong>NIKORA Deep-Cell Tech</strong></div>
+          <div class="compare-title" role="columnheader">Skincare Alone vs. <em>&nbsp;NIKORA Tech + Actives</em></div>
+          <div class="col-h" role="columnheader"><span>Routine</span><strong>Skincare Alone</strong></div>
+          <div class="col-h nk" role="columnheader"><span>Synergy</span><strong>NIKORA Tech + Actives</strong></div>
         </div>
 
-        <div class="cmp-row" role="row">
+                <div class="cmp-row" role="row">
           <div class="cmp-feature" role="rowheader">Depth of action</div>
           <div class="cmp-cell std" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Works on the skin&rsquo;s surface</div>
-          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Energy reaches deep cell layers</div>
+          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>630nm light reaches the cells below</div>
         </div>
         <div class="cmp-row" role="row">
-          <div class="cmp-feature" role="rowheader">Collagen support</div>
+          <div class="cmp-feature" role="rowheader">Collagen &amp; ATP</div>
           <div class="cmp-cell std" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Topical ingredients only</div>
-          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>630nm light stimulates collagen at the source</div>
+          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Red light fuels fibroblasts and mitochondria</div>
         </div>
         <div class="cmp-row" role="row">
           <div class="cmp-feature" role="rowheader">Facial muscle tone</div>
@@ -971,51 +1088,38 @@ h1.sci-title em{font-style:italic; color:var(--gold);}
           <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>EMS microcurrents tone and lift</div>
         </div>
         <div class="cmp-row" role="row">
-          <div class="cmp-feature" role="rowheader">Lymphatic drainage</div>
+          <div class="cmp-feature" role="rowheader">Microcirculation</div>
           <div class="cmp-cell std" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Manual massage, if any</div>
-          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Warmth and sonic massage</div>
+          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Warmth and current boost blood flow</div>
         </div>
         <div class="cmp-row" role="row">
-          <div class="cmp-feature" role="rowheader">Serum absorption</div>
+          <div class="cmp-feature" role="rowheader">Active absorption</div>
           <div class="cmp-cell std" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Limited by the skin barrier</div>
-          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Boosted by warmth and sonic vibration</div>
+          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Warmth + EMS temporarily improve uptake</div>
         </div>
         <div class="cmp-row" role="row">
           <div class="cmp-feature" role="rowheader">Daily time</div>
           <div class="cmp-cell std" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Multi-step routine</div>
-          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>5-minute daily routine</div>
+          <div class="cmp-cell nk" role="cell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>5-minute daily ritual</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ================= 4. DERMATOLOGIST ENDORSEMENT ================= -->
+  <!-- ================= 4. YOUR RITUAL ================= -->
   <section class="section" id="expert" aria-labelledby="exp-h2" style="padding-top:clamp(30px,4vw,50px);">
     <div class="container">
-      <div class="section-head reveal">
-        <div>
-          <h2 id="exp-h2">Trusted by <em>skin experts.</em></h2>
-          <p>Safety and efficacy, in a dermatologist&rsquo;s own words.</p>
-        </div>
-      </div>
-
+      <div class="section-head reveal"><div><h2 id="exp-h2">Get the most from <em>every session.</em></h2><p>Simple habits that help technology and skincare work together.</p></div></div>
       <div class="glass-card expert reveal">
-        <figure class="expert-quote" style="margin:0;">
-          <svg class="q-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 6C4.9 7.3 3.5 9.5 3.5 12.4V18h6.2v-6H6.6c.1-1.6.9-2.8 2.4-3.6L7.2 6zm9.5 0c-2.3 1.3-3.7 3.5-3.7 6.4V18h6.2v-6h-3.1c.1-1.6.9-2.8 2.4-3.6L16.7 6z"/></svg>
-          <blockquote>Used as directed, at-home red light and EMS devices are a safe, gentle and genuinely effective way to support collagen and a firmer-looking complexion. They are non-invasive, UV-free, and easy enough to use every day.</blockquote>
-          <figcaption class="expert-by">
-            <span class="expert-avatar"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
-            <span>
-              <p class="expert-name">Licensed Dermatologist</p>
-              <p class="expert-role">On home-use LED &amp; EMS devices</p>
-            </span>
-          </figcaption>
-        </figure>
+        <div class="expert-quote">
+          <blockquote>Consistency beats intensity. Five calm minutes a day, on freshly prepped skin, is the whole secret.</blockquote>
+          <p class="pp-text" style="margin:0;">Visible results usually appear within 30-45 days of consistent daily use. Our 30-Day Money-Back Guarantee covers unopened and unused items in original packaging upon arrival.</p>
+        </div>
         <div class="expert-side">
-          <h3>What dermatologists look for</h3>
-          <div class="expert-point"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Non-invasive, needle-free treatment</div>
-          <div class="expert-point"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Zero UV exposure</div>
-          <div class="expert-point"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Gentle enough for consistent daily use</div>
+          <h3>Best-practice checklist</h3>
+          <div class="expert-point"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Start on clean skin with a water-based essence or ampoule</div>
+          <div class="expert-point"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Keep the wand gliding; never hold it still in one spot</div>
+          <div class="expert-point"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Finish with moisturizer, and SPF in the morning</div>
         </div>
       </div>
     </div>
@@ -1027,30 +1131,30 @@ h1.sci-title em{font-style:italic; color:var(--gold);}
       <div class="section-head reveal">
         <div>
           <h2 id="safe-h2">Safety is <em>built in.</em></h2>
-          <p>Every NIKORA device is designed around recognized safety standards.</p>
+          <p>Designed for gentle, at-home cosmetic use. Read the guide that comes with your device.</p>
         </div>
       </div>
 
       <div class="cert-grid">
         <div class="glass-card cert reveal">
           <span class="cert-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg></span>
-          <h3>FDA-Cleared Technology</h3>
-          <p>Built on FDA-cleared light therapy standards.</p>
+          <h3>Non-Invasive</h3>
+          <p>No needles and no downtime, just light and gentle current.</p>
         </div>
         <div class="glass-card cert reveal">
           <span class="cert-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="M8.5 14.5L7 22l5-3 5 3-1.5-7.5"/></svg></span>
-          <h3>CE Certified</h3>
-          <p>Meets European safety and conformity requirements.</p>
+          <h3>Patch Test First</h3>
+          <p>Try new actives and the device on a small area before full use.</p>
         </div>
         <div class="glass-card cert reveal">
           <span class="cert-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/><path d="M3 3l18 18"/></svg></span>
           <h3>100% UV-Free</h3>
-          <p>Zero ultraviolet exposure, ever.</p>
+          <p>Red light only: zero ultraviolet exposure.</p>
         </div>
         <div class="glass-card cert reveal">
           <span class="cert-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 11c0 5.6-7 10-7 10z"/><path d="M9 11.5l2 2 3.5-4"/></svg></span>
-          <h3>Dermatologist Approved</h3>
-          <p>Reviewed for safe, effective home use.</p>
+          <h3>Ask Your Doctor First</h3>
+          <p>If you are pregnant, have a pacemaker or implant, or a skin condition, check before using EMS.</p>
         </div>
       </div>
     </div>
@@ -1254,14 +1358,16 @@ var NK_ICONS = {
 
 /* Fallback pool so the recommendations strip is NEVER empty (used until Firebase '/products' answers, or if it fails/is empty). */
 var NK_FALLBACK = [
-  { id:'1',  name:'NIKORA RED Light & EMS Facial Wand 4-in-1', price:34.99, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
-  { id:'2',  name:'3D EMS Gua Sha Sculptor', price:24.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400' },
-  { id:'3',  name:'Hydro-Vacuum Pore Cleaner', price:29.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
-  { id:'4',  name:'LED Therapy Mask 7-in-1 Pro', price:49.99, category:'LED Therapy', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
-  { id:'5',  name:'EMS Body Sculptor RF', price:59.99, category:'Body Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
-  { id:'6',  name:'Sonic Eye Massager', price:19.99, category:'Eye Care', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
-  { id:'7',  name:'Ultrasonic Skin Scrubber', price:24.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
-  { id:'8',  name:'Thermal Neck & Face Massager', price:39.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' }
+  { id:'1', name:'COSRX Advanced Snail 96 Mucin Power Essence', price:25.00, category:'Essences', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
+  { id:'2', name:'Anua Heartleaf 77% Soothing Toner 250ml', price:22.00, category:'Toners', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
+  { id:'3', name:'Beauty of Joseon Relief Sun: Rice + Probiotics SPF50+', price:18.00, category:'Sun Care', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' },
+  { id:'4', name:'Skin1004 Madagascar Centella Ampoule 100ml', price:24.00, category:'Serums & Ampoules', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
+  { id:'5', name:'Laneige Lip Sleeping Mask Berry', price:24.00, category:'Lip Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'6', name:'Biodance Bio-Collagen Real Deep Mask Set', price:19.00, category:'Masks', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
+  { id:'7', name:'Round Lab Birch Juice Moisturizing Cream 80ml', price:28.00, category:'Moisturizers', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'8', name:'NIKORA Electroporation & LED Skin Booster Wand', price:129.00, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
+  { id:'9', name:'NIKORA Cryo-Cooling Ice Globe Sculptor', price:39.00, category:'Cooling Therapy', img:'https://images.unsplash.com/photo-1512290900673-10705a3962d3?w=400' },
+  { id:'10', name:'The NIKORA x K-Beauty Glass Skin Ritual Set', price:159.00, category:'Bundles & Sets', img:'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400' }
 ];
 
 function nkEsc(str){
@@ -1841,9 +1947,9 @@ function sciInitVisual(){
   var scenes = Array.prototype.slice.call(root.querySelectorAll('.sv-scene'));
   var big = document.getElementById('sv-big'), cap = document.getElementById('sv-cap'), desc = document.getElementById('sv-desc');
   var DATA = [
-    { big:'630nm', cap:'Wave Range',   desc:'Deep-red 630nm light energizes the cells that build collagen and elastin.' },
+    { big:'630nm', cap:'Red Light',    desc:'Clinical-range 630nm red light energizes the cells that build collagen and elastin.' },
     { big:'3.3Hz', cap:'EMS Pulse',    desc:'A gentle 3.3Hz microcurrent pulse tones and lifts facial muscles.' },
-    { big:'100%',  cap:'Non-Invasive', desc:'No needles, no downtime and no UV \u2014 comfortable enough for every day.' }
+    { big:'Synergy', cap:'Wand + Actives', desc:'Warmth and microcurrents help prepare skin so essences and ampoules can work harder.' }
   ];
   var cur = 0, timer = 0, userPicked = false;
 
@@ -1921,9 +2027,110 @@ function sciInitPillars(){
   select('light', false);
 }
 
+
+/* ---- mechanism cards (accordion) ---- */
+function sciInitMech(){
+  Array.prototype.forEach.call(document.querySelectorAll('.mech-btn'), function(b){
+    b.addEventListener('click', function(){
+      var open = b.getAttribute('aria-expanded') === 'true', box = document.getElementById(b.getAttribute('aria-controls'));
+      b.setAttribute('aria-expanded', open ? 'false' : 'true');
+      if(box) box.hidden = open;
+    });
+  });
+}
+
+/* ---- wavelength chart ---- */
+function sciInitSpectrum(){
+  var card = document.getElementById('sp-card'); if(!card) return;
+  var D = [
+    { pct:22, t:'<strong>450nm blue light</strong> is absorbed in the outermost skin layers. It stays near the surface.' },
+    { pct:42, t:'<strong>530nm green light</strong> reaches the upper epidermis. It is mostly used for surface tone.' },
+    { pct:72, t:'<strong>630nm red light (NIKORA)</strong> reaches from the epidermis into the upper dermis, where fibroblasts and mitochondria use it to support collagen and ATP.' },
+    { pct:96, t:'<strong>830nm near-infrared</strong> travels deeper still but is invisible to the eye. NIKORA focuses on 630nm red light for skin.' }
+  ];
+  var chips = card.querySelectorAll('.sp-chip'), marks = card.querySelectorAll('.sp-mark');
+  function show(i){
+    Array.prototype.forEach.call(chips, function(c, k){ c.setAttribute('aria-selected', k === i ? 'true' : 'false'); });
+    Array.prototype.forEach.call(marks, function(m, k){ m.classList.toggle('on', k === i); });
+    document.getElementById('sp-bar').style.width = D[i].pct + '%';
+    document.getElementById('sp-read').innerHTML = D[i].t;
+  }
+  Array.prototype.forEach.call(chips, function(c, i){ c.addEventListener('click', function(){ show(i); }); });
+  Array.prototype.forEach.call(marks, function(m, i){ m.style.cursor = 'pointer'; m.addEventListener('click', function(){ show(i); }); });
+  show(2);
+}
+
+/* ---- synergy ritual stepper ---- */
+function sciInitSynergy(){
+  var card = document.getElementById('syn-card'); if(!card) return;
+  var steps = Array.prototype.slice.call(card.querySelectorAll('.syn-step')), scenes = card.querySelectorAll('.sy-scene');
+  function show(i){
+    steps.forEach(function(b, k){ b.setAttribute('aria-selected', k === i ? 'true' : 'false'); b.tabIndex = k === i ? 0 : -1; });
+    Array.prototype.forEach.call(scenes, function(sc, k){ sc.classList.toggle('on', k === i); });
+  }
+  steps.forEach(function(b, i){
+    b.addEventListener('click', function(){ show(i); });
+    b.addEventListener('keydown', function(e){
+      var n = -1;
+      if(e.key === 'ArrowDown' || e.key === 'ArrowRight') n = (i + 1) % steps.length;
+      else if(e.key === 'ArrowUp' || e.key === 'ArrowLeft') n = (i - 1 + steps.length) % steps.length;
+      if(n < 0) return; e.preventDefault(); show(n); steps[n].focus();
+    });
+  });
+  show(0);
+}
+
+
+/* ---- synergy grid: renders EVERY active product from Firebase /products (falls back to the built-in cards if Firebase is unavailable) ---- */
+var SYN_ACTIVES = [
+  [/snail/i, 'Snail Mucin'], [/centella|cica/i, 'Centella Asiatica'], [/heartleaf|houttuynia/i, 'Heartleaf'], [/rice|probiotic/i, 'Rice + Probiotics'],
+  [/collagen/i, 'Bio-Collagen'], [/birch/i, 'Birch Sap'], [/peptide/i, 'Peptide Complex'], [/niacinamide/i, 'Niacinamide'],
+  [/hyaluron/i, 'Hyaluronic Acid'], [/vitamin c|ascorb/i, 'Vitamin C'], [/retinol|retinal/i, 'Retinol'], [/ceramide/i, 'Ceramides'],
+  [/wand|led|electropor|ems/i, 'Beauty Tech'], [/globe|cryo/i, 'Cooling Therapy'], [/set|bundle|ritual/i, 'Bundle']
+];
+function synEyebrow(p){
+  var hay = [p.name, p.title, p.desc, p.description, (p.tags || []).join ? [].concat(p.tags || []).join(' ') : ''].join(' ');
+  for(var i = 0; i < SYN_ACTIVES.length; i++){ if(SYN_ACTIVES[i][0].test(hay)) return SYN_ACTIVES[i][1]; }
+  return p.brand || p.category || 'K-Beauty';
+}
+function synBenefit(p){
+  var t = String(p.desc || p.description || '').replace(/\s+/g, ' ').trim();
+  if(!t) return 'Pairs with your NIKORA ritual for a visible glow.';
+  if(t.length > 110){ t = t.slice(0, 110); t = t.replace(/\s+\S*$/, '') + '\u2026'; }
+  return t;
+}
+function synCard(p){
+  return '<a class="glass-card syn-prod" href="product.html?id=' + encodeURIComponent(p.id) + '"><small>' + nkEsc(synEyebrow(p)) + '</small><h3>' + nkEsc(p.name || p.title) + '</h3><p>' + nkEsc(synBenefit(p)) + '</p></a>';
+}
+function synRender(raw){
+  var box = document.getElementById('syn-prods'); if(!box) return;
+  var list = [];
+  Object.keys(raw || {}).forEach(function(k){
+    var p = raw[k];
+    if(!p || typeof p !== 'object' || p._deleted || p.hidden === true || p.active === false) return;
+    var name = p.name || p.title, price = Number(p.price);
+    if(!name || !(price > 0)) return;
+    list.push(Object.assign({}, p, { id: p.id != null ? p.id : k, name: name }));
+  });
+  if(!list.length){ box.removeAttribute('aria-busy'); return; }          /* keep the built-in cards */
+  list.sort(function(a, b){ return (Number(a.id) || 1e9) - (Number(b.id) || 1e9); });
+  box.innerHTML = list.map(synCard).join('');
+  box.removeAttribute('aria-busy');
+  sciInitTilt();
+}
+function sciInitSynProducts(){
+  var box = document.getElementById('syn-prods'); if(!box) return;
+  if(typeof firebaseReady === 'undefined' || !firebaseReady || !db){ return; }   /* offline: static cards stay */
+  box.setAttribute('aria-busy', 'true');
+  var done = false;
+  setTimeout(function(){ if(!done) box.removeAttribute('aria-busy'); }, 6000);
+  db.ref('products').on('value', function(snap){ done = true; synRender(snap.val()); },
+    function(err){ done = true; box.removeAttribute('aria-busy'); console.warn('Synergy grid: Firebase unavailable, showing built-in products.', err); });
+}
+
 /* ---- animated metric counters + progress rings ---- */
 function sciInitCounters(){
-  var cards = Array.prototype.slice.call(document.querySelectorAll('.metric'));
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.metric')).filter(function(c){ return c.querySelector('.metric-num[data-count]'); });
   if(!cards.length) return;
 
   function parts(card){
@@ -1995,7 +2202,7 @@ function sciInitReveal(){
 /* ---- tactile 3D spotlight on the grid cards (same behaviour as index.html) ---- */
 function sciInitTilt(){
   if(SCI_REDUCED || !(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches)) return;
-  Array.prototype.forEach.call(document.querySelectorAll('.pillar-tab, .metric, .cert'), function(card){
+  Array.prototype.forEach.call(document.querySelectorAll('.pillar-tab, .metric, .cert, .mech-card, .syn-prod'), function(card){
     if(card.dataset.tactileBound) return;
     card.dataset.tactileBound = '1';
     card.addEventListener('mousemove', function(e){
@@ -2021,6 +2228,10 @@ function init(){
 
   sciInitVisual();
   sciInitPillars();
+  sciInitMech();
+  sciInitSpectrum();
+  sciInitSynergy();
+  sciInitSynProducts();
   sciInitCounters();
   sciInitReveal();
   sciInitTilt();
@@ -2050,7 +2261,7 @@ if(document.readyState === 'loading'){
 (function(){
   var S = window.NikoraSite; if(!S) return;
   var U = S.util, D = null, lastBlocks = '';
-  var PILLARS = ['light', 'ems', 'warmth'];
+  var PILLARS = ['light', 'ems', 'synergy'];
   function $(id){ return document.getElementById(id); }
   function str(v, max){ return (typeof v === 'string' && v.trim()) ? v.trim().slice(0, max) : ''; }
   function sibP(h){ return h && h.parentNode ? h.parentNode.querySelector('p') : null; }
