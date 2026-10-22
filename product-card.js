@@ -52,14 +52,14 @@
     var B = window.NKBestsellers, id = esc(p.id), name = esc(p.name);
     var price = Number(p.price) || 0, was = Number(p.oldPrice) || 0, sale = was > price;
     var href = 'product.html?id=' + encodeURIComponent(p.id);
-    var main = (B.imagesOf(p) || [])[0] || p.img || p.image || '';
+    var main = B.imagesOf(p)[0];                       /* the product's Firebase photo, or the branded placeholder (never lib/products.js) */
     var badges = B.badges(p).map(function(t){ return '<span class="nk-badge best">' + esc(t) + '</span>'; }).join('');
     if(sale) badges += '<span class="nk-badge sale">Save $' + (was - price).toFixed(2) + '</span>';
     if(p.lowStock === true) badges += '<span class="nk-badge low">Low Stock</span>';
     return '<article class="glass-card product-card nk-card" data-bs-card data-bs-id="' + id + '" data-product-id="' + id + '">' +
       '<a class="nk-media" href="' + href + '" aria-label="' + name + '">' +
         (badges ? '<span class="nk-badges">' + badges + '</span>' : '') +
-        (main ? '<img data-bs-main data-bs-src0="' + esc(main) + '" src="' + esc(main) + '" alt="' + name + '" loading="lazy">' : '') +
+        '<img data-bs-main data-bs-src0="' + esc(main) + '" src="' + esc(main) + '" alt="' + name + '" loading="lazy" onerror="window.NKImgFail&amp;&amp;NKImgFail(this)">' +
       '</a>' +
       B.thumbsHtml(p) +
       '<div class="nk-body">' +
