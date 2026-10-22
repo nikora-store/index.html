@@ -1,7 +1,8 @@
 /**
  * bestsellers.js - shared by index.html and catalog.html so both pages rank, badge and show galleries identically.
- * Data comes from GET /api/catalog (a read-only view of lib/products.js). If that request fails (offline, file://),
- * both pages quietly fall back to whatever the Firebase /products data already says.
+ * Data comes from GET /api/catalog (a read-only view of lib/products.js) for names, prices, descriptions and bestseller ranks.
+ * PHOTOS come ONLY from Firebase /products (the product's own images[]). lib/products.js images are never used: a product with no
+ * images (or a photo that fails to load) shows the branded NIKORA placeholder below.
  * Load with a plain <script src="bestsellers.js"></script> before the page's main script.
  */
 (function (root) {
@@ -9,7 +10,7 @@
   var ENDPOINT = '/api/catalog';
   var TOP_RATED_MIN = 4.5;          // "TOP RATED" only shows for a REAL rating at or above this
   var BUNDLE_CATEGORY = 'Bundles & Sets';
-  var SERVER_FIELDS = ['name', 'category', 'price', 'desc', 'oldPrice', 'img', 'images', 'bestseller', 'bestsellerRank', 'bestsellerLabel', 'rating', 'salesCount'];
+  var SERVER_FIELDS = ['name', 'category', 'price', 'desc', 'oldPrice', 'bestseller', 'bestsellerRank', 'bestsellerLabel', 'rating', 'salesCount'];
   var serverList = null, pending = null, rankingSource = null;   // 'sales' = ranked from real store orders, 'fallback' = initial ranks from lib/products.js
 
   function esc(s) {
@@ -36,25 +37,27 @@
     return pending;
   }
 
-  var MIN_OWN_IMAGES = 2;   // a product's own gallery (Firebase / local override) is used only when it has at least this many photos; with fewer, the 4 default images from lib/products.js are used instead. Set to 1 to let a single-photo override win.
+  /** Branded neutral placeholder (inline SVG, so it can never fail to load): obsidian, gold ring, NIKORA wordmark. */
+  var PLACEHOLDER = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%2317141c'/><stop offset='1' stop-color='%230B0B0E'/></linearGradient></defs><rect width='400' height='400' fill='url(%23g)'/><circle cx='200' cy='168' r='58' fill='none' stroke='%23C89B54' stroke-width='3' opacity='.85'/><circle cx='200' cy='168' r='40' fill='none' stroke='%23C89B54' stroke-width='1.5' opacity='.45'/><text x='200' y='262' text-anchor='middle' font-family='Playfair Display,Georgia,serif' font-size='34' font-weight='600' letter-spacing='6' fill='%23F7F4F0'>NIK<tspan fill='%23C89B54' font-style='italic' font-weight='500'>ORA</tspan></text><text x='200' y='296' text-anchor='middle' font-family='Montserrat,Arial,sans-serif' font-size='11' letter-spacing='3' fill='%23C89B54' opacity='.8'>PHOTO COMING SOON</text></svg>";
 
-  /** The gallery set on the product itself (Firebase `images`: array or {0:..,1:..} object), cleaned and de-duplicated.
-   *  Returns null when it has fewer than `min` photos (default MIN_OWN_IMAGES), so a missing or 1-photo override falls back to the lib/products.js gallery.
-   *  A qualifying list wins over the lib default, so adding or removing images in the admin panel changes every page. */
-  function ownImages(p, min) {
+  /** The photos stored on the product in Firebase (`images`: array or {0:..,1:..} object), trimmed and de-duplicated, in order.
+   *  Any number of photos (1..N) is shown exactly as saved. Returns [] when images is missing, null or empty; there is NO fallback
+   *  to lib/products.js and no minimum photo count. */
+  function ownImages(p) {
     var v = p && p.images, seen = {}, out = [];
     if (v && typeof v === 'object' && !Array.isArray(v)) v = Object.keys(v).sort(function (a, c) { return Number(a) - Number(c); }).map(function (k) { return v[k]; });
-    if (!Array.isArray(v)) return null;
+    if (!Array.isArray(v)) return [];
     v.forEach(function (u) { if (typeof u !== 'string') return; u = u.trim(); if (u && !seen[u]) { seen[u] = true; out.push(u); } });
-    return out.length >= (min == null ? MIN_OWN_IMAGES : min) && out.length ? out : null;
+    return out;
   }
+
   /** Copy of p with the server record s laid over it; images stay the admin's own list when it has one. */
   function overlayRecord(p, s) {
     var o = {}, k;
     for (k in p) if (Object.prototype.hasOwnProperty.call(p, k)) o[k] = p[k];
     SERVER_FIELDS.forEach(function (f) { o[f] = s[f]; });
     var own = ownImages(p);
-    if (own) { o.images = own; o.img = own[0]; }
+    o.images = own; o.img = own[0] || '';          /* Firebase photos only; empty means the placeholder is shown */
     return o;
   }
 
@@ -77,6 +80,7 @@
       if (seen[String(s.id)]) return;
       var o = { desc: '' };
       for (k in s) if (Object.prototype.hasOwnProperty.call(s, k)) o[k] = s[k];
+      o.images = []; o.img = '';                   /* never carry lib/products.js photos into the storefront */
       out.push(o);
     });
     return out;
@@ -125,11 +129,10 @@
     return null;
   }
 
+  /** Always at least one URL: the product's own Firebase photos, otherwise the placeholder. */
   function imagesOf(p) {
     var own = ownImages(p);
-    if (own) return own;
-    var one = p.img || p.image || (ownImages(p, 1) || [])[0];
-    return one ? [one] : [];
+    return own.length ? own : [PLACEHOLDER];
   }
   function thumbUrl(u, size) {
     u = String(u); size = size || 120;
@@ -146,6 +149,27 @@
         '<img src="' + esc(thumbUrl(src)) + '" alt="" loading="lazy" draggable="false"></button>';
     }).join('') + '</div>';
   }
+
+  /** A photo that fails to load (img onerror): thumbnails are removed; a failed hero switches to the next working photo or the placeholder.
+   *  Never throws, never loops (the placeholder is an inline SVG). */
+  function imgFail(img) {
+    if (!img || !img.getAttribute || img.getAttribute('src') === PLACEHOLDER) return;
+    var card = img.closest && img.closest('[data-bs-card]');
+    if (img.hasAttribute('data-bs-main')) {
+      var bad = img.getAttribute('data-bs-src0'), next = PLACEHOLDER, t = card ? card.querySelectorAll('.bs-thumb') : [], i;
+      for (i = 0; i < t.length; i++) { var s0 = t[i].getAttribute('data-src'); if (s0 && s0 !== bad && s0 !== img.getAttribute('src')) { next = s0; break; } }
+      img.setAttribute('data-bs-src0', next); img.setAttribute('src', next);
+      return;
+    }
+    var btn = img.closest && img.closest('.bs-thumb');
+    if (!btn) return;
+    var strip = btn.parentNode, failed = btn.getAttribute('data-src');
+    if (strip) strip.removeChild(btn);
+    if (strip && strip.querySelectorAll('.bs-thumb').length < 2) strip.style.display = 'none';
+    var m = card && card.querySelector('[data-bs-main]');
+    if (m && m.getAttribute('src') === failed) imgFail(m);
+  }
+  root.NKImgFail = imgFail;
 
   function setImage(card, src) {
     var img = card.querySelector('[data-bs-main]');
@@ -169,6 +193,7 @@
         if (th.length > 1 && img && img.getAttribute('src') === img.getAttribute('data-bs-src0')) setImage(card, th[1].getAttribute('data-src'));
       }
     }
+    rootEl.addEventListener('error', function (e) { if (e.target && e.target.tagName === 'IMG') imgFail(e.target); }, true);   /* error events do not bubble: capture them */
     rootEl.addEventListener('mouseover', show);
     rootEl.addEventListener('focusin', show);
     rootEl.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('.bs-thumb')) { e.preventDefault(); show(e); } });
@@ -180,7 +205,7 @@
     });
   }
 
-  var api = { source: function () { return rankingSource; }, ownImages: ownImages, overlayOne: overlayOne, bundles: bundles, load: load, get: get, thumbUrl: thumbUrl, apply: apply, compare: compare, ranked: ranked, badges: badges, imagesOf: imagesOf, thumbsHtml: thumbsHtml, bindGallery: bindGallery, esc: esc };
+  var api = { placeholder: PLACEHOLDER, imgFail: imgFail, source: function () { return rankingSource; }, ownImages: ownImages, overlayOne: overlayOne, bundles: bundles, load: load, get: get, thumbUrl: thumbUrl, apply: apply, compare: compare, ranked: ranked, badges: badges, imagesOf: imagesOf, thumbsHtml: thumbsHtml, bindGallery: bindGallery, esc: esc };
   root.NKBestsellers = api;
   if (typeof module !== 'undefined' && module.exports) { module.exports = api; api._setServerList = function (l) { serverList = l; }; }
 })(typeof window !== 'undefined' ? window : this);
