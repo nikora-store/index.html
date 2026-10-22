@@ -1299,25 +1299,24 @@ function seededStock(id){
   return 3 + (n * 11) % 9;
 }
 function getStock(p){ return (p.stockCount != null) ? Number(p.stockCount) : seededStock(p.id); }
-var FALLBACK_IMG = 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900';
-/* Image list for a product, in this order of preference:
-   1. images[] stored on the product itself, only when it has 2+ photos  2. the 4 default images[] from lib/products.js (served by /api/catalog, via bestsellers.js), used whenever the override is missing or has a single photo
-   3. a single image / img string (one image, no thumbnail strip)  4. FALLBACK_IMG.
-   Empty and duplicate entries are dropped. images[0] is always the hero. */
+/* Branded neutral placeholder (inline SVG, cannot fail to load). */
+var NK_PLACEHOLDER = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%2317141c'/><stop offset='1' stop-color='%230B0B0E'/></linearGradient></defs><rect width='400' height='400' fill='url(%23g)'/><circle cx='200' cy='168' r='58' fill='none' stroke='%23C89B54' stroke-width='3' opacity='.85'/><circle cx='200' cy='168' r='40' fill='none' stroke='%23C89B54' stroke-width='1.5' opacity='.45'/><text x='200' y='262' text-anchor='middle' font-family='Playfair Display,Georgia,serif' font-size='34' font-weight='600' letter-spacing='6' fill='%23F7F4F0'>NIK<tspan fill='%23C89B54' font-style='italic' font-weight='500'>ORA</tspan></text><text x='200' y='296' text-anchor='middle' font-family='Montserrat,Arial,sans-serif' font-size='11' letter-spacing='3' fill='%23C89B54' opacity='.8'>PHOTO COMING SOON</text></svg>";
+/* Image list for a product: ONLY the photos saved on the product in Firebase (images[], array or {0:..} object, any length 1..N).
+   Empty / null / missing images, or photos that fail to load, show the NIKORA placeholder. There is no fallback to lib/products.js and no
+   minimum photo count. Empty and duplicate entries are dropped; images[0] is the hero. */
 function getImages(p){
-  var B = window.NKBestsellers, srv = (B && B.get) ? B.get(p.id) : null, list = [];
-  var own = (B && B.ownImages) ? B.ownImages(p) : (Array.isArray(p.images) && p.images.length > 1 ? p.images : null);
-  if(own) list = own;                                                            /* own gallery (Firebase / local override / admin panel) with 2+ photos: any length */
-  else if(srv && Array.isArray(srv.images) && srv.images.length) list = srv.images;   /* missing or 1-photo override: the 4 default images from lib/products.js */
-  else if(p.img || p.image) list = [p.img || p.image];                           /* product not in lib/products.js: its single photo */
-  else if(B && B.ownImages && B.ownImages(p, 1)) list = B.ownImages(p, 1);
-  var seen = {}, out = [];
-  list.forEach(function(u){
-    if(typeof u !== 'string') return;
-    u = u.trim();
-    if(u && !seen[u]){ seen[u] = true; out.push(u); }
-  });
-  return out.length ? out : [FALLBACK_IMG];
+  var v = p && p.images, seen = {}, out = [];
+  if(v && typeof v === 'object' && !Array.isArray(v)){
+    v = Object.keys(v).sort(function(a, b){ return Number(a) - Number(b); }).map(function(k){ return v[k]; });
+  }
+  if(Array.isArray(v)){
+    v.forEach(function(u){
+      if(typeof u !== 'string') return;
+      u = u.trim();
+      if(u && !seen[u]){ seen[u] = true; out.push(u); }
+    });
+  }
+  return out.length ? out : [NK_PLACEHOLDER];
 }
 function isLowStock(p){
   if(p.stockStatus === 'low') return true;
@@ -1443,7 +1442,7 @@ var galleryIndex = 0;
 var galleryToken = 0;   /* bumps on every image change so a slow image can never overwrite a newer click */
 
 function renderProduct(){
-  /* lib/products.js (via /api/catalog) is the source of truth for name, price, was-price, description, images and bestseller rank. */
+  /* lib/products.js (via /api/catalog) is the source of truth for name, price, was-price, description and bestseller rank. Photos come only from Firebase (see getImages). */
   if(!PRODUCT_PENDING && window.NKBestsellers && window.NKBestsellers.overlayOne){ CURRENT_PRODUCT = window.NKBestsellers.overlayOne(CURRENT_PRODUCT); }
   var p = CURRENT_PRODUCT;
 
@@ -1600,16 +1599,19 @@ function showGalleryImage(idx){
   setTimeout(done, 600);                                    /* safety: never leave the hero dimmed */
 }
 
-/* An image URL that fails to load is removed, so there is never a broken thumbnail or a blank hero. */
+/* An image URL that fails to load is removed, so there is never a broken thumbnail or a blank hero.
+   When the last photo is gone the branded NIKORA placeholder takes its place (never an old lib/products.js photo). */
 function dropBrokenImage(src){
   var at = galleryImages.indexOf(src);
-  if(at === -1 || galleryImages.length <= 1) return;
+  if(at === -1 || src === NK_PLACEHOLDER) return;
   var wasCurrent = at === galleryIndex;
   galleryImages.splice(at, 1);
+  if(!galleryImages.length) galleryImages = [NK_PLACEHOLDER];
   if(wasCurrent) galleryIndex = 0; else if(at < galleryIndex) galleryIndex -= 1;
   renderGalleryThumbs();
   if(wasCurrent){ document.getElementById('main-image').removeAttribute('src'); }
   showGalleryImage(galleryIndex);
+  updateGalleryUi();
 }
 
 function initGallery(){
