@@ -112,7 +112,7 @@ button{font-family:inherit;cursor:pointer;}
 .page-head p{margin:0; color:var(--text-soft); font-size:14.5px; max-width:520px;}
 
 /* ---------------- TOOLBAR ---------------- */
-.toolbar-wrap{position:sticky; top:73px; z-index:300; padding-top:14px; padding-bottom:14px;}
+.toolbar-wrap{position:sticky; top:var(--hdr-h, 73px); z-index:300; padding-top:14px; padding-bottom:14px;}
 .toolbar{
   background:var(--card-bg); backdrop-filter:blur(12px); border:1px solid var(--card-border);
   border-radius:20px; padding:16px 20px; box-shadow:var(--shadow-ambient);
@@ -605,6 +605,50 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
 .modal-close-btn svg{width:16px; height:16px; stroke:currentColor; fill:none;}
 .card-add-btn{display:flex; align-items:center; justify-content:center; gap:8px;}
 .card-add-btn svg{width:15px; height:15px; stroke:currentColor; fill:none;}
+
+/* ================= MOBILE LAYOUT FIXES (badges, grid, landscape filter bar) ================= */
+:root{--hdr-h:73px;}
+html{scroll-padding-top:calc(var(--hdr-h) + 12px);}
+.product-grid > *{min-width:0;}
+.nk-card .nk-title, .nk-card .nk-title a{overflow-wrap:anywhere; word-break:normal; hyphens:auto;}
+
+/* Portrait phones: compact 2-column grid. Badges become a normal flex row ABOVE the photo (position:relative, no absolute overlay),
+   so they can never cover or clip the product title, and long names such as "COSRX Advanced Snail 96 Mucin Power Essence" wrap cleanly underneath. */
+@media (max-width:520px){
+  .grid-section .container{padding-left:14px; padding-right:14px;}
+  .product-grid{grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px;}
+  .product-grid .nk-card{border-radius:16px;}
+  .product-grid .nk-card .nk-media{aspect-ratio:auto; display:flex; flex-direction:column;}
+  .product-grid .nk-card .nk-badges{position:relative; top:auto; left:auto; z-index:auto; width:100%; box-sizing:border-box; flex-direction:row; flex-wrap:wrap; gap:4px; padding:8px 8px 6px;}
+  .product-grid .nk-card .nk-badge{font-size:9px; padding:4px 8px;}
+  .product-grid .nk-card .nk-media img{width:100%; height:auto; aspect-ratio:1/1; flex:none;}
+  .product-grid .nk-card .bs-thumbs{padding:8px 10px 0; gap:5px;}
+  .product-grid .nk-card .bs-thumb{width:30px; height:30px; border-radius:7px;}
+  .product-grid .nk-card .nk-body{padding:12px 12px 14px;}
+  .product-grid .nk-card .nk-cat{font-size:9.5px; margin-bottom:4px;}
+  .product-grid .nk-card .nk-title{font-size:14px; line-height:1.3;}
+  .product-grid .nk-card .nk-desc{font-size:11.5px; line-height:1.5; margin-bottom:10px;}
+  .product-grid .nk-card .nk-price-row{margin-bottom:10px;}
+  .product-grid .nk-card .nk-price{font-size:15px;}
+  .product-grid .nk-card .nk-add{padding:10px 8px; font-size:11px; gap:0;}
+  .product-grid .nk-card .nk-add svg{display:none;}
+  /* legacy card markup, if any page still renders it */
+  .card-badges{position:relative; top:auto; left:auto; flex-direction:row; flex-wrap:wrap; padding:8px;}
+}
+@media (max-width:340px){ .product-grid{grid-template-columns:1fr;} }   /* very small screens: one card per row */
+
+/* Landscape phones: the search/filter panel scrolls away with the page instead of sticking and covering the grid.
+   (If you prefer it sticky, replace "static" with "sticky" and keep the max-height + scroll below.) */
+@media (orientation:landscape) and (max-height:500px){
+  .toolbar-wrap, .search-filter-container, .catalog-controls, .filter-bar{position:static !important; top:auto !important; z-index:auto !important; padding-top:8px; padding-bottom:8px;}
+  .toolbar{padding:10px 14px; gap:8px; max-height:60vh; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+  .toolbar-row{gap:8px;}
+  .search-field{min-width:160px; padding:7px 14px;}
+  .sort-select{padding:7px 14px;}
+  .page-head{padding-top:18px; padding-bottom:12px;}
+  .page-head h1{font-size:clamp(24px,5vw,32px);}
+  .product-grid{grid-template-columns:repeat(3, minmax(0,1fr)); gap:14px;}
+}
 </style>
 <style id="nk-promo-css">
 /* ===== Catalog top promo banner (Firebase /site_content/banners/catalog) ===== */
@@ -2088,6 +2132,21 @@ if(document.readyState === 'loading'){
     try{ if(b) localStorage.setItem(CACHE, JSON.stringify(b)); else localStorage.removeItem(CACHE); }catch(e){}
     render(b);
   }, function(err){ console.warn('Catalog banner unavailable.', err); });
+})();
+</script>
+<script>
+/* Header offset: measure the fixed/sticky site header rendered by nav.js and publish it as --hdr-h (used by the sticky toolbar and anchors). */
+(function(){
+  function measure(){
+    var h = 0, kids = document.body ? document.body.children : [];
+    for(var i = 0; i < kids.length && i < 8; i++){
+      var el = kids[i], cs = window.getComputedStyle(el);
+      if((cs.position === 'fixed' || cs.position === 'sticky') && el.getBoundingClientRect().top <= 1 && el.offsetHeight > 30 && el.offsetHeight < 200) h = Math.max(h, el.offsetHeight);
+    }
+    if(h) document.documentElement.style.setProperty('--hdr-h', h + 'px');
+  }
+  window.addEventListener('load', measure); window.addEventListener('resize', measure); window.addEventListener('orientationchange', measure);
+  document.addEventListener('DOMContentLoaded', measure); setTimeout(measure, 400); setTimeout(measure, 1500);
 })();
 </script>
 </body>
