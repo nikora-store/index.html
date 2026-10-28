@@ -27,6 +27,7 @@ const MAX_ITEMS = 50;
 
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-NIKORA-Bridge', '1');      /* proves a response came from this function and not from a Vercel-level block */
   res.setHeader('X-Content-Type-Options', 'nosniff');
   const route = String((req.query && req.query.route) || 'orders');
   if (route !== 'orders') return discovery(req, res, route);
@@ -243,7 +244,8 @@ function routeMap(base) {
     '/wc/v3/system_status': mk('/wc/v3/system_status', ['GET']),
     '/wp-json/': { namespace: '', methods: ['GET'] },
     '/wp-json/wc/v3': { namespace: 'wc/v3', methods: ['GET'] },
-    '/wp-json/wc/v3/orders': { namespace: 'wc/v3', methods: ['GET', 'POST', 'PUT'] }
+    '/wp-json/wc/v3/orders': { namespace: 'wc/v3', methods: ['GET', 'POST', 'PUT'] },
+    '/wp-json/wc/v3/orders/<id>': { namespace: 'wc/v3', methods: ['GET', 'PUT'] }
   };
 }
 function discovery(req, res, route) {
