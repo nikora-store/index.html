@@ -672,6 +672,7 @@ html{scroll-padding-top:calc(var(--hdr-h) + 12px);}
 }
 @media(prefers-reduced-motion:reduce){.nk-promo{animation:none}.nk-promo-btn:hover{transform:none}}
 </style>
+<script src="shipping-rules.js"></script>
 </head>
 <body>
 <script src="nav.js"></script>
@@ -791,7 +792,7 @@ html{scroll-padding-top:calc(var(--hdr-h) + 12px);}
     <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="ship-progress-wrap">
-    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Add $50.00 more to unlock FREE Express Shipping</div>
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on orders of $50.00+ &middot; $4.99 flat rate below</div>
     <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
   </div>
   <div class="cart-items" id="cart-items-list"></div>
@@ -1393,13 +1394,9 @@ function renderCart(){
 
   var text = document.getElementById('ship-progress-text');
   var fill = document.getElementById('ship-progress-fill');
-  var unlocked = payable >= NK_FREE_SHIP;
-  fill.style.width = Math.min(100, (payable / NK_FREE_SHIP) * 100) + '%';
-  text.classList.toggle('unlocked', unlocked);
-  fill.classList.toggle('unlocked', unlocked);
-  text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
-    ? 'You\u2019ve unlocked FREE Express Shipping!'
-    : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
+  if(window.NKShipping){ NKShipping.renderProgress(text, fill, payable, count, cart, NK_ICONS); }
+  else { var unlocked = payable >= NK_FREE_SHIP; fill.style.width = Math.min(100, payable / NK_FREE_SHIP * 100) + '%'; text.classList.toggle('unlocked', unlocked); fill.classList.toggle('unlocked', unlocked);
+    text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked ? 'You\u2019ve unlocked FREE Express Shipping!' : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping'); }
 
   renderCartRecs(cart);
 }
