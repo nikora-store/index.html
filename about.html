@@ -15,7 +15,7 @@
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>About NIKORA — NIKORA</title>
-<meta name="description" content="About NIKORA: smart skincare technology designed around a five-minute daily routine, with free tracked shipping, a 30-day money-back guarantee and real human support.">
+<meta name="description" content="NIKORA combines innovative 630nm LED and EMS beauty technology with authentic Korean skincare sourced directly from Seoul, with tracked US shipping (free from $50) and a 30-day money-back guarantee.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -680,7 +680,35 @@ h1.f-title em{font-style:italic; color:var(--gold);}
   .pv-block{scroll-margin-top:150px;}
 }
 @media (max-width:700px){ .pv-links{grid-template-columns:1fr;} .pv-card-head{gap:12px;} .pv-ico{width:42px; height:42px;} }
+
+/* ---------- Header / sticky-tab offsets and small-screen scaling ---------- */
+:root{--hdr-h:73px; --pv-tabs-h:0px;}
+html{scroll-padding-top:calc(var(--hdr-h) + 12px);}
+.pv-side{top:calc(var(--hdr-h) + 16px);}
+.pv-block{scroll-margin-top:calc(var(--hdr-h) + 20px);}
+.pv-card, .pv-sub, .pv-lede, .pv-help p, .f-sub{overflow-wrap:anywhere;}
+.f-title{font-size:clamp(30px,8vw,56px); line-height:1.12;}
+@media (max-width:960px){
+  .pv-side{top:var(--hdr-h); z-index:60; margin-top:6px; padding-top:6px; background:linear-gradient(var(--canvas, #0B0B0E) 70%, transparent);}
+  .pv-block{scroll-margin-top:calc(var(--hdr-h) + var(--pv-tabs-h) + 18px);}
+  .pv-tabs ul{scroll-snap-type:x proximity; padding:2px;}
+  .pv-tab{scroll-snap-align:start;}
+}
+@media (max-width:700px){
+  .pv-card{padding:22px 18px;}
+  .pv-card-head{align-items:flex-start;}
+  .pv-card h2{font-size:clamp(21px,6vw,26px);}
+  .pv-lede{font-size:14.5px;}
+  .pv-sub p, .pv-sub li{font-size:14px; line-height:1.7;}
+  .pv-linkcard{padding:14px;}
+  .pv-help{padding:22px 18px; gap:16px;}
+  .pv-help-body{flex:1 1 100%; flex-wrap:wrap; gap:12px;}
+  .pv-mailbtn{width:100%; justify-content:center;}
+}
+@media (max-width:380px){ .pv-tab{padding:9px 12px; font-size:13px;} .pv-tab svg{display:none;} }
+@media (orientation:landscape) and (max-height:500px){ .pv-side{position:static; margin-top:0; padding-top:0; background:none;} .pv-block{scroll-margin-top:calc(var(--hdr-h) + 12px);} }
 </style>
+<script src="shipping-rules.js"></script>
 </head>
 <body>
 <script src="nav.js"></script>
@@ -693,7 +721,7 @@ h1.f-title em{font-style:italic; color:var(--gold);}
     <div class="container">
       <span class="f-eyebrow reveal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg>About us</span>
       <h1 class="f-title reveal" id="pv-h1">About <em>NIKORA</em></h1>
-      <p class="f-sub reveal">Smart care. Instant glow. Beauty tech designed around the routine you actually have time for.</p>
+      <p class="f-sub reveal">Smart care. Instant glow. 630nm LED &amp; EMS beauty tech, paired with authentic Korean skincare sourced directly from Seoul.</p>
       <div class="pv-eff-wrap reveal"><span class="pv-eff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Effective Date: October 2026</span></div>
     </div>
   </section>
@@ -714,15 +742,15 @@ h1.f-title em{font-style:italic; color:var(--gold);}
 <section class="pv-block" id="what-we-do" aria-labelledby="what-we-do-h">
   <article class="glass-card pv-card reveal">
     <header class="pv-card-head"><span class="pv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l2.2 5.3L20 9l-4.2 3.9L17 19l-5-2.8L7 19l1.2-6.1L4 9l5.8-.7L12 3z"/></svg></span><div><span class="pv-kicker">Section 1</span><h2 id="what-we-do-h">What We Do</h2></div></header>
-    <p class="pv-lede">NIKORA brings professional-style skincare technology into a simple five-minute daily ritual at home.</p>
-    <div class="pv-sub"><h3>Technology in Your Routine</h3><p>Our devices combine red light, EMS microcurrents and gentle warmth, the same kinds of technology you may know from skincare treatments, in compact tools made for everyday home use.</p><div class="pv-links"><a class="pv-linkcard" href="science.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l2.2 5.3L20 9l-4.2 3.9L17 19l-5-2.8L7 19l1.2-6.1L4 9l5.8-.7L12 3z"/></svg><strong>The Science</strong><span>How each technology works.</span></a><a class="pv-linkcard" href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><strong>The Collection</strong><span>Browse every NIKORA device.</span></a><a class="pv-linkcard" href="reviews.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg><strong>Customer Reviews</strong><span>Unedited feedback from real customers.</span></a></div></div><div class="pv-sub"><h3>Cosmetic Tools</h3><p>NIKORA devices are cosmetic tools intended for personal home skincare and are not medical devices. They are not intended to diagnose, treat, cure, or prevent any medical condition or disease.</p></div>
+    <p class="pv-lede">NIKORA combines innovative 630nm LED and EMS beauty technology with authentic Korean skincare (K-Beauty), sourced directly from Seoul, in one simple five-minute daily ritual.</p>
+    <div class="pv-sub"><h3>Technology in Your Routine</h3><p>Our flagship Booster Wand combines 630nm red light, EMS microcurrents and gentle warmth in a compact tool made for everyday home use.</p><p>Alongside it, we source Korean skincare favorites directly from Seoul, including COSRX, Beauty of Joseon, Anua, Skin1004, Laneige, Biodance and Round Lab. Warmth and microcurrents temporarily make skin more receptive, so water-based essences and ampoules can work harder.</p><div class="pv-links"><a class="pv-linkcard" href="science.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l2.2 5.3L20 9l-4.2 3.9L17 19l-5-2.8L7 19l1.2-6.1L4 9l5.8-.7L12 3z"/></svg><strong>The Science</strong><span>How each technology works.</span></a><a class="pv-linkcard" href="catalog.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><strong>The Collection</strong><span>Browse every NIKORA device.</span></a><a class="pv-linkcard" href="reviews.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg><strong>Customer Reviews</strong><span>Unedited feedback from real customers.</span></a></div></div><div class="pv-sub"><h3>Cosmetic Tools</h3><p>NIKORA devices are cosmetic tools intended for personal home skincare and are not medical devices. They are not intended to diagnose, treat, cure, or prevent any medical condition or disease.</p></div>
   </article>
 </section>
 <section class="pv-block" id="how-we-deliver" aria-labelledby="how-we-deliver-h">
   <article class="glass-card pv-card reveal">
     <header class="pv-card-head"><span class="pv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span><div><span class="pv-kicker">Section 2</span><h2 id="how-we-deliver-h">How We Deliver</h2></div></header>
-    <p class="pv-lede">Orders are packed carefully and shipped free, with tracking from dispatch to your door.</p>
-    <div class="pv-sub"><h3>From Warehouse to You</h3><p>Every order is quality-checked, assembled and packed at our CJ Dropshipping warehouse in 1&ndash;3 business days, then shipped with tracking via carriers such as YunExpress. Delivery usually takes 5&ndash;12 business days.</p><p>Read the details in our <a href="shipping.html">Shipping Policy</a>, or follow a parcel on the <a href="track-order.html">Track Order</a> page.</p></div>
+    <p class="pv-lede">Orders are packed carefully and shipped with tracking from dispatch to your door: free on orders of $50.00 and above, a flat $4.99 below.</p>
+    <div class="pv-sub"><h3>From Warehouse to You</h3><p>Every order is processed in 1&ndash;3 business days, then shipped tracked to the US by our fulfillment partners: K-Dropshipping for K-Beauty (7&ndash;15 business days in transit) and QKSource for beauty devices (3&ndash;7 business days in transit). Orders with items from both ship in separate packages, each with its own tracking.</p><p>Read the details in our <a href="shipping.html">Shipping Policy</a>, or follow a parcel on the <a href="track-order.html">Track Order</a> page.</p></div>
   </article>
 </section>
 <section class="pv-block" id="our-promise" aria-labelledby="our-promise-h">
@@ -800,7 +828,7 @@ h1.f-title em{font-style:italic; color:var(--gold);}
     <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="ship-progress-wrap">
-    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on every order (5&ndash;12 business days)</div>
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on orders of $50.00+ &middot; $4.99 flat rate below</div>
     <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
   </div>
   <div class="cart-items" id="cart-items-list"></div>
@@ -935,14 +963,16 @@ var NK_ICONS = {
 
 /* Fallback pool so the recommendations strip is NEVER empty (used until Firebase '/products' answers, or if it fails/is empty). */
 var NK_FALLBACK = [
-  { id:'1',  name:'NIKORA RED Light & EMS Facial Wand 4-in-1', price:34.99, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
-  { id:'2',  name:'3D EMS Gua Sha Sculptor', price:24.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400' },
-  { id:'3',  name:'Hydro-Vacuum Pore Cleaner', price:29.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
-  { id:'4',  name:'LED Therapy Mask 7-in-1 Pro', price:49.99, category:'LED Therapy', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
-  { id:'5',  name:'EMS Body Sculptor RF', price:59.99, category:'Body Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
-  { id:'6',  name:'Sonic Eye Massager', price:19.99, category:'Eye Care', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
-  { id:'7',  name:'Ultrasonic Skin Scrubber', price:24.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
-  { id:'8',  name:'Thermal Neck & Face Massager', price:39.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' }
+  { id:'1', name:'COSRX Advanced Snail 96 Mucin Power Essence', price:25.00, category:'Essences', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
+  { id:'2', name:'Anua Heartleaf 77% Soothing Toner 250ml', price:22.00, category:'Toners', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
+  { id:'3', name:'Beauty of Joseon Relief Sun: Rice + Probiotics SPF50+', price:18.00, category:'Sun Care', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' },
+  { id:'4', name:'Skin1004 Madagascar Centella Ampoule 100ml', price:24.00, category:'Serums & Ampoules', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
+  { id:'5', name:'Laneige Lip Sleeping Mask Berry', price:24.00, category:'Lip Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'6', name:'Biodance Bio-Collagen Real Deep Mask Set', price:19.00, category:'Masks', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
+  { id:'7', name:'Round Lab Birch Juice Moisturizing Cream 80ml', price:28.00, category:'Moisturizers', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'8', name:'NIKORA Electroporation & LED Skin Booster Wand', price:129.00, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
+  { id:'9', name:'NIKORA Cryo-Cooling Ice Globe Sculptor', price:39.00, category:'Cooling Therapy', img:'https://images.unsplash.com/photo-1512290900673-10705a3962d3?w=400' },
+  { id:'10', name:'The NIKORA x K-Beauty Glass Skin Ritual Set', price:159.00, category:'Bundles & Sets', img:'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400' }
 ];
 
 function nkEsc(str){
@@ -1218,13 +1248,9 @@ function renderCart(){
 
   var text = document.getElementById('ship-progress-text');
   var fill = document.getElementById('ship-progress-fill');
-  var unlocked = true;   /* Express shipping is free on every order */
-  fill.style.width = '100%';
-  text.classList.toggle('unlocked', unlocked);
-  fill.classList.toggle('unlocked', unlocked);
-  text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
-    ? 'FREE Express Shipping on every order (5\u201312 business days)'
-    : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
+  if(window.NKShipping){ NKShipping.renderProgress(text, fill, payable, count, cart, NK_ICONS); }
+  else { var unlocked = payable >= NK_FREE_SHIP; fill.style.width = Math.min(100, payable / NK_FREE_SHIP * 100) + '%'; text.classList.toggle('unlocked', unlocked); fill.classList.toggle('unlocked', unlocked);
+    text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked ? 'You\u2019ve unlocked FREE Express Shipping!' : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping'); }
 
   renderCartRecs(cart);
 }
@@ -1546,6 +1572,23 @@ function fInitReveal(){
 }
 
 /* ---------------- Init ---------------- */
+
+/* ---------- Header offset: measures the site header (rendered by nav.js) and exposes --hdr-h so sticky tabs / anchor targets never sit underneath it ---------- */
+(function(){
+  function measure(){
+    var h = 0, kids = document.body ? document.body.children : [];
+    for(var i = 0; i < kids.length && i < 8; i++){
+      var el = kids[i], cs = window.getComputedStyle(el);
+      if((cs.position === 'fixed' || cs.position === 'sticky') && el.getBoundingClientRect().top <= 1 && el.offsetHeight > 30 && el.offsetHeight < 200){ h = Math.max(h, el.offsetHeight); }
+    }
+    if(h) document.documentElement.style.setProperty('--hdr-h', h + 'px');
+    var tabs = document.querySelector('.pv-side');
+    document.documentElement.style.setProperty('--pv-tabs-h', (tabs && window.innerWidth <= 960 ? tabs.offsetHeight : 0) + 'px');
+  }
+  window.addEventListener('load', measure); window.addEventListener('resize', measure); window.addEventListener('orientationchange', measure);
+  document.addEventListener('DOMContentLoaded', measure); setTimeout(measure, 400); setTimeout(measure, 1500);
+})();
+
 /* ---------- Legal tabs: click-to-scroll + scroll-spy (sidebar on desktop, scrollable tabs on mobile) ---------- */
 function pvInitTabs(){
   var tabs = Array.prototype.slice.call(document.querySelectorAll('[data-pv-tab]'));
