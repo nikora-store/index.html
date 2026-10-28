@@ -720,6 +720,7 @@ footer.site{border-top:1px solid var(--line); padding:60px 0 30px; margin-top:20
 }
 @media(prefers-reduced-motion:reduce){.nk-hs-track{transition:none}.nk-hs-btn:hover{transform:none}}
 </style>
+<script src="shipping-rules.js"></script>
 </head>
 <body>
 <script src="nav.js"></script>
@@ -951,7 +952,7 @@ footer.site{border-top:1px solid var(--line); padding:60px 0 30px; margin-top:20
     <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="ship-progress-wrap">
-    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Add $50.00 more to unlock FREE Express Shipping</div>
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on orders of $50.00+ &middot; $4.99 flat rate below</div>
     <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
   </div>
   <div class="cart-items" id="cart-items-list"></div>
@@ -1103,14 +1104,16 @@ var NK_ICONS = {
 
 /* Fallback pool so the recommendations strip is NEVER empty (used until Firebase '/products' answers, or if it fails/is empty). */
 var NK_FALLBACK = [
-  { id:'1',  name:'NIKORA RED Light & EMS Facial Wand 4-in-1', price:34.99, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
-  { id:'2',  name:'3D EMS Gua Sha Sculptor', price:24.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400' },
-  { id:'3',  name:'Hydro-Vacuum Pore Cleaner', price:29.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
-  { id:'4',  name:'LED Therapy Mask 7-in-1 Pro', price:49.99, category:'LED Therapy', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
-  { id:'5',  name:'EMS Body Sculptor RF', price:59.99, category:'Body Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
-  { id:'6',  name:'Sonic Eye Massager', price:19.99, category:'Eye Care', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
-  { id:'7',  name:'Ultrasonic Skin Scrubber', price:24.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
-  { id:'8',  name:'Thermal Neck & Face Massager', price:39.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' }
+  { id:'1', name:'COSRX Advanced Snail 96 Mucin Power Essence', price:25.00, category:'Essences', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
+  { id:'2', name:'Anua Heartleaf 77% Soothing Toner 250ml', price:22.00, category:'Toners', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
+  { id:'3', name:'Beauty of Joseon Relief Sun: Rice + Probiotics SPF50+', price:18.00, category:'Sun Care', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' },
+  { id:'4', name:'Skin1004 Madagascar Centella Ampoule 100ml', price:24.00, category:'Serums & Ampoules', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
+  { id:'5', name:'Laneige Lip Sleeping Mask Berry', price:24.00, category:'Lip Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'6', name:'Biodance Bio-Collagen Real Deep Mask Set', price:19.00, category:'Masks', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
+  { id:'7', name:'Round Lab Birch Juice Moisturizing Cream 80ml', price:28.00, category:'Moisturizers', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'8', name:'NIKORA Electroporation & LED Skin Booster Wand', price:129.00, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
+  { id:'9', name:'NIKORA Cryo-Cooling Ice Globe Sculptor', price:39.00, category:'Cooling Therapy', img:'https://images.unsplash.com/photo-1512290900673-10705a3962d3?w=400' },
+  { id:'10', name:'The NIKORA x K-Beauty Glass Skin Ritual Set', price:159.00, category:'Bundles & Sets', img:'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400' }
 ];
 
 function nkEsc(str){
@@ -1386,13 +1389,9 @@ function renderCart(){
 
   var text = document.getElementById('ship-progress-text');
   var fill = document.getElementById('ship-progress-fill');
-  var unlocked = payable >= NK_FREE_SHIP;
-  fill.style.width = Math.min(100, (payable / NK_FREE_SHIP) * 100) + '%';
-  text.classList.toggle('unlocked', unlocked);
-  fill.classList.toggle('unlocked', unlocked);
-  text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
-    ? 'You\u2019ve unlocked FREE Express Shipping!'
-    : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
+  if(window.NKShipping){ NKShipping.renderProgress(text, fill, payable, count, cart, NK_ICONS); }
+  else { var unlocked = payable >= NK_FREE_SHIP; fill.style.width = Math.min(100, payable / NK_FREE_SHIP * 100) + '%'; text.classList.toggle('unlocked', unlocked); fill.classList.toggle('unlocked', unlocked);
+    text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked ? 'You\u2019ve unlocked FREE Express Shipping!' : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping'); }
 
   renderCartRecs(cart);
 }
