@@ -15,7 +15,7 @@
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shipping Policy — NIKORA</title>
-<meta name="description" content="NIKORA Shipping Policy: 1–3 business days processing at our CJ Dropshipping warehouse, 5–12 business days tracked transit, free Express shipping, tracking and lost-parcel protection.">
+<meta name="description" content="NIKORA Shipping Policy: free Express shipping on orders of $50.00 and above, $4.99 flat rate below. K-Dropshipping (K-Beauty) and QKSource (devices) delivery times, split packages, tracking, customs and address changes.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -680,7 +680,45 @@ h1.f-title em{font-style:italic; color:var(--gold);}
   .pv-block{scroll-margin-top:150px;}
 }
 @media (max-width:700px){ .pv-links{grid-template-columns:1fr;} .pv-card-head{gap:12px;} .pv-ico{width:42px; height:42px;} }
+
+/* ---------- Shipping page components ---------- */
+.ship-facts{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:18px 0 4px;}
+.ship-facts .sf{display:flex; flex-direction:column; gap:4px; padding:16px 18px; border-radius:16px; background:rgba(200,155,84,.09); border:1px solid rgba(200,155,84,.3);}
+.ship-facts .sf b{font-family:'Playfair Display',serif; font-weight:600; font-size:26px; line-height:1.1; color:#C89B54;}
+.ship-facts .sf span{font-size:12.5px; line-height:1.5; color:var(--text-soft);}
+.ship-table-wrap{overflow-x:auto; margin:14px 0 0; border:1px solid var(--line); border-radius:14px;}
+.ship-table{width:100%; border-collapse:collapse; font-size:14px; min-width:420px;}
+.ship-table th, .ship-table td{padding:12px 16px; text-align:left; border-bottom:1px solid var(--line); color:var(--text-soft);}
+.ship-table th{font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-faint); background:rgba(200,155,84,.07);}
+.ship-table tr:last-child td{border-bottom:none;}
+.ship-table td strong{color:var(--text);}
+.ship-table .ship-free{color:#C89B54;}
+.ship-notice{margin:16px 0; padding:16px 18px; border-radius:14px; border:1px solid rgba(200,155,84,.45); border-left-width:4px; background:rgba(200,155,84,.1); font-size:14px; line-height:1.65; color:var(--text-soft);}
+.ship-notice b{color:var(--text);}
+@media (max-width:700px){ .ship-facts{grid-template-columns:1fr;} .ship-facts .sf{flex-direction:row; align-items:center; gap:14px;} .ship-facts .sf b{font-size:22px; min-width:84px;} }
+
+/* ---------- Header / sticky-tab offsets and small-screen scaling ---------- */
+:root{--hdr-h:73px; --pv-tabs-h:0px;}
+html{scroll-padding-top:calc(var(--hdr-h) + 12px);}
+.pv-side{top:calc(var(--hdr-h) + 16px);}
+.pv-block{scroll-margin-top:calc(var(--hdr-h) + 20px);}
+.pv-card, .pv-sub, .pv-lede, .pv-help p, .f-sub{overflow-wrap:anywhere;}
+.f-title{font-size:clamp(30px,8vw,56px); line-height:1.12;}
+@media (max-width:960px){
+  .pv-side{top:var(--hdr-h); z-index:60; margin-top:6px; padding-top:6px; background:linear-gradient(var(--canvas, #0B0B0E) 70%, transparent);}
+  .pv-block{scroll-margin-top:calc(var(--hdr-h) + var(--pv-tabs-h) + 18px);}
+  .pv-tabs ul{scroll-snap-type:x proximity; padding:2px;}
+  .pv-tab{scroll-snap-align:start;}
+}
+@media (max-width:700px){
+  .pv-card{padding:22px 18px;} .pv-card-head{align-items:flex-start;} .pv-card h2{font-size:clamp(21px,6vw,26px);}
+  .pv-sub p, .pv-sub li{font-size:14px; line-height:1.7;}
+  .pv-help{padding:22px 18px; gap:16px;} .pv-help-body{flex:1 1 100%; flex-wrap:wrap; gap:12px;} .pv-mailbtn{width:100%; justify-content:center;}
+}
+@media (max-width:380px){ .pv-tab{padding:9px 12px; font-size:13px;} .pv-tab svg{display:none;} }
+@media (orientation:landscape) and (max-height:500px){ .pv-side{position:static; margin-top:0; padding-top:0; background:none;} .pv-block{scroll-margin-top:calc(var(--hdr-h) + 12px);} }
 </style>
+<script src="shipping-rules.js"></script>
 </head>
 <body>
 <script src="nav.js"></script>
@@ -693,7 +731,7 @@ h1.f-title em{font-style:italic; color:var(--gold);}
     <div class="container">
       <span class="f-eyebrow reveal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg>Policies</span>
       <h1 class="f-title reveal" id="pv-h1">Shipping <em>Policy</em></h1>
-      <p class="f-sub reveal">Free tracked Express shipping on every order, fulfilled from our CJ Dropshipping warehouse and delivered by international carriers such as YunExpress.</p>
+      <p class="f-sub reveal">Free Express shipping on orders of $50.00 and above, a flat $4.99 below that. K-Beauty ships from K-Dropshipping and beauty devices from QKSource, with separate delivery windows.</p>
       <div class="pv-eff-wrap reveal"><span class="pv-eff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Effective Date: October 2026</span></div>
     </div>
   </section>
@@ -706,37 +744,44 @@ h1.f-title em{font-style:italic; color:var(--gold);}
         <aside class="pv-side" aria-label="On this page">
           <nav class="glass-card pv-tabs" aria-label="On this page">
             <p class="pv-tabs-title">On this page</p>
-            <ul><li><a class="pv-tab" href="#processing-delivery" data-pv-tab="processing-delivery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><span>Processing &amp; Delivery</span></a></li><li><a class="pv-tab" href="#costs-carriers" data-pv-tab="costs-carriers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg><span>Costs &amp; Carriers</span></a></li><li><a class="pv-tab" href="#tracking-issues" data-pv-tab="tracking-issues"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Tracking &amp; Delivery Issues</span></a></li><li><a class="pv-tab" href="#customs-address" data-pv-tab="customs-address"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21s7-6.1 7-11.5A7 7 0 005 9.5C5 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>Customs &amp; Address</span></a></li></ul>
+            <ul><li><a class="pv-tab" href="#processing-dispatch" data-pv-tab="processing-dispatch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><span>Processing &amp; Dispatch</span></a></li><li><a class="pv-tab" href="#rates-transit" data-pv-tab="rates-transit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg><span>Rates &amp; Transit Times</span></a></li><li><a class="pv-tab" href="#order-tracking" data-pv-tab="order-tracking"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Order Tracking</span></a></li><li><a class="pv-tab" href="#customs-taxes" data-pv-tab="customs-taxes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21s7-6.1 7-11.5A7 7 0 005 9.5C5 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>Customs &amp; Taxes</span></a></li><li><a class="pv-tab" href="#address-corrections" data-pv-tab="address-corrections"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21s-7-6.2-7-11.2A7 7 0 0112 3a7 7 0 017 6.8C19 14.8 12 21 12 21z"/><circle cx="12" cy="10" r="2.4"/></svg><span>Address Corrections</span></a></li></ul>
           </nav>
         </aside>
 
         <div class="pv-main">
-<section class="pv-block" id="processing-delivery" aria-labelledby="processing-delivery-h">
+<section class="pv-block" id="processing-dispatch" aria-labelledby="processing-dispatch-h">
   <article class="glass-card pv-card reveal">
-    <header class="pv-card-head"><span class="pv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span><div><span class="pv-kicker">Section 1</span><h2 id="processing-delivery-h">Processing &amp; Delivery Times</h2></div></header>
-    <p class="pv-lede">From our warehouse to your door in roughly 6&ndash;15 business days, with tracking all the way.</p>
-    <div class="pv-sub"><h3>Order Processing (Handling)</h3><p>Every order is processed in <strong>1&ndash;3 business days</strong> at our CJ Dropshipping warehouse. During that time we run a quality check, assemble your order and pack it carefully before dispatch.</p></div><div class="pv-sub"><h3>Transit Time</h3><p>Once dispatched, your parcel travels with international carriers such as <strong>YunExpress</strong> and usually arrives in <strong>5&ndash;12 business days</strong>, depending on your destination.</p></div><div class="pv-sub"><h3>Estimated Total</h3><p>Plan on about <strong>6&ndash;15 business days</strong> from order to delivery. Your estimated arrival window appears at checkout and in your order confirmation. Business days are Monday to Friday, excluding public holidays.</p></div><div class="pv-sub"><h3>Please Note</h3><p>Delivery times are estimates, not guarantees. They can vary with your location, customs checks, carrier capacity and peak seasons such as holidays.</p></div>
+    <header class="pv-card-head"><span class="pv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span><div><span class="pv-kicker">Section 1</span><h2 id="processing-dispatch-h">Processing &amp; Dispatch</h2></div></header>
+    <p class="pv-lede">Every order is processed in 1&ndash;3 business days, then dispatched with tracking by one of our two fulfillment partners.</p>
+    <div class="pv-sub"><h3>Order Processing</h3><p>Every order is processed in <strong>1&ndash;3 business days</strong> (Monday to Friday, excluding public holidays), whichever partner ships it. During that time the order gets a quality check and careful packaging before dispatch.</p></div><div class="pv-sub"><h3>Two Fulfillment Partners</h3><p><strong>K-Dropshipping</strong> ships our K-Beauty products (COSRX, Anua, Beauty of Joseon, Skin1004, Laneige, Biodance and Round Lab). <strong>QKSource</strong> ships our beauty devices (the NIKORA Booster Wand and the Cryo Ice Globe). The Glass Skin Ritual Set contains items from both, so it ships in two packages.</p></div><div class="ship-notice" role="note"><b>Multi-Package Delivery Notice</b><br>Orders containing both skincare and devices, or the Glass Skin Ritual Set, arrive in <strong>separate packages with individual tracking numbers, at no additional charge</strong>. Each package has its own delivery window, so they can arrive on different days. Shipping is charged only once per order, never per package.</div><div class="pv-sub"><h3>Dispatch Confirmation</h3><p>When a package leaves its warehouse we email you its tracking number. Orders with two packages receive a tracking number for each.</p></div>
   </article>
 </section>
-<section class="pv-block" id="costs-carriers" aria-labelledby="costs-carriers-h">
+<section class="pv-block" id="rates-transit" aria-labelledby="rates-transit-h">
   <article class="glass-card pv-card reveal">
-    <header class="pv-card-head"><span class="pv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span><div><span class="pv-kicker">Section 2</span><h2 id="costs-carriers-h">Shipping Costs &amp; Carriers</h2></div></header>
-    <p class="pv-lede">Simple and transparent: the shipping line at checkout shows exactly what you pay.</p>
-    <div class="pv-sub"><h3>Shipping Cost</h3><p><strong>Express shipping is free on every order.</strong> You will see &ldquo;FREE&rdquo; on the shipping line at checkout.</p></div><div class="pv-sub"><h3>Fulfilment &amp; Carriers</h3><p>Orders are packed at our CJ Dropshipping warehouse and handed to carriers such as YunExpress. The carrier used depends on your destination and may change so that your parcel arrives as quickly as possible.</p></div>
+    <header class="pv-card-head"><span class="pv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span><div><span class="pv-kicker">Section 2</span><h2 id="rates-transit-h">Rates &amp; Transit Times</h2></div></header>
+    <p class="pv-lede">Free Express shipping from $50.00, a flat $4.99 below, and delivery windows that depend on the supplier.</p>
+    <div class="ship-facts" role="list"><div class="sf" role="listitem"><b>FREE</b><span>Express shipping on orders of $50.00 and above</span></div><div class="sf" role="listitem"><b>$4.99</b><span>Flat rate on orders under $50.00, charged once per order</span></div><div class="sf" role="listitem"><b>2 suppliers</b><span>Separate delivery windows, one shipping charge</span></div></div><div class="pv-sub"><h3>Shipping Rates &amp; the $50 Free Shipping Threshold</h3><p><strong>Express shipping is FREE on orders of $50.00 and above</strong> (after any discount), applied to the <strong>entire order</strong> whether it ships in one package or two. Orders under $50.00 pay a flat rate of <strong>$4.99</strong>, charged <strong>once per order</strong>, never per package. The shipping line at checkout shows exactly what you pay, and the progress bar in your cart shows how close you are to free shipping.</p></div><div class="pv-sub"><h3>Delivery Times by Supplier</h3><p>Transit starts once your package is dispatched. Estimates are business days (Monday to Friday, excluding public holidays) for US addresses.</p><div class="ship-table-wrap"><table class="ship-table"><thead><tr><th scope="col">Supplier &amp; products</th><th scope="col">Processing</th><th scope="col">Transit</th><th scope="col">Total estimate</th></tr></thead><tbody><tr><td><strong>K-Dropshipping</strong><br>K-Beauty skincare (products 1&ndash;7)</td><td>1&ndash;3 days</td><td>7&ndash;15 days</td><td><strong>8&ndash;18 days</strong></td></tr><tr><td><strong>QKSource</strong><br>Beauty devices (Microcurrent Wand &amp; Cryo Globe, products 8&ndash;9)</td><td>1&ndash;3 days</td><td>3&ndash;7 days</td><td><strong>4&ndash;10 days</strong></td></tr><tr><td><strong>Glass Skin Ritual Set</strong><br>2 packages</td><td>1&ndash;3 days</td><td>K-Beauty 7&ndash;15, device 3&ndash;7</td><td><strong>Device 4&ndash;10 days, K-Beauty 8&ndash;18 days</strong></td></tr></tbody></table></div></div><div class="pv-sub"><h3>K-Beauty Skincare: K-Dropshipping (7&ndash;15 days)</h3><p>K-Beauty skincare orders are processed in 1&ndash;3 business days and then travel for 7&ndash;15 business days by standard express, tracked end to end. Plan on about 8&ndash;18 business days from order to delivery.</p></div><div class="pv-sub"><h3>Beauty Devices: QKSource (3&ndash;7 days)</h3><p>Device orders are processed in 1&ndash;3 business days and then travel for 3&ndash;7 business days by US domestic express with carriers such as SpeedX, GOFO Express, UNI or USPS, tracked end to end. Plan on about 4&ndash;10 business days from order to delivery. The carrier may change so that your parcel arrives as quickly as possible.</p></div><div class="pv-sub"><h3>Please Note</h3><p>Delivery times are estimates, not guarantees, and can vary with your location, customs checks, carrier capacity and peak seasons. If you order from outside the US, delivery can take longer than the estimates above.</p></div>
   </article>
 </section>
-<section class="pv-block" id="tracking-issues" aria-labelledby="tracking-issues-h">
+<section class="pv-block" id="order-tracking" aria-labelledby="order-tracking-h">
   <article class="glass-card pv-card reveal">
-    <header class="pv-card-head"><span class="pv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><span class="pv-kicker">Section 3</span><h2 id="tracking-issues-h">Tracking &amp; Delivery Issues</h2></div></header>
-    <p class="pv-lede">Follow your parcel and know exactly what we do if something goes wrong.</p>
-    <div class="pv-sub"><h3>Tracking Your Order</h3><p>When your order is dispatched we send you a tracking number by email. Follow your parcel any time on the <a href="track-order.html">Track Order</a> page using your order number (it starts with #NK-) and the email or phone number you ordered with. Tracking updates can take a little time to appear after dispatch.</p></div><div class="pv-sub"><h3>Delayed, Damaged or Lost Parcels</h3><p>If tracking has been <strong>inactive for more than 14 days</strong>, or your parcel has been <strong>in transit for more than 30 days</strong>, it counts as lost. Contact us and we will reship it for free or refund you in full. Items that arrive defective or damaged in shipping are covered in the same way.</p><div class="pv-links"><a class="pv-linkcard" href="guarantee.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg><strong>30-Day Guarantee</strong><span>Money-back and loss &amp; damage protection.</span></a><a class="pv-linkcard" href="track-order.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><strong>Track Order</strong><span>Follow your parcel in real time.</span></a><a class="pv-linkcard" href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/></svg><strong>Contact Support</strong><span>Reach our team any day.</span></a></div></div>
+    <header class="pv-card-head"><span class="pv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><span class="pv-kicker">Section 3</span><h2 id="order-tracking-h">Order Tracking</h2></div></header>
+    <p class="pv-lede">Follow every package and know exactly what we do if something goes wrong.</p>
+    <div class="pv-sub"><h3>Tracking Your Order</h3><p>Each package has its own tracking number, emailed when it is dispatched. Follow your parcels any time on the <a href="track-order.html">Track Order</a> page using your order number (it starts with #NK-) and the email or phone number you ordered with. Tracking updates can take a little time to appear after dispatch.</p></div><div class="pv-sub"><h3>Split Shipments</h3><p>If your order ships in two packages, one being delivered before the other is normal. The remaining package is not delayed or lost. Track each package separately.</p></div><div class="pv-sub"><h3>Delayed, Damaged or Lost Packages</h3><p>If a package's tracking has been <strong>inactive for more than 14 days</strong>, or it has been <strong>in transit for more than 30 days</strong>, it counts as lost. Contact us and we will reship it for free or refund you in full. Items that arrive defective or damaged in shipping are covered in the same way. Protection applies to each package separately.</p><div class="pv-links"><a class="pv-linkcard" href="guarantee.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><strong>Our Guarantee</strong><span>Loss &amp; damage protection details.</span></a></div></div>
   </article>
 </section>
-<section class="pv-block" id="customs-address" aria-labelledby="customs-address-h">
+<section class="pv-block" id="customs-taxes" aria-labelledby="customs-taxes-h">
   <article class="glass-card pv-card reveal">
-    <header class="pv-card-head"><span class="pv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21s7-6.1 7-11.5A7 7 0 005 9.5C5 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span><div><span class="pv-kicker">Section 4</span><h2 id="customs-address-h">Customs &amp; Address Accuracy</h2></div></header>
-    <p class="pv-lede">A few things that can affect delivery, and what you can do about them.</p>
-    <div class="pv-sub"><h3>Customs</h3><p>International parcels can be inspected by customs, which may add time. Depending on your country, import duties or taxes may apply on arrival. These are set by local authorities, not by NIKORA.</p></div><div class="pv-sub"><h3>Delivery Address</h3><p>Please check your delivery address carefully at checkout. To change it, email <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a> with your order number as soon as possible. We can only change an address before your order is dispatched.</p></div>
+    <header class="pv-card-head"><span class="pv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21s7-6.1 7-11.5A7 7 0 005 9.5C5 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span><div><span class="pv-kicker">Section 4</span><h2 id="customs-taxes-h">Customs &amp; Taxes</h2></div></header>
+    <p class="pv-lede">Parcels can be inspected by customs, and local duties may apply.</p>
+    <div class="pv-sub"><h3>Customs Inspection</h3><p>Parcels can be inspected by customs, which may add time to delivery. Delays caused by customs are outside our control and are not counted against the delivery estimates.</p></div><div class="pv-sub"><h3>Import Duties &amp; Taxes</h3><p>Depending on your country, import duties or taxes may apply on arrival. These are set by local authorities, not by NIKORA. If you have questions before you order, email <a href="mailto:nikora.support@gmail.com">nikora.support@gmail.com</a>.</p></div>
+  </article>
+</section>
+<section class="pv-block" id="address-corrections" aria-labelledby="address-corrections-h">
+  <article class="glass-card pv-card reveal">
+    <header class="pv-card-head"><span class="pv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21s-7-6.2-7-11.2A7 7 0 0112 3a7 7 0 017 6.8C19 14.8 12 21 12 21z"/><circle cx="12" cy="10" r="2.4"/></svg></span><div><span class="pv-kicker">Section 5</span><h2 id="address-corrections-h">Address Corrections</h2></div></header>
+    <p class="pv-lede">Check your delivery address at checkout. Changes are possible only before dispatch.</p>
+    <div class="pv-sub"><h3>Before Your Order Ships</h3><p>To change or correct your delivery address, email <a href="mailto:nikora.support@gmail.com?subject=Address%20change">nikora.support@gmail.com</a> with your order number <strong>as soon as possible</strong>. Orders are processed in 1&ndash;3 business days, so the sooner you write, the better the chance we can update it in time.</p></div><div class="pv-sub"><h3>After Dispatch</h3><p>Once a package is dispatched its address can no longer be edited. In a split order, one package may already be on its way while the other is still processing, so please double-check your address at checkout.</p></div>
   </article>
 </section>
 
@@ -807,7 +852,7 @@ h1.f-title em{font-style:italic; color:var(--gold);}
     <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="ship-progress-wrap">
-    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on every order (5&ndash;12 business days)</div>
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on orders of $50.00+ &middot; $4.99 flat rate below</div>
     <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
   </div>
   <div class="cart-items" id="cart-items-list"></div>
@@ -942,14 +987,16 @@ var NK_ICONS = {
 
 /* Fallback pool so the recommendations strip is NEVER empty (used until Firebase '/products' answers, or if it fails/is empty). */
 var NK_FALLBACK = [
-  { id:'1',  name:'NIKORA RED Light & EMS Facial Wand 4-in-1', price:34.99, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
-  { id:'2',  name:'3D EMS Gua Sha Sculptor', price:24.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400' },
-  { id:'3',  name:'Hydro-Vacuum Pore Cleaner', price:29.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
-  { id:'4',  name:'LED Therapy Mask 7-in-1 Pro', price:49.99, category:'LED Therapy', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
-  { id:'5',  name:'EMS Body Sculptor RF', price:59.99, category:'Body Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
-  { id:'6',  name:'Sonic Eye Massager', price:19.99, category:'Eye Care', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
-  { id:'7',  name:'Ultrasonic Skin Scrubber', price:24.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
-  { id:'8',  name:'Thermal Neck & Face Massager', price:39.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' }
+  { id:'1', name:'COSRX Advanced Snail 96 Mucin Power Essence', price:25.00, category:'Essences', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
+  { id:'2', name:'Anua Heartleaf 77% Soothing Toner 250ml', price:22.00, category:'Toners', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
+  { id:'3', name:'Beauty of Joseon Relief Sun: Rice + Probiotics SPF50+', price:18.00, category:'Sun Care', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' },
+  { id:'4', name:'Skin1004 Madagascar Centella Ampoule 100ml', price:24.00, category:'Serums & Ampoules', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
+  { id:'5', name:'Laneige Lip Sleeping Mask Berry', price:24.00, category:'Lip Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'6', name:'Biodance Bio-Collagen Real Deep Mask Set', price:19.00, category:'Masks', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
+  { id:'7', name:'Round Lab Birch Juice Moisturizing Cream 80ml', price:28.00, category:'Moisturizers', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'8', name:'NIKORA Electroporation & LED Skin Booster Wand', price:129.00, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
+  { id:'9', name:'NIKORA Cryo-Cooling Ice Globe Sculptor', price:39.00, category:'Cooling Therapy', img:'https://images.unsplash.com/photo-1512290900673-10705a3962d3?w=400' },
+  { id:'10', name:'The NIKORA x K-Beauty Glass Skin Ritual Set', price:159.00, category:'Bundles & Sets', img:'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400' }
 ];
 
 function nkEsc(str){
@@ -1225,13 +1272,9 @@ function renderCart(){
 
   var text = document.getElementById('ship-progress-text');
   var fill = document.getElementById('ship-progress-fill');
-  var unlocked = true;   /* Express shipping is free on every order */
-  fill.style.width = '100%';
-  text.classList.toggle('unlocked', unlocked);
-  fill.classList.toggle('unlocked', unlocked);
-  text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
-    ? 'FREE Express Shipping on every order (5\u201312 business days)'
-    : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
+  if(window.NKShipping){ NKShipping.renderProgress(text, fill, payable, count, cart, NK_ICONS); }
+  else { var unlocked = payable >= NK_FREE_SHIP; fill.style.width = Math.min(100, payable / NK_FREE_SHIP * 100) + '%'; text.classList.toggle('unlocked', unlocked); fill.classList.toggle('unlocked', unlocked);
+    text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked ? 'You\u2019ve unlocked FREE Express Shipping!' : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping'); }
 
   renderCartRecs(cart);
 }
@@ -1553,6 +1596,23 @@ function fInitReveal(){
 }
 
 /* ---------------- Init ---------------- */
+
+/* ---------- Header offset: measures the site header rendered by nav.js and exposes --hdr-h ---------- */
+(function(){
+  function measure(){
+    var h = 0, kids = document.body ? document.body.children : [];
+    for(var i = 0; i < kids.length && i < 8; i++){
+      var el = kids[i], cs = window.getComputedStyle(el);
+      if((cs.position === 'fixed' || cs.position === 'sticky') && el.getBoundingClientRect().top <= 1 && el.offsetHeight > 30 && el.offsetHeight < 200) h = Math.max(h, el.offsetHeight);
+    }
+    if(h) document.documentElement.style.setProperty('--hdr-h', h + 'px');
+    var t = document.querySelector('.pv-side');
+    document.documentElement.style.setProperty('--pv-tabs-h', (t && window.innerWidth <= 960 ? t.offsetHeight : 0) + 'px');
+  }
+  window.addEventListener('load', measure); window.addEventListener('resize', measure); window.addEventListener('orientationchange', measure);
+  document.addEventListener('DOMContentLoaded', measure); setTimeout(measure, 400); setTimeout(measure, 1500);
+})();
+
 /* ---------- Legal tabs: click-to-scroll + scroll-spy (sidebar on desktop, scrollable tabs on mobile) ---------- */
 function pvInitTabs(){
   var tabs = Array.prototype.slice.call(document.querySelectorAll('[data-pv-tab]'));
