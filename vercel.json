@@ -1,9 +1,6 @@
 {
   "functions": {
-    "api/checkout/stripe-complete.js": { "maxDuration": 30 },
-    "api/checkout/paypal-capture.js": { "maxDuration": 30 },
-    "api/webhooks/stripe.js": { "maxDuration": 30 },
-    "api/webhooks/fulfillment.js": { "maxDuration": 30 },
+    "api/checkout/*.js": { "maxDuration": 30 },
     "api/wc/v3/orders.js": { "maxDuration": 30 }
   },
   "rewrites": [
