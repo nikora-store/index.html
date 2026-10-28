@@ -1,6 +1,19 @@
 {
   "functions": {
-    "api/orders/create.js": { "maxDuration": 30 },
-    "api/webhooks/fulfillment.js": { "maxDuration": 30 }
-  }
+    "api/checkout/stripe-complete.js": { "maxDuration": 30 },
+    "api/checkout/paypal-capture.js": { "maxDuration": 30 },
+    "api/webhooks/stripe.js": { "maxDuration": 30 },
+    "api/webhooks/fulfillment.js": { "maxDuration": 30 },
+    "api/wc/v3/orders.js": { "maxDuration": 30 }
+  },
+  "rewrites": [
+    { "source": "/wp-json", "destination": "/api/wc/v3/orders?route=root" },
+    { "source": "/wp-json/", "destination": "/api/wc/v3/orders?route=root" },
+    { "source": "/wp-json/wc/v3", "destination": "/api/wc/v3/orders?route=namespace" },
+    { "source": "/wp-json/wc/v3/", "destination": "/api/wc/v3/orders?route=namespace" },
+    { "source": "/wp-json/wc/v3/system_status", "destination": "/api/wc/v3/orders?route=system_status" },
+    { "source": "/wp-json/wc/v3/orders/:id", "destination": "/api/wc/v3/orders?id=:id" },
+    { "source": "/wp-json/wc/v3/orders", "destination": "/api/wc/v3/orders" },
+    { "source": "/wp-json/wc/v3/:path*", "destination": "/api/wc/v3/orders?route=other" }
+  ]
 }
