@@ -15,7 +15,7 @@
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>30-Day Money-Back Guarantee &amp; Loss Protection — NIKORA</title>
-<meta name="description" content="Every NIKORA order is covered by a 30-day money-back guarantee and free reshipment or a full refund for defective, damaged or lost packages.">
+<meta name="description" content="Every NIKORA order is covered by a 30-day money-back guarantee plus a free reshipment or full refund for defective, damaged or lost packages. Processing 1-3 business days; devices 3-7 and K-Beauty 7-15 business days in transit.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -658,7 +658,16 @@ h1.g-title em{font-style:italic; color:var(--gold);}
 .cover-big b{font-family:'Playfair Display',serif; font-weight:500; font-size:clamp(44px,5vw,62px); line-height:1; color:var(--gold);}
 .cover-big span{font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-faint);}
 .cover-lead{margin:0 0 6px; font-size:14.5px; line-height:1.6; color:var(--text-soft);}
+
+/* ---------- Anchor targets clear the fixed site header (and the sticky return card stays below it) ---------- */
+:root{--hdr-h:73px;}
+html{scroll-padding-top:calc(var(--hdr-h) + 12px);}
+#protection, #how-it-works, #returns, #faq{scroll-margin-top:calc(var(--hdr-h) + 16px);}
+.ret-card{top:calc(var(--hdr-h) + 20px);}
+@media (max-width:700px){ .g-title{font-size:clamp(30px,8.5vw,48px); line-height:1.12;} .g-sub, .cover-row span, .step p, .gbadge p{overflow-wrap:anywhere;} .cover, .step, .gbadge{padding-left:18px; padding-right:18px;} }
+@media (orientation:landscape) and (max-height:500px){ .ret-card{position:static;} }
 </style>
+<script src="shipping-rules.js"></script>
 </head>
 <body>
 <script src="nav.js"></script>
@@ -676,7 +685,7 @@ h1.g-title em{font-style:italic; color:var(--gold);}
           30-Day Money-Back Guarantee <span class="bar" aria-hidden="true"></span> Loss &amp; Damage Protection
         </span>
         <h1 class="g-title reveal" id="g-h1">Order with Confidence. <em>Every Order</em> Protected.</h1>
-        <p class="g-sub reveal">Try NIKORA risk-free for 30 days, and if your order arrives defective, gets damaged in shipping or goes missing, we reship it for free or refund you in full.</p>
+        <p class="g-sub reveal">Try NIKORA risk-free for 30 days. Every order ships tracked, and if it arrives defective, gets damaged in shipping or goes missing, we reship it for free or refund you in full.</p>
         <div class="g-ctas reveal">
           <a class="btn-primary" href="catalog.html">Shop Collection <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
           <a class="btn-ghost" href="#protection">See what&rsquo;s covered</a>
@@ -689,7 +698,7 @@ h1.g-title em{font-style:italic; color:var(--gold);}
           <p class="cover-lead">For items in unopened, unused condition.</p>
         </div>
         <div class="cover-row"><span class="cover-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 109-9 9.7 9.7 0 00-6.7 2.8L3 8"/><path d="M3 3v5h5"/><path d="M9.2 12.4l2.1 2.1 3.6-4"/></svg></span><div><b>100% free reshipment or full refund</b><span>Defective items, shipping damage and lost packages.</span></div></div>
-        <div class="cover-row"><span class="cover-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span><div><b>5&ndash;12 business days, fully tracked</b><span>After 1&ndash;3 business days of quality check, assembly and packaging.</span></div></div>
+        <div class="cover-row"><span class="cover-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span><div><b>3&ndash;15 business days, fully tracked</b><span>After 1&ndash;3 business days of processing: devices 3&ndash;7 days, K-Beauty 7&ndash;15 days in transit.</span></div></div>
         <div class="cover-row"><span class="cover-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.2A7 7 0 0112 3a7 7 0 017 6.8C19 14.8 12 21 12 21z"/><path d="M10.2 9a1.9 1.9 0 013.6.7c0 1.4-1.8 1.7-1.8 2.9M12 14.4v.1"/></svg></span><div><b>Lost? We step in at 14 days</b><span>Tracking inactive for more than 14 days, or transit over 30 days.</span></div></div>
       </div>
 
@@ -728,7 +737,7 @@ h1.g-title em{font-style:italic; color:var(--gold);}
         <div class="glass-card gbadge reveal">
           <span class="gb-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.2A7 7 0 0112 3a7 7 0 017 6.8C19 14.8 12 21 12 21z"/><path d="M10.2 9a1.9 1.9 0 013.6.7c0 1.4-1.8 1.7-1.8 2.9M12 14.4v.1"/></svg></span>
           <h3>Lost Package Protection</h3>
-          <p>If tracking is inactive for more than 14 days, or transit exceeds 30 days, we reship it free or refund you.</p>
+          <p>Each package has its own tracking. If a package&rsquo;s tracking is inactive for more than 14 days, or its transit exceeds 30 days, we reship it free or refund you.</p>
           <span class="gb-tag">14 / 30-day rule</span>
         </div>
         <div class="glass-card gbadge reveal">
@@ -762,7 +771,7 @@ h1.g-title em{font-style:italic; color:var(--gold);}
           <div class="step-head"><span class="step-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2a2 2 0 001.6 1.6h7.7a2 2 0 002-1.5L21 8H6"/><circle cx="10" cy="20.5" r="1.4"/><circle cx="17" cy="20.5" r="1.4"/></svg></span><span class="step-num" aria-hidden="true">01</span></div>
           <span class="step-label">Step 01</span>
           <h3>Processed &amp; Packed</h3>
-          <p>Your order goes to our CJ Dropshipping warehouse for a quality check, assembly and careful packaging.</p>
+          <p>Your order is processed in 1&ndash;3 business days by our fulfillment partners: K-Dropshipping for K-Beauty and QKSource for beauty devices.</p>
           <span class="step-tag"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>1&ndash;3 business days</span>
         </article>
 
@@ -771,7 +780,7 @@ h1.g-title em{font-style:italic; color:var(--gold);}
           <span class="step-label">Step 02</span>
           <h3>Shipped &amp; Tracked</h3>
           <p>Once dispatched you get your tracking number by email and on our <a href="track-order.html">tracking page</a>, with real-time updates to your door.</p>
-          <span class="step-tag"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>5&ndash;12 business days</span>
+          <span class="step-tag"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>7&ndash;15 business days</span>
         </article>
 
         <article class="glass-card step reveal">
@@ -834,7 +843,7 @@ h1.g-title em{font-style:italic; color:var(--gold);}
               <span class="faq-chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>
             </button></h3>
             <div class="faq-a" id="faq-a4" role="region" aria-labelledby="faq-q4"><div><div class="faq-a-inner">
-              Orders are processed in <strong>1&ndash;3 business days</strong> (quality check, assembly and packaging at our CJ Dropshipping warehouse), then ship in <strong>5&ndash;12 business days</strong> with real-time tracking. Tracking numbers activate within 1&ndash;3 business days after dispatch from the warehouse. <a href="track-order.html">Track an order</a>.
+              Orders are processed in <strong>1&ndash;3 business days</strong> (quality check and packaging through K-Dropshipping and QKSource), then ship tracked: <strong>3&ndash;7 business days</strong> for devices (QKSource) and <strong>7&ndash;15 business days</strong> for K-Beauty (K-Dropshipping). Orders with items from both suppliers arrive in separate packages. Tracking numbers activate within 1&ndash;3 business days after dispatch from the warehouse. <a href="track-order.html">Track an order</a>.
             </div></div></div>
           </div>
 
@@ -858,7 +867,7 @@ h1.g-title em{font-style:italic; color:var(--gold);}
         <h2 id="cta-h2">Shop <em>Risk-Free</em> Today</h2>
         <p>30-day money-back guarantee. Free reshipment or full refund for defective, damaged or lost orders.</p>
         <a class="btn-primary" href="catalog.html">Shop Collection <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <span class="cta-fine">Free Express Shipping &middot; 5&ndash;12 business days &middot; Real-time tracking</span>
+        <span class="cta-fine">Free Express Shipping from $50 &middot; Tracked delivery &middot; $4.99 flat rate below</span>
       </div>
     </div>
   </section>
@@ -914,7 +923,7 @@ h1.g-title em{font-style:italic; color:var(--gold);}
     <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="ship-progress-wrap">
-    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on every order (5&ndash;12 business days)</div>
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on orders of $50.00+ &middot; $4.99 flat rate below</div>
     <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
   </div>
   <div class="cart-items" id="cart-items-list"></div>
@@ -1049,14 +1058,16 @@ var NK_ICONS = {
 
 /* Fallback pool so the recommendations strip is NEVER empty (used until Firebase '/products' answers, or if it fails/is empty). */
 var NK_FALLBACK = [
-  { id:'1',  name:'NIKORA RED Light & EMS Facial Wand 4-in-1', price:34.99, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
-  { id:'2',  name:'3D EMS Gua Sha Sculptor', price:24.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400' },
-  { id:'3',  name:'Hydro-Vacuum Pore Cleaner', price:29.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
-  { id:'4',  name:'LED Therapy Mask 7-in-1 Pro', price:49.99, category:'LED Therapy', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
-  { id:'5',  name:'EMS Body Sculptor RF', price:59.99, category:'Body Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
-  { id:'6',  name:'Sonic Eye Massager', price:19.99, category:'Eye Care', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
-  { id:'7',  name:'Ultrasonic Skin Scrubber', price:24.99, category:'Cleansing', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
-  { id:'8',  name:'Thermal Neck & Face Massager', price:39.99, category:'Sculptors', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' }
+  { id:'1', name:'COSRX Advanced Snail 96 Mucin Power Essence', price:25.00, category:'Essences', img:'https://images.unsplash.com/photo-1556228722-d119f018d480?w=400' },
+  { id:'2', name:'Anua Heartleaf 77% Soothing Toner 250ml', price:22.00, category:'Toners', img:'https://images.unsplash.com/photo-1608248597261-83325b6ba584?w=400' },
+  { id:'3', name:'Beauty of Joseon Relief Sun: Rice + Probiotics SPF50+', price:18.00, category:'Sun Care', img:'https://images.unsplash.com/photo-1567928254714-3a216c5b969d?w=400' },
+  { id:'4', name:'Skin1004 Madagascar Centella Ampoule 100ml', price:24.00, category:'Serums & Ampoules', img:'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400' },
+  { id:'5', name:'Laneige Lip Sleeping Mask Berry', price:24.00, category:'Lip Care', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'6', name:'Biodance Bio-Collagen Real Deep Mask Set', price:19.00, category:'Masks', img:'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400' },
+  { id:'7', name:'Round Lab Birch Juice Moisturizing Cream 80ml', price:28.00, category:'Moisturizers', img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400' },
+  { id:'8', name:'NIKORA Electroporation & LED Skin Booster Wand', price:129.00, category:'Facial Wand', img:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400' },
+  { id:'9', name:'NIKORA Cryo-Cooling Ice Globe Sculptor', price:39.00, category:'Cooling Therapy', img:'https://images.unsplash.com/photo-1512290900673-10705a3962d3?w=400' },
+  { id:'10', name:'The NIKORA x K-Beauty Glass Skin Ritual Set', price:159.00, category:'Bundles & Sets', img:'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400' }
 ];
 
 function nkEsc(str){
@@ -1332,13 +1343,9 @@ function renderCart(){
 
   var text = document.getElementById('ship-progress-text');
   var fill = document.getElementById('ship-progress-fill');
-  var unlocked = true;   /* Express shipping is free on every order */
-  fill.style.width = '100%';
-  text.classList.toggle('unlocked', unlocked);
-  fill.classList.toggle('unlocked', unlocked);
-  text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
-    ? 'FREE Express Shipping on every order (5\u201312 business days)'
-    : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
+  if(window.NKShipping){ NKShipping.renderProgress(text, fill, payable, count, cart, NK_ICONS); }
+  else { var unlocked = payable >= NK_FREE_SHIP; fill.style.width = Math.min(100, payable / NK_FREE_SHIP * 100) + '%'; text.classList.toggle('unlocked', unlocked); fill.classList.toggle('unlocked', unlocked);
+    text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked ? 'You\u2019ve unlocked FREE Express Shipping!' : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping'); }
 
   renderCartRecs(cart);
 }
@@ -1742,6 +1749,22 @@ function gInitTilt(){
 }
 
 /* ---------------- Init ---------------- */
+/* ---------- Header offset: measures the site header (rendered by nav.js) and exposes --hdr-h so sticky tabs / anchor targets never sit underneath it ---------- */
+(function(){
+  function measure(){
+    var h = 0, kids = document.body ? document.body.children : [];
+    for(var i = 0; i < kids.length && i < 8; i++){
+      var el = kids[i], cs = window.getComputedStyle(el);
+      if((cs.position === 'fixed' || cs.position === 'sticky') && el.getBoundingClientRect().top <= 1 && el.offsetHeight > 30 && el.offsetHeight < 200){ h = Math.max(h, el.offsetHeight); }
+    }
+    if(h) document.documentElement.style.setProperty('--hdr-h', h + 'px');
+    var tabs = document.querySelector('.pv-side');
+    document.documentElement.style.setProperty('--pv-tabs-h', (tabs && window.innerWidth <= 960 ? tabs.offsetHeight : 0) + 'px');
+  }
+  window.addEventListener('load', measure); window.addEventListener('resize', measure); window.addEventListener('orientationchange', measure);
+  document.addEventListener('DOMContentLoaded', measure); setTimeout(measure, 400); setTimeout(measure, 1500);
+})();
+
 function init(){
   var saved = safeStorage.getItem('theme') || safeStorage.getItem('nikora_theme');
   setTheme(saved === 'dark' ? 'dark' : 'light');
