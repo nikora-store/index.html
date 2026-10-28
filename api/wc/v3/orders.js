@@ -10,6 +10,12 @@
  *                      (b) Authenticated WooCommerce payload (Basic Auth): validated, priced on the server, saved to
  *                          /orders as "Processing" and returned as a WooCommerce 201.
  *  PUT  /orders/:id    Basic Auth. status / tracking written back by the supplier side.
+ *
+ *  Discovery (what K-Dropshipping probes before it validates the keys), selected by ?route= from the vercel.json rewrites:
+ *  GET  /wp-json/                   route=root           WordPress/WooCommerce REST index, public (no auth, never 401)
+ *  GET  /wp-json/wc/v3              route=namespace      wc/v3 namespace index, public (no auth, never 401)
+ *  GET  /wp-json/wc/v3/system_status route=system_status minimal status; no credentials -> served, WRONG credentials -> 401
+ *  any other /wp-json/wc/v3/*       route=other          WooCommerce-style 404 JSON
  */
 'use strict';
 
@@ -22,6 +28,8 @@ const MAX_ITEMS = 50;
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  const route = String((req.query && req.query.route) || 'orders');
+  if (route !== 'orders') return discovery(req, res, route);
   if (req.method === 'OPTIONS') { res.setHeader('Allow', 'GET, POST, PUT, PATCH, OPTIONS'); return res.status(204).end(); }
 
   try {
@@ -222,4 +230,70 @@ async function updateOrder(req, res, db, id, p) {
   if (t.carrier) upd.carrier = t.carrier;
   await db.ref('orders/' + key).update(upd);
   return res.status(200).json(b.toWooOrder(key, Object.assign({}, o, upd), b.baseUrlOf(req), { supplier: 'all' }));
+}
+
+/* ------------------------------------------------------------------ discovery + system status */
+function hasCredentials(req) {
+  return /^basic\s/i.test(req.headers.authorization || '') || !!(req.query && req.query.consumer_key);
+}
+function routeMap(base) {
+  const ep = (methods) => [{ methods, args: {} }];
+  const mk = (path, methods) => ({ namespace: 'wc/v3', methods, endpoints: ep(methods), _links: { self: [{ href: base + '/wp-json' + path }] } });
+  return {
+    '/wc/v3': mk('/wc/v3', ['GET']),
+    '/wc/v3/orders': mk('/wc/v3/orders', ['GET', 'POST']),
+    '/wc/v3/orders/(?P<id>[\\d]+)': mk('/wc/v3/orders/(?P<id>[\\d]+)', ['GET', 'POST', 'PUT', 'PATCH']),
+    '/wc/v3/system_status': mk('/wc/v3/system_status', ['GET'])
+  };
+}
+function discovery(req, res, route) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  if (req.method === 'OPTIONS') { res.setHeader('Allow', 'GET, HEAD, OPTIONS'); return res.status(204).end(); }
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    res.setHeader('Allow', 'GET, HEAD, OPTIONS');
+    return b.wcError(res, 405, 'rest_no_route', 'No route was found matching the URL and request method.');
+  }
+  const base = b.baseUrlOf(req);
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Link', '<' + base + '/wp-json/>; rel="https://api.w.org/"');
+
+  if (route === 'root') {                                          /* public: no auth, never 401 */
+    return res.status(200).json({
+      name: 'NIKORA', description: 'NIKORA beauty store (WooCommerce REST API bridge)',
+      url: base, home: base, gmt_offset: '0', timezone_string: 'UTC',
+      namespaces: ['wc/v3'], authentication: {}, routes: routeMap(base),
+      site_logo: 0, site_icon: 0, site_icon_url: '',
+      _links: { help: [{ href: 'https://woocommerce.github.io/woocommerce-rest-api-docs/' }] }
+    });
+  }
+  if (route === 'namespace') {                                     /* public: no auth, never 401 */
+    return res.status(200).json({
+      namespace: 'wc/v3', routes: routeMap(base),
+      _links: { up: [{ href: base + '/wp-json/' }] }
+    });
+  }
+  if (route === 'system_status') {
+    /* no credentials: serve the minimal status (nothing sensitive in it); wrong credentials: 401 so bad keys are caught */
+    if (hasCredentials(req) && !b.authenticate(req)) return unauthorized(res, 'woocommerce_rest_cannot_view', 'Sorry, you cannot list resources.');
+    return res.status(200).json({
+      environment: {
+        home_url: base, site_url: base, store_id: 'nikora-store', version: '9.0.0', wp_version: '6.6.0', wp_multisite: false,
+        wp_memory_limit: 268435456, wp_debug_mode: false, wp_cron: false, language: 'en_US',
+        server_info: 'Vercel Serverless (NIKORA WooCommerce bridge)', php_version: '8.2.0', max_upload_size: 52428800,
+        default_timezone: 'UTC', curl_version: '8.0.0', external_object_cache: null
+      },
+      database: { wc_database_version: '9.0.0', database_prefix: 'wp_', maxmind_geoip_database: '', database_tables: { woocommerce: {}, other: {} }, database_size: { data: 0, index: 0 } },
+      active_plugins: [], inactive_plugins: [], dropins_mu_plugins: { dropins: [], mu_plugins: [] },
+      theme: { name: 'NIKORA', version: '1.0.0', is_child_theme: false, has_woocommerce_support: true },
+      settings: {
+        api_enabled: true, force_ssl: true, currency: 'USD', currency_symbol: '$', currency_position: 'left',
+        thousand_separator: ',', decimal_separator: '.', number_of_decimals: 2, geolocation_enabled: false,
+        taxonomies: {}, product_visibility_terms: {}
+      },
+      security: { secure_connection: true, hide_errors: true },
+      pages: [],
+      _links: { self: [{ href: base + '/wp-json/wc/v3/system_status' }], collection: [{ href: base + '/wp-json/wc/v3/system_status' }] }
+    });
+  }
+  return b.wcError(res, 404, 'rest_no_route', 'No route was found matching the URL and request method.');
 }
