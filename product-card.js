@@ -52,6 +52,7 @@
     var B = window.NKBestsellers, id = esc(p.id), name = esc(p.name);
     var price = Number(p.price) || 0, was = Number(p.oldPrice) || 0, sale = was > price;
     var href = 'product.html?id=' + encodeURIComponent(p.id);
+    var sl = window.NKShipping && NKShipping.cardLine(p.id), shipLine = sl ? '<div class="nk-ship">' + esc(sl) + '</div>' : '';   /* supplier-based estimate (shipping-rules.js) */
     var main = B.imagesOf(p)[0];                       /* the product's Firebase photo, or the branded placeholder (never lib/products.js) */
     var badges = B.badges(p).map(function(t){ return '<span class="nk-badge best">' + esc(t) + '</span>'; }).join('');
     if(sale) badges += '<span class="nk-badge sale">Save $' + (was - price).toFixed(2) + '</span>';
@@ -67,6 +68,7 @@
         '<h3 class="nk-title"><a href="' + href + '">' + name + '</a></h3>' +
         (p.desc ? '<p class="nk-desc">' + esc(p.desc) + '</p>' : '<div class="nk-grow"></div>') +
         '<div class="nk-price-row"><span class="nk-price">$' + price.toFixed(2) + '</span>' + (sale ? '<span class="nk-was">$' + was.toFixed(2) + '</span>' : '') + '</div>' +
+        shipLine +
         '<button type="button" class="nk-add" ' + (o.addAttr || 'data-action="add-to-cart"') + ' data-id="' + id + '" data-name="' + name + '" data-price="' + price + '">' + ICON + 'Add to Cart</button>' +
       '</div></article>';
   }
