@@ -759,6 +759,7 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
 .rf-star-picker button.filled svg{fill:var(--gold); stroke:var(--gold);}
 .cutoff-bar svg, .urgency-bar svg{stroke:currentColor; fill:none;}
 </style>
+<script src="shipping-rules.js"></script>
 </head>
 <body>
 <script src="nav.js"></script>
@@ -820,7 +821,7 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
 
         <div class="cutoff-bar">
           <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"><circle cx="12" cy="13" r="7"/><path d="M12 10v3l2 2M9 3h6"/></svg>
-          <span>Processed in 1&ndash;3 business days &middot; Free Express delivery in 5&ndash;12 business days</span>
+          <span id="ship-est">Processed in 1&ndash;3 business days &middot; Free Express shipping on orders of $50.00+ ($4.99 flat rate below)</span>
         </div>
 
         <div class="urgency-bar" id="urgency-bar">
@@ -883,7 +884,7 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
         </button>
         <div class="accordion-panel">
           <div class="accordion-panel-inner" id="panel-shipping">
-            <p>Orders are processed in 1–3 business days (quality check, assembly and packaging), then ship FREE in 5–12 business days with real-time tracking.</p>
+            <p>Orders are processed in 1–3 business days, then ship tracked. Express shipping is FREE on orders of $50.00 and above, otherwise a $4.99 flat rate per order.</p>
             <p>Visible lifting results usually appear within 30–45 days of consistent daily use. Our 30-Day Money-Back Guarantee covers unopened and unused items in original packaging upon arrival.</p>
             <p>Customers are responsible for return shipping costs for change-of-mind returns. Defective, damaged or lost orders are covered by a free reshipment or a full refund.</p>
           </div>
@@ -998,7 +999,7 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
     <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="ship-progress-wrap">
-    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on every order (5&ndash;12 business days)</div>
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on orders of $50.00+ &middot; $4.99 flat rate below</div>
     <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
   </div>
   <div class="cart-items" id="cart-items-list"></div>
@@ -1291,7 +1292,7 @@ function getBullets(p){
   if(p.brand && !/^NIKORA/i.test(p.brand)) out.push("Korean skincare from " + p.brand);
   else out.push(isDevice(p) ? "Gentle, comfortable at-home beauty tech" : "Curated K-Beauty plus NIKORA beauty tech");
   if(!isDevice(p) && p.category !== 'Bundles & Sets') out.push("Pairs with the NIKORA Booster Wand for a deeper absorption ritual");
-  out.push("Free shipping and a 30-Day Money-Back Guarantee on unopened, unused items");
+  out.push("Free shipping on orders over $50 and a 30-Day Money-Back Guarantee on unopened, unused items");
   return out;
 }
 function seededStock(id){
@@ -1342,7 +1343,7 @@ var HOWTO_BY_CATEGORY = {
   "Bundles & Sets": ['Follow the layering order in the Routine Recommendation on the catalog page.', 'Morning: essence, ampoule, then sunscreen.', 'Evening: essence, ampoule, Booster Wand (see its manual), then moisturizer; use the mask as directed on its pack.', 'Introduce one new product at a time.']
 };
 var DEFAULT_SHIPPING = [
-  'Orders are processed in 1–3 business days (quality check, assembly and packaging), then ship FREE in 5–12 business days with real-time tracking.',
+  'Orders are processed in 1–3 business days, then ship tracked. K-Beauty ships from K-Dropshipping (7–15 business days in transit) and devices from QKSource (3–7 business days). Express shipping is FREE on orders of $50.00 and above, otherwise a $4.99 flat rate per order. Items from both suppliers ship in separate packages.',
   'Visible lifting results usually appear within 30–45 days of consistent daily use. Our 30-Day Money-Back Guarantee covers unopened and unused items in original packaging upon arrival.',
   'Customers are responsible for return shipping costs for change-of-mind returns. Defective, damaged or lost orders are covered by a free reshipment or a full refund.'
 ];
@@ -1352,7 +1353,13 @@ var SKINCARE_SHIPPING = [
   'Results vary with your skin and routine. Our 30-Day Money-Back Guarantee covers unopened and unused items in original packaging upon arrival.',
   DEFAULT_SHIPPING[2]
 ];
-function getShipping(p){ return (Array.isArray(p.shipping) && p.shipping.length) ? p.shipping : (isDevice(p) ? DEFAULT_SHIPPING : SKINCARE_SHIPPING); }
+function getShipping(p){
+  if(Array.isArray(p.shipping) && p.shipping.length) return p.shipping;
+  var base = (isDevice(p) ? DEFAULT_SHIPPING : SKINCARE_SHIPPING).slice();
+  var own = window.NKShipping && NKShipping.productLine(p.id);   /* supplier-specific estimate for this product */
+  if(own) base[0] = own;
+  return base;
+}
 function benefitsPanelHtml(p){
   var descLines = (p.desc || '').split(/\r?\n/).map(function(s){ return s.trim(); }).filter(Boolean);
   if(descLines.length > 1){
@@ -1502,6 +1509,8 @@ function renderProduct(){
   document.getElementById('panel-science').innerHTML = benefitsPanelHtml(p);
   document.getElementById('panel-howto').innerHTML = '<ol>' + getHowTo(p).map(function(t){ return '<li>' + escapeHtml(t) + '</li>'; }).join('') + '</ol>';
   document.getElementById('panel-shipping').innerHTML = getShipping(p).map(function(t){ return '<p>' + escapeHtml(t) + '</p>'; }).join('');
+  var shipEl = document.getElementById('ship-est'), shipTxt = window.NKShipping && NKShipping.cardLine(p.id);
+  if(shipEl && shipTxt) shipEl.textContent = shipTxt + ' \u00b7 Processed in 1\u20133 business days \u00b7 FREE Express shipping on orders of $50.00+';
 
   var ctaLabel = soldOut ? 'Sold Out' : 'Add to Cart';
   ['add-to-cart-btn', 'mcta-add-btn'].forEach(function(id){
@@ -2296,13 +2305,9 @@ function renderCart(){
 
   var text = document.getElementById('ship-progress-text');
   var fill = document.getElementById('ship-progress-fill');
-  var unlocked = true;   /* Express shipping is free on every order */
-  fill.style.width = '100%';
-  text.classList.toggle('unlocked', unlocked);
-  fill.classList.toggle('unlocked', unlocked);
-  text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
-    ? 'FREE Express Shipping on every order (5\u201312 business days)'
-    : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
+  if(window.NKShipping){ NKShipping.renderProgress(text, fill, payable, count, cart, NK_ICONS); }
+  else { var unlocked = payable >= NK_FREE_SHIP; fill.style.width = Math.min(100, payable / NK_FREE_SHIP * 100) + '%'; text.classList.toggle('unlocked', unlocked); fill.classList.toggle('unlocked', unlocked);
+    text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked ? 'You\u2019ve unlocked FREE Express Shipping!' : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping'); }
 
   renderCartRecs(cart);
 }
