@@ -16,7 +16,7 @@
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Secure Checkout — NIKORA</title>
-<meta name="description" content="Complete your NIKORA order with free Express shipping (5–12 business days), a 30-day money-back guarantee and loss &amp; damage protection.">
+<meta name="description" content="Complete your NIKORA order with free Express shipping on orders of $50.00+ ($4.99 flat rate below), a 30-day money-back guarantee and loss &amp; damage protection.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -752,6 +752,7 @@ details[open] > .ck-sum-toggle svg{transform:rotate(180deg);}
 .ck-row{display:flex; justify-content:space-between; gap:12px; font-size:14px; color:var(--text-soft);}
 .ck-row span:last-child{color:var(--text); font-weight:600;}
 .ck-row-discount span:last-child{color:var(--gold);}
+.ck-multi-note{margin:14px 0 0; padding:12px 14px; border-radius:12px; border:1px solid rgba(200,155,84,.4); background:rgba(200,155,84,.08); font-size:12.5px; line-height:1.55; color:var(--text-soft);}
 .ck-free{color:var(--gold) !important; letter-spacing:.08em; font-size:12.5px;}
 .ck-row-total{align-items:center; margin-top:6px; padding:16px 18px; border-radius:16px; color:var(--text) !important; background:linear-gradient(135deg,rgba(var(--gold-rgb),.26),rgba(var(--gold-rgb),.08)); border:1px solid rgba(var(--gold-rgb),.55);}
 .ck-row-total span:first-child{font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text);}
@@ -901,6 +902,7 @@ details[open] > .ck-sum-toggle svg{transform:rotate(180deg);}
    /api/checkout/config, which reads them from the Vercel environment. Nothing secret is ever returned. */
 window.NK_CONFIG = fetch('/api/checkout/config', { cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : {}; }).catch(function(){ return {}; });
 </script>
+<script src="shipping-rules.js"></script>
 </head>
 <body>
 <script src="nav.js"></script>
@@ -920,7 +922,7 @@ window.NK_CONFIG = fetch('/api/checkout/config', { cache: 'no-store' }).then(fun
     <div class="container">
       <span class="f-eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>Secure Checkout</span>
       <h1 id="ck-head-title">Secure <em style="font-style:italic;color:var(--gold)">Checkout</em></h1>
-      <p id="ck-head-sub">Complete your order in just a couple of minutes. Free Express shipping on every order (5&ndash;12 business days).</p>
+      <p id="ck-head-sub">Complete your order in just a couple of minutes. Free Express shipping on orders of $50.00 and above, a flat $4.99 below that.</p>
       <ol class="ck-steps" aria-label="Checkout progress">
         <li class="done" data-ck-step="1"><span class="n">1</span>Bag</li>
         <li class="active" data-ck-step="2" aria-current="step"><span class="n">2</span>Details &amp; Payment</li>
@@ -1041,18 +1043,15 @@ window.NK_CONFIG = fetch('/api/checkout/config', { cache: 'no-store' }).then(fun
           <div class="ck-rows">
             <div class="ck-row"><span>Subtotal</span><span id="ck-subtotal"></span></div>
             <div class="ck-row ck-row-discount" id="ck-discount-row" hidden><span id="ck-discount-label">Discount</span><span id="ck-discount"></span></div>
-            <div class="ck-row"><span>Free Express Shipping <small style="opacity:.65;">(5&ndash;12 business days)</small></span><span class="ck-free">FREE</span></div>
+            <div class="ck-row"><span id="ck-ship-label">Free Express Shipping</span><span id="ck-ship" class="ck-free">FREE</span></div>
             <div class="ck-row"><span id="ck-tax-label">Estimated Tax</span><span id="ck-tax"></span></div>
             <div class="ck-row ck-row-total"><span>Total</span><span id="ck-total"></span></div>
           </div>
+          <p class="ck-multi-note" id="ck-multi-note" role="note">Orders containing items from multiple fulfillment facilities may arrive in separate packages with individual tracking numbers.</p>
           <div class="ck-badges" id="ck-badges-aside" aria-label="Security and guarantees"></div>
           <div class="ck-policy">
             <h3>What happens next</h3>
-            <ul>
-              <li><span><b>Processing: 1&ndash;3 business days.</b> Quality check, assembly and packaging at our CJ Dropshipping warehouse.</span></li>
-              <li><span><b>Shipping: 5&ndash;12 business days</b> with end-to-end real-time tracking.</span></li>
-              <li><span><b>Loss &amp; damage protection:</b> free reshipment or a full refund for defective, damaged or lost orders.</span></li>
-            </ul>
+            <ul id="ck-next-list"></ul>
           </div>
         </aside>
       </div>
@@ -1114,7 +1113,7 @@ window.NK_CONFIG = fetch('/api/checkout/config', { cache: 'no-store' }).then(fun
     <button type="button" class="cart-close-btn" id="close-cart-btn" aria-label="Close cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="ship-progress-wrap">
-    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on every order (5&ndash;12 business days)</div>
+    <div class="ship-progress-text" id="ship-progress-text"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>FREE Express Shipping on orders of $50.00+ &middot; $4.99 flat rate below</div>
     <div class="ship-progress-bar"><div class="ship-progress-fill" id="ship-progress-fill"></div></div>
   </div>
   <div class="cart-items" id="cart-items-list"></div>
@@ -1588,13 +1587,9 @@ function renderCart(){
 
   var text = document.getElementById('ship-progress-text');
   var fill = document.getElementById('ship-progress-fill');
-  var unlocked = true;   /* Express shipping is free on every order */
-  fill.style.width = '100%';
-  text.classList.toggle('unlocked', unlocked);
-  fill.classList.toggle('unlocked', unlocked);
-  text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked
-    ? 'FREE Express Shipping on every order (5\u201312 business days)'
-    : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping');
+  if(window.NKShipping){ NKShipping.renderProgress(text, fill, payable, count, cart, NK_ICONS); }
+  else { var unlocked = payable >= NK_FREE_SHIP; fill.style.width = Math.min(100, payable / NK_FREE_SHIP * 100) + '%'; text.classList.toggle('unlocked', unlocked); fill.classList.toggle('unlocked', unlocked);
+    text.innerHTML = NK_ICONS[unlocked ? 'check' : 'truck'] + (unlocked ? 'You\u2019ve unlocked FREE Express Shipping!' : 'Add $' + (NK_FREE_SHIP - payable).toFixed(2) + ' more to unlock FREE Express Shipping'); }
 
   renderCartRecs(cart);
 }
@@ -1930,7 +1925,7 @@ function fInitReveal(){
    (e.g. Stripe Elements) where marked "PAYMENT HOOK" in ckSubmit().
    ============================================================================================= */
 var CK_TAX_RATE = 0.08;                          /* estimated sales-tax rate: shown to the customer and saved on the order */
-var CK_DELIVERY_BUSINESS_DAYS = [6, 15];         /* 1-3 business days processing + 5-12 business days shipping */
+var CK_DELIVERY_BUSINESS_DAYS = [4, 18];         /* fallback only; real windows come from NKShipping per supplier: K-Dropshipping 8-18, QKSource 4-10 business days */
 var CK_EMAIL_CONFIRMATIONS = true;               /* the server sends the confirmation email (Resend) once payment succeeds */
 var CK_FALLBACK_IMG = {
   "1": "https://images.unsplash.com/photo-1556228722-d119f018d480?w=400",
@@ -2018,6 +2013,26 @@ function nkSha256(msg){
 }
 
 
+/* ---------------- shipping: per-supplier packages and the "what happens next" list ---------------- */
+function ckPackages(items){ return window.NKShipping ? NKShipping.shipmentsOf(items) : []; }
+function ckNextHtml(items){
+  var pk = ckPackages(items), li = function(h){ return '<li><span>' + h + '</span></li>'; }, out = '';
+  out += li('<b>Processing: 1&ndash;3 business days.</b> Quality check and careful packaging before dispatch.');
+  if(pk.length === 2){
+    out += li('<b>Your order ships in 2 packages</b> with separate tracking numbers and delivery windows: ' + pk.map(function(p){ return p.name + ' (' + p.what + '): about ' + NKShipping.range(p.total) + ' business days'; }).join('; ') + '. They may arrive on different days.');
+  } else if(pk.length === 1){
+    out += li('<b>Delivery: about ' + NKShipping.range(pk[0].total) + ' business days</b> from order, shipped by ' + pk[0].name + ' with end-to-end tracking.');
+  } else {
+    out += li('<b>Tracked delivery.</b> You will receive a tracking number by email when your order is dispatched.');
+  }
+  out += li('<b>Loss &amp; damage protection:</b> free reshipment or a full refund for defective, damaged or lost orders.');
+  return out;
+}
+function ckShippingRates(){
+  var t = ckTotals(ckItems());
+  return [{ id: t.shipping ? 'flat-express' : 'free-express', displayName: t.shipping ? 'Express Shipping (flat rate)' : 'Free Express Shipping', amount: ckCents(t.shipping) }];
+}
+
 /* ---------------- totals ---------------- */
 function ckTotals(items){
   var subtotal = 0;
@@ -2027,8 +2042,10 @@ function ckTotals(items){
   var discount = promo ? promo.discount : 0;
   var taxable = Math.max(0, subtotal - discount);
   var tax = Math.round(taxable * CK_TAX_RATE * 100) / 100;
-  var total = Math.round((taxable + tax) * 100) / 100;
-  return { subtotal: subtotal, discount: discount, promo: promo, promoCode: promo ? promo.code : '', shipping: 0, tax: tax, taxRate: CK_TAX_RATE, total: total };
+  /* Shipping mirrors the cart drawer exactly: free from $50.00 (payable subtotal after discount), otherwise $4.99 once per order. */
+  var shipping = window.NKShipping ? NKShipping.cost(taxable) : (Math.round(taxable * 100) >= 5000 ? 0 : 4.99);
+  var total = Math.round((taxable + shipping + tax) * 100) / 100;   /* tax stays on the goods only, as before */
+  return { subtotal: subtotal, discount: discount, promo: promo, promoCode: promo ? promo.code : '', shipping: shipping, tax: tax, taxRate: CK_TAX_RATE, total: total };
 }
 
 /* ---------------- summary rendering ---------------- */
@@ -2051,6 +2068,9 @@ function ckRender(){
 
   ckSetText('ck-subtotal', ckMoney(t.subtotal));
   ckSetText('ck-tax', ckMoney(t.tax));
+  ckSetText('ck-ship-label', t.shipping > 0 ? 'Express Shipping (flat rate)' : 'Free Express Shipping');
+  ckSetText('ck-ship', t.shipping > 0 ? ckMoney(t.shipping) : 'FREE');
+  (function(){ var e = ckEl('ck-ship'); if(e) e.className = t.shipping > 0 ? '' : 'ck-free'; var n = ckEl('ck-next-list'); if(n) n.innerHTML = ckNextHtml(items); })();
   ckSetText('ck-tax-label', 'Estimated Tax (' + Math.round(t.taxRate * 1000) / 10 + '%)');
   ckSetText('ck-total', ckMoney(t.total));
   ckSetText('ck-toggle-total', ckMoney(t.total));
@@ -2188,7 +2208,7 @@ function ckCollect(items, t){
       var p = Number(i.price) || 0;
       return { id: String(i.id), variant: String(i.variant || 'default'), title: String(i.title), price: p, qty: i.qty, quantity: i.qty, lineTotal: Math.round(p * i.qty * 100) / 100 };
     }),
-    pricing: { subtotal: t.subtotal, discount: t.discount, promoCode: t.promoCode, shipping: 0, shippingLabel: 'Express Insured Shipping', tax: t.tax, taxRate: t.taxRate },
+    pricing: { subtotal: t.subtotal, discount: t.discount, promoCode: t.promoCode, shipping: t.shipping, shippingLabel: t.shipping > 0 ? 'Express Shipping (flat rate)' : 'Free Express Shipping', tax: t.tax, taxRate: t.taxRate },
     total: t.total, currency: 'USD',
     notes: ckVal('ck-notes').slice(0, 500)
   };
@@ -2335,13 +2355,13 @@ function ckStripeInit(cfg){
     e.resolve({
       emailRequired: true, phoneNumberRequired: true, shippingAddressRequired: true, billingAddressRequired: true,
       allowedShippingCountries: CK_COUNTRIES, business: { name: 'NIKORA' },
-      shippingRates: [{ id: 'free-express', displayName: 'Free Express Shipping (5\u201312 business days)', amount: 0 }]
+      shippingRates: ckShippingRates()
     });
   });
   CK_PAY.expEl.on('shippingaddresschange', function(e){
     var c = e.address && e.address.country;
     if(c && CK_COUNTRIES.indexOf(String(c).toUpperCase()) === -1) { e.reject(); return; }
-    e.resolve({ shippingRates: [{ id: 'free-express', displayName: 'Free Express Shipping (5\u201312 business days)', amount: 0 }] });
+    e.resolve({ shippingRates: ckShippingRates() });
   });
   CK_PAY.expEl.on('shippingratechange', function(e){ e.resolve(); });
   CK_PAY.expEl.on('confirm', ckExpressConfirm);
@@ -2507,7 +2527,10 @@ function ckShowConfirmation(s){
   CK.placed = true;
   var addr = s.address || {};
   var addrText = [addr.line1, addr.line2, [addr.city, addr.state, addr.postalCode].filter(Boolean).join(' '), addr.country].filter(Boolean).map(ckAttr).join('<br>');
-  var eta = ckFmtDate(ckAddBusinessDays(s.createdAt, CK_DELIVERY_BUSINESS_DAYS[0])) + ' \u2013 ' + ckFmtDate(ckAddBusinessDays(s.createdAt, CK_DELIVERY_BUSINESS_DAYS[1]));
+  var pk = ckPackages(s.items || []), range = function(r){ return ckFmtDate(ckAddBusinessDays(s.createdAt, r[0])) + ' \u2013 ' + ckFmtDate(ckAddBusinessDays(s.createdAt, r[1])); };
+  var eta = pk.length ? pk.map(function(x){ return (pk.length > 1 ? x.name + ' (' + x.what + '): ' : '') + range(x.total); }).join('<br>') : range(CK_DELIVERY_BUSINESS_DAYS);
+  var etaNote = pk.length > 1 ? 'Your order ships in 2 packages, each with its own tracking number. They may arrive on different days.'
+    : (pk.length ? NKShipping.range(pk[0].total) + ' business days including 1\u20133 days of processing, with real-time tracking' : 'Tracked delivery, with real-time tracking');
   var emailLine = CK_EMAIL_CONFIRMATIONS
     ? 'A confirmation email has been sent to <strong>' + ckAttr(s.email) + '</strong>.'
     : 'Keep your Order ID safe. You can track your order any time with <strong>' + ckAttr(s.email) + '</strong>.';
@@ -2520,7 +2543,7 @@ function ckShowConfirmation(s){
   }).join('');
   var rows = '<div class="ck-row"><span>Subtotal</span><span>' + ckMoney(p.subtotal) + '</span></div>' +
     (p.discount > 0 ? '<div class="ck-row ck-row-discount"><span>Discount' + (p.promoCode ? ' (' + ckAttr(p.promoCode) + ')' : '') + '</span><span>\u2212' + ckMoney(p.discount) + '</span></div>' : '') +
-    '<div class="ck-row"><span>Free Express Shipping <small style="opacity:.65;">(5&ndash;12 business days)</small></span><span class="ck-free">FREE</span></div>' +
+    (p.shipping > 0 ? '<div class="ck-row"><span>Express Shipping (flat rate)</span><span>' + ckMoney(p.shipping) + '</span></div>' : '<div class="ck-row"><span>Free Express Shipping</span><span class="ck-free">FREE</span></div>') +
     '<div class="ck-row"><span>Estimated Tax</span><span>' + ckMoney(p.tax) + '</span></div>' +
     '<div class="ck-row ck-row-total"><span>Total</span><span>' + ckMoney(s.total) + '</span></div>';
   var trackHref = 'track-order.html?orderId=' + encodeURIComponent(s.id);
@@ -2539,7 +2562,7 @@ function ckShowConfirmation(s){
         '<div class="ck-recap-col"><h2 class="ck-recap-h">Order Summary</h2><ul class="ck-lines" role="list">' + lines + '</ul><div class="ck-rows">' + rows + '</div></div>' +
         '<div class="ck-recap-col"><h2 class="ck-recap-h">Delivery</h2>' +
           '<p class="ck-recap-p"><strong>' + ckAttr(s.name) + '</strong><br>' + addrText + '</p>' +
-          '<p class="ck-recap-p"><span class="ck-recap-k">Estimated arrival</span><br><strong>' + eta + '</strong><br><span class=\"ck-recap-k\">' + CK_DELIVERY_BUSINESS_DAYS[0] + '\u2013' + CK_DELIVERY_BUSINESS_DAYS[1] + ' business days: 1\u20133 processing + 5\u201312 shipping, with real-time tracking</span></p>' +
+          '<p class="ck-recap-p"><span class="ck-recap-k">Estimated arrival</span><br><strong>' + eta + '</strong><br><span class=\"ck-recap-k\">' + etaNote + '</span></p>' +
           '<p class="ck-recap-p"><span class="ck-recap-k">Payment</span><br><strong>' + ckAttr(ckPaymentLabel(s.payment)) + '</strong></p>' +
         '</div>' +
       '</div>' +
@@ -2584,7 +2607,7 @@ function ckSteps(n){
 var CK_BADGES = [
   { t: '256-Bit SSL Encrypted Checkout', s: 'Every payment is encrypted end to end',
     svg: '<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path class="fill" d="M16 3.5l9.5 3.7v7.3c0 6.2-4 10.7-9.5 13.6-5.5-2.9-9.5-7.4-9.5-13.6V7.2L16 3.5z"/><path d="M16 3.5l9.5 3.7v7.3c0 6.2-4 10.7-9.5 13.6-5.5-2.9-9.5-7.4-9.5-13.6V7.2L16 3.5z"/><rect x="11.5" y="14" width="9" height="6.8" rx="1.8"/><path d="M13.3 14v-1.8a2.7 2.7 0 015.4 0V14"/><circle class="dot" cx="16" cy="17.4" r="1"/></svg>' },
-  { t: 'Express Shipping', s: '5\u201312 business days, fully tracked',
+  { t: 'Tracked Express Shipping', s: 'Free on orders of $50+, flat $4.99 below',
     svg: '<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path class="fill" d="M3.5 9.5h14.5v11.5H3.5z"/><path d="M3.5 9.5h14.5v11.5H3.5zM18 13h5.2l3.8 3.9V21H18"/><circle cx="9" cy="22.2" r="2.4"/><circle cx="22.2" cy="22.2" r="2.4"/><path d="M1.5 13H0M2.5 16.5H.5" opacity=".55"/><path d="M8 15.2l1.6 1.6 3-3.2"/></svg>' },
   { t: '30-Day Risk-Free Guarantee &amp; Easy Returns', s: 'Money back on unopened, unused items',
     svg: '<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="fill" cx="16" cy="16" r="11.5"/><path d="M26.2 11.2A11.5 11.5 0 105.8 21"/><path d="M26.7 5.8v5.7h-5.7"/><path d="M11.2 16.4l3.3 3.3 6.3-6.6"/></svg>' }
