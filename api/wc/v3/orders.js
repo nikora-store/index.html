@@ -14,7 +14,7 @@
  *  Discovery (what K-Dropshipping probes before it validates the keys), selected by ?route= from the vercel.json rewrites:
  *  GET  /wp-json/                   route=root           WordPress/WooCommerce REST index, public (no auth, never 401)
  *  GET  /wp-json/wc/v3              route=namespace      wc/v3 namespace index, public (no auth, never 401)
- *  GET  /wp-json/wc/v3/system_status route=system_status minimal status; no credentials -> served, WRONG credentials -> 401
+ *  GET  /wp-json/wc/v3/system_status route=system_status minimal status, public (no auth, never 401)
  *  any other /wp-json/wc/v3/*       route=other          WooCommerce-style 404 JSON
  */
 'use strict';
@@ -233,9 +233,6 @@ async function updateOrder(req, res, db, id, p) {
 }
 
 /* ------------------------------------------------------------------ discovery + system status */
-function hasCredentials(req) {
-  return /^basic\s/i.test(req.headers.authorization || '') || !!(req.query && req.query.consumer_key);
-}
 function routeMap(base) {
   const ep = (methods) => [{ methods, args: {} }];
   const mk = (path, methods) => ({ namespace: 'wc/v3', methods, endpoints: ep(methods), _links: { self: [{ href: base + '/wp-json' + path }] } });
@@ -243,7 +240,10 @@ function routeMap(base) {
     '/wc/v3': mk('/wc/v3', ['GET']),
     '/wc/v3/orders': mk('/wc/v3/orders', ['GET', 'POST']),
     '/wc/v3/orders/(?P<id>[\\d]+)': mk('/wc/v3/orders/(?P<id>[\\d]+)', ['GET', 'POST', 'PUT', 'PATCH']),
-    '/wc/v3/system_status': mk('/wc/v3/system_status', ['GET'])
+    '/wc/v3/system_status': mk('/wc/v3/system_status', ['GET']),
+    '/wp-json/': { namespace: '', methods: ['GET'] },
+    '/wp-json/wc/v3': { namespace: 'wc/v3', methods: ['GET'] },
+    '/wp-json/wc/v3/orders': { namespace: 'wc/v3', methods: ['GET', 'POST', 'PUT'] }
   };
 }
 function discovery(req, res, route) {
@@ -259,7 +259,7 @@ function discovery(req, res, route) {
 
   if (route === 'root') {                                          /* public: no auth, never 401 */
     return res.status(200).json({
-      name: 'NIKORA', description: 'NIKORA beauty store (WooCommerce REST API bridge)',
+      name: 'NIKORA Store', description: 'K-Beauty Store',
       url: base, home: base, gmt_offset: '0', timezone_string: 'UTC',
       namespaces: ['wc/v3'], authentication: {}, routes: routeMap(base),
       site_logo: 0, site_icon: 0, site_icon_url: '',
@@ -273,8 +273,7 @@ function discovery(req, res, route) {
     });
   }
   if (route === 'system_status') {
-    /* no credentials: serve the minimal status (nothing sensitive in it); wrong credentials: 401 so bad keys are caught */
-    if (hasCredentials(req) && !b.authenticate(req)) return unauthorized(res, 'woocommerce_rest_cannot_view', 'Sorry, you cannot list resources.');
+    /* public probe: nothing sensitive in this object; order routes are the ones that enforce the ck_/cs_ keys */
     return res.status(200).json({
       environment: {
         home_url: base, site_url: base, store_id: 'nikora-store', version: '9.0.0', wp_version: '6.6.0', wp_multisite: false,
