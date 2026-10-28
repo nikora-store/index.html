@@ -752,6 +752,13 @@ details[open] > .ck-sum-toggle svg{transform:rotate(180deg);}
 .ck-row{display:flex; justify-content:space-between; gap:12px; font-size:14px; color:var(--text-soft);}
 .ck-row span:last-child{color:var(--text); font-weight:600;}
 .ck-row-discount span:last-child{color:var(--gold);}
+.ck-fulfil{margin:14px 0 0; padding:14px; border-radius:14px; border:1px solid rgba(200,155,84,.32); background:rgba(255,255,255,.04); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);}
+.ck-fulfil h3{margin:0 0 10px; font-size:13px; letter-spacing:.04em; color:#C89B54;}
+.ck-fulfil ul{list-style:none; margin:0; padding:0; display:grid; gap:8px;}
+.ck-fulfil li{display:flex; justify-content:space-between; gap:12px; font-size:12.5px; line-height:1.5; color:var(--text-soft);}
+.ck-fulfil li b{color:#C89B54; white-space:nowrap; font-weight:600;}
+.ck-split-note{margin:10px 0 0; padding:10px 12px; border-radius:10px; border-left:3px solid #C89B54; background:rgba(200,155,84,.1); font-size:12.5px; line-height:1.55; color:var(--text-soft);}
+.ck-split-note[hidden]{display:none;}
 .ck-multi-note{margin:14px 0 0; padding:12px 14px; border-radius:12px; border:1px solid rgba(200,155,84,.4); background:rgba(200,155,84,.08); font-size:12.5px; line-height:1.55; color:var(--text-soft);}
 .ck-free{color:var(--gold) !important; letter-spacing:.08em; font-size:12.5px;}
 .ck-row-total{align-items:center; margin-top:6px; padding:16px 18px; border-radius:16px; color:var(--text) !important; background:linear-gradient(135deg,rgba(var(--gold-rgb),.26),rgba(var(--gold-rgb),.08)); border:1px solid rgba(var(--gold-rgb),.55);}
@@ -1048,6 +1055,14 @@ window.NK_CONFIG = fetch('/api/checkout/config', { cache: 'no-store' }).then(fun
             <div class="ck-row ck-row-total"><span>Total</span><span id="ck-total"></span></div>
           </div>
           <p class="ck-multi-note" id="ck-multi-note" role="note">Orders containing items from multiple fulfillment facilities may arrive in separate packages with individual tracking numbers.</p>
+          <div class="ck-fulfil" id="ck-fulfil" aria-label="Delivery times by fulfillment partner">
+            <h3>Delivery times (after 1&ndash;3 days of processing)</h3>
+            <ul>
+              <li><span>K-Beauty skincare &middot; K-Dropshipping</span><b>7&ndash;15 days</b></li>
+              <li><span>Beauty devices &middot; QKSource</span><b>3&ndash;7 days</b></li>
+            </ul>
+          </div>
+          <p class="ck-split-note" id="ck-split-note" role="note" hidden><strong>Glass Skin Ritual Set:</strong> this set always ships in <strong>2 separate packages</strong> &ndash; the K-Beauty items from K-Dropshipping (7&ndash;15 days) and the Booster Wand from QKSource (3&ndash;7 days). Each package has its own tracking number and they may arrive on different days. Shipping is charged only once.</p>
           <div class="ck-badges" id="ck-badges-aside" aria-label="Security and guarantees"></div>
           <div class="ck-policy">
             <h3>What happens next</h3>
@@ -2014,6 +2029,7 @@ function nkSha256(msg){
 
 
 /* ---------------- shipping: per-supplier packages and the "what happens next" list ---------------- */
+function ckHasBundle(items){ return (items || []).some(function(i){ var id = String(i.id); return id === '10' || /glass-skin/i.test(id); }); }
 function ckPackages(items){ return window.NKShipping ? NKShipping.shipmentsOf(items) : []; }
 function ckNextHtml(items){
   var pk = ckPackages(items), li = function(h){ return '<li><span>' + h + '</span></li>'; }, out = '';
@@ -2025,6 +2041,7 @@ function ckNextHtml(items){
   } else {
     out += li('<b>Tracked delivery.</b> You will receive a tracking number by email when your order is dispatched.');
   }
+  if(ckHasBundle(items)) out += li('<b>Glass Skin Ritual Set ships in 2 packages:</b> K-Beauty items from K-Dropshipping (7&ndash;15 days) and the Booster Wand from QKSource (3&ndash;7 days), each with its own tracking number.');
   out += li('<b>Loss &amp; damage protection:</b> free reshipment or a full refund for defective, damaged or lost orders.');
   return out;
 }
@@ -2070,7 +2087,7 @@ function ckRender(){
   ckSetText('ck-tax', ckMoney(t.tax));
   ckSetText('ck-ship-label', t.shipping > 0 ? 'Express Shipping (flat rate)' : 'Free Express Shipping');
   ckSetText('ck-ship', t.shipping > 0 ? ckMoney(t.shipping) : 'FREE');
-  (function(){ var e = ckEl('ck-ship'); if(e) e.className = t.shipping > 0 ? '' : 'ck-free'; var n = ckEl('ck-next-list'); if(n) n.innerHTML = ckNextHtml(items); })();
+  (function(){ var e = ckEl('ck-ship'); if(e) e.className = t.shipping > 0 ? '' : 'ck-free'; var n = ckEl('ck-next-list'); if(n) n.innerHTML = ckNextHtml(items); var sn = ckEl('ck-split-note'); if(sn) sn.hidden = !ckHasBundle(items); })();
   ckSetText('ck-tax-label', 'Estimated Tax (' + Math.round(t.taxRate * 1000) / 10 + '%)');
   ckSetText('ck-total', ckMoney(t.total));
   ckSetText('ck-toggle-total', ckMoney(t.total));
@@ -2237,10 +2254,24 @@ function ckRecFromServer(j){
 function ckFinish(j){
   var rec = ckRecFromServer(j);
   ckComplete(rec);
+  ckNotifyBridge(rec);                                  /* fire-and-forget: tells the WooCommerce bridge the paid order is ready for K-Dropshipping */
   ckNotifyAgent(rec);                                   /* fire-and-forget: never blocks or breaks the confirmation screen */
   if(rec.emailSent === false) ckEmailFailed(rec.customer.email);
 }
 
+/* ---------------- WooCommerce bridge ping (fire-and-forget) ----------------
+   The paid order is already saved to Firebase /orders by the server (stripe-complete / paypal-capture). This marks it as
+   synced for K-Dropshipping polling. It only works for an existing PAID order whose email matches, so it cannot create orders. */
+function ckNotifyBridge(rec){
+  try{
+    var key = 'nikora_bridge_sent_' + rec.orderId;
+    if(safeSession.getItem(key)) return;
+    safeSession.setItem(key, '1');
+    fetch('/api/wc/v3/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderKey: rec.orderId, email: (rec.customer && rec.customer.email) || '' }),
+      keepalive: true, credentials: 'omit' }).catch(function(){});
+  }catch(e){ /* never let the bridge affect checkout */ }
+}
 /* ---------------- AI Agent fulfillment webhook (background, fire-and-forget) ----------------
    Called once from ckFinish() after the order is paid and saved, for every payment path (card, Apple/Google Pay, PayPal,
    3-D Secure return). It runs after ckComplete(), so the customer is already on the confirmation screen; any failure here
