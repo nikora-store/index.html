@@ -25,6 +25,11 @@
     { "source": "/api/agent", "destination": "/api/router?r=agent" },
     { "source": "/api/webhooks/stripe", "destination": "/api/checkout/stripe" },
 
+    { "source": "/wc-auth/v1", "destination": "/api/wc/v3/orders?route=wc_auth" },
+    { "source": "/wc-auth/v1/", "destination": "/api/wc/v3/orders?route=wc_auth" },
+    { "source": "/wc-auth/v1/authorize", "destination": "/api/wc/v3/orders?route=wc_auth" },
+    { "source": "/wc-auth/v1/authorize/", "destination": "/api/wc/v3/orders?route=wc_auth" },
+
     { "source": "/wp-json", "destination": "/api/wc/v3/orders?route=root" },
     { "source": "/wp-json/", "destination": "/api/wc/v3/orders?route=root" },
     { "source": "/wp-json/wc/v3", "destination": "/api/wc/v3/orders?route=namespace" },
