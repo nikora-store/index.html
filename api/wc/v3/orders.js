@@ -19,6 +19,9 @@
  *  GET  /?rest_route=/wc/v3/...     route=rest           plain-permalink form of every route above
  *  GET  /wp-json/wp/v2              route=wp_namespace   wp/v2 namespace index (public); other wp/v2 paths: users/me -> 401, rest -> 404
  *  any other /wp-json/wc/v3/*       route=other          WooCommerce-style 404 JSON
+ *  GET/POST /wc-auth/v1/authorize  route=wc_auth   WooCommerce-style "authorize this app" page (app_name, scope, user_id,
+ *                                   return_url, callback_url). The store owner approves with WC_AUTH_PASSWORD; the ck_/cs_ keys
+ *                                   are then POSTed to callback_url as JSON, exactly like WooCommerce does, and the browser goes to return_url.
  *  CORS: every route answers OPTIONS preflight (204, no auth) and sends Access-Control-* headers.
  */
 'use strict';
@@ -43,6 +46,10 @@ module.exports = async function handler(req, res) {
 
   mapRestRoute(req);                                  /* ?rest_route=/wc/v3/... (sites with plain permalinks) */
   const route = String((req.query && req.query.route) || 'orders');
+  if (route === 'wc_auth') {
+    try { return await wcAuth(req, res); }
+    catch (e) { console.error('[wc-auth]', e && e.message); return authPage(res, 500, 'Something went wrong', '<p>Please try again.</p>'); }
+  }
   if (route !== 'orders') return discovery(req, res, route);
 
   try {
@@ -247,6 +254,97 @@ async function updateOrder(req, res, db, id, p) {
   if (t.carrier) upd.carrier = t.carrier;
   await db.ref('orders/' + key).update(upd);
   return res.status(200).json(b.toWooOrder(key, Object.assign({}, o, upd), b.baseUrlOf(req), { supplier: 'all' }));
+}
+
+
+/* ------------------------------------------------------------------ /wc-auth/v1/authorize */
+const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function authPage(res, status, title, inner) {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'");
+  const css = 'body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0B0B0E;color:#EDE9E0;font:16px/1.55 -apple-system,Segoe UI,Roboto,sans-serif;padding:24px;box-sizing:border-box}'
+    + '.card{width:100%;max-width:440px;padding:28px;border-radius:18px;border:1px solid rgba(200,155,84,.35);background:rgba(255,255,255,.05);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}'
+    + 'h1{margin:0 0 6px;font-size:20px;color:#C89B54;letter-spacing:.02em}p{margin:8px 0;color:#CFC9BC;font-size:14px}.k{color:#C89B54}'
+    + 'ul{margin:10px 0;padding-left:18px;font-size:14px;color:#CFC9BC}input[type=password]{width:100%;box-sizing:border-box;margin:10px 0;padding:12px;border-radius:10px;border:1px solid rgba(200,155,84,.4);background:rgba(0,0,0,.35);color:#EDE9E0;font-size:15px}'
+    + 'button{cursor:pointer;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:600;border:1px solid rgba(200,155,84,.5);margin-right:8px}'
+    + '.ok{background:#C89B54;color:#0B0B0E}.no{background:transparent;color:#C89B54}.err{color:#ff9d8a}';
+  return res.status(status).send('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>'
+    + esc(title) + ' - NIKORA</title><style>' + css + '</style></head><body><main class="card"><h1>' + esc(title) + '</h1>' + inner + '</main></body></html>');
+}
+function safeUrl(v, httpsOnly) {
+  try {
+    const u = new URL(String(v));
+    if (u.username || u.password) return null;
+    if (u.protocol === 'https:' || (!httpsOnly && u.protocol === 'http:')) return u;
+  } catch (e) { /* invalid */ }
+  return null;
+}
+function publicHost(u) {      /* the callback is called from our server: no localhost, internal names or IP literals */
+  const h = u.hostname.toLowerCase();
+  return h.indexOf('.') !== -1 && h.indexOf(':') === -1 && !/^\d+\.\d+\.\d+\.\d+$/.test(h) && !/\.(local|internal|localhost)$/.test(h) && h !== 'localhost';
+}
+function backTo(res, ret, params) {
+  const u = new URL(ret);
+  Object.keys(params).forEach((k) => u.searchParams.set(k, params[k]));
+  res.setHeader('Location', u.toString());
+  return res.status(302).end();
+}
+
+async function wcAuth(req, res) {
+  if (['GET', 'HEAD', 'POST'].indexOf(req.method) === -1) { res.setHeader('Allow', 'GET, HEAD, POST, OPTIONS'); return authPage(res, 405, 'Method not allowed', ''); }
+  const src = req.method === 'POST' ? (parseBody(req) || {}) : (req.query || {});
+  const p = {
+    app_name: b.str(src.app_name, 100), scope: b.str(src.scope, 20) || 'read_write',
+    user_id: b.str(src.user_id, 64).replace(/[^A-Za-z0-9_-]/g, ''), return_url: b.str(src.return_url, 500), callback_url: b.str(src.callback_url, 500)
+  };
+  if (!p.app_name && !p.callback_url && !p.return_url) {                     /* bare probe of the endpoint */
+    return authPage(res, 200, 'WooCommerce authentication', '<p>This store accepts WooCommerce-style app authorization requests.</p>');
+  }
+  const cb = safeUrl(p.callback_url, true), ret = p.return_url ? safeUrl(p.return_url, false) : null;
+  const errs = [];
+  if (!p.app_name) errs.push('app_name is required');
+  if (['read', 'write', 'read_write'].indexOf(p.scope) === -1) errs.push('scope must be read, write or read_write');
+  if (!cb || !publicHost(cb)) errs.push('callback_url must be a public https URL');
+  if (p.return_url && !ret) errs.push('return_url must be an http(s) URL');
+  if (errs.length) return authPage(res, 400, 'Invalid request', '<ul class="err">' + errs.map((e) => '<li>' + esc(e) + '</li>').join('') + '</ul>');
+
+  const hidden = ['app_name', 'scope', 'user_id', 'return_url', 'callback_url'].map((k) => '<input type="hidden" name="' + k + '" value="' + esc(p[k]) + '">').join('');
+  const form = (note) => authPage(res, note ? 401 : 200, 'Authorize ' + p.app_name,
+    '<p><span class="k">' + esc(p.app_name) + '</span> wants access to your NIKORA orders (<span class="k">' + esc(p.scope.replace('_', '/')) + '</span>).</p>'
+    + '<p>Keys are sent to <span class="k">' + esc(cb.hostname) + '</span>.</p>' + (note ? '<p class="err">' + esc(note) + '</p>' : '')
+    + '<form method="post" action="/wc-auth/v1/authorize">' + hidden
+    + '<input type="password" name="password" placeholder="Store admin password" autocomplete="current-password" required>'
+    + '<button class="ok" name="decision" value="approve" type="submit">Approve</button><button class="no" name="decision" value="deny" type="submit" formnovalidate>Deny</button></form>');
+
+  if (req.method !== 'POST') return form('');
+
+  if (String(src.decision) === 'deny') {
+    return ret ? backTo(res, p.return_url, { success: '0', user_id: p.user_id }) : authPage(res, 200, 'Access denied', '<p>No keys were shared.</p>');
+  }
+  const adminPw = process.env.WC_AUTH_PASSWORD, ck = process.env.WC_CONSUMER_KEY, cs = process.env.WC_CONSUMER_SECRET;
+  if (!adminPw || !ck || !cs) {
+    console.error('[wc-auth] WC_AUTH_PASSWORD, WC_CONSUMER_KEY and WC_CONSUMER_SECRET must be set');
+    return authPage(res, 503, 'Not configured', '<p>App authorization is not enabled on this store.</p>');
+  }
+  if (!b.safeEqual(String(src.password || ''), adminPw)) return form('Wrong password.');
+
+  let r;
+  try {
+    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 8000);
+    r = await fetch(cb.toString(), {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, signal: ctl.signal, redirect: 'error',
+      body: JSON.stringify({ key_id: 1, user_id: p.user_id, consumer_key: ck, consumer_secret: cs, key_permissions: p.scope })
+    });
+    clearTimeout(t);
+  } catch (e) {
+    console.error('[wc-auth] callback failed:', e && e.message);
+    return authPage(res, 502, 'Could not reach the app', '<p>The app did not answer. Nothing was approved; please try again.</p>');
+  }
+  if (r.status >= 300) { console.error('[wc-auth] callback HTTP', r.status); return authPage(res, 502, 'The app rejected the keys', '<p>HTTP ' + esc(r.status) + ' from ' + esc(cb.hostname) + '.</p>'); }
+  return ret ? backTo(res, p.return_url, { success: '1', user_id: p.user_id }) : authPage(res, 200, 'Connected', '<p>' + esc(p.app_name) + ' is now connected to your store.</p>');
 }
 
 /* ------------------------------------------------------------------ ?rest_route= support */
