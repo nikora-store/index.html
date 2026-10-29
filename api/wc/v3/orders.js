@@ -17,6 +17,7 @@
  *  GET  /wp-json/wc/v3/system_status route=system_status minimal status, public (no auth, never 401)
  *  GET  /wp-json/wc/v3/<products|customers|coupons|...>  route=other  empty-list stubs for connector probes (keys required)
  *  GET  /?rest_route=/wc/v3/...     route=rest           plain-permalink form of every route above
+ *  GET  /wp-json/wp/v2              route=wp_namespace   wp/v2 namespace index (public); other wp/v2 paths: users/me -> 401, rest -> 404
  *  any other /wp-json/wc/v3/*       route=other          WooCommerce-style 404 JSON
  *  CORS: every route answers OPTIONS preflight (204, no auth) and sends Access-Control-* headers.
  */
@@ -256,6 +257,8 @@ function mapRestRoute(req) {
   let m;
   if (rr === '') q.route = 'root';
   else if (rr === 'wc/v3') q.route = 'namespace';
+  else if (rr === 'wp/v2') q.route = 'wp_namespace';
+  else if (/^wp\/v2\//.test(rr)) { q.route = 'wp_other'; q.path = rr.replace(/^wp\/v2\//, ''); }
   else if (rr === 'wc/v3/system_status') q.route = 'system_status';
   else if (rr === 'wc/v3/orders') delete q.route;
   else if ((m = /^wc\/v3\/orders\/(\d+)$/.exec(rr))) { delete q.route; q.id = m[1]; }
@@ -267,19 +270,34 @@ function mapRestRoute(req) {
 const EMPTY_COLLECTIONS = ['products', 'products/categories', 'products/tags', 'products/attributes', 'customers', 'coupons', 'webhooks', 'refunds', 'shipping/zones', 'payment_gateways'];
 
 /* ------------------------------------------------------------------ discovery + system status */
+/* Route table in the shape a real WordPress + WooCommerce site returns it: every route carries namespace, methods,
+   endpoints[] (with args) and _links, because some connectors iterate over routes[*].endpoints. */
+const CTX_ARG = { context: { description: 'Scope under which the request is made; determines fields present in response.', type: 'string', enum: ['view', 'embed', 'edit'], default: 'view', required: false } };
 function routeMap(base) {
-  const ep = (methods) => [{ methods, args: {} }];
-  const mk = (path, methods) => ({ namespace: 'wc/v3', methods, endpoints: ep(methods), _links: { self: [{ href: base + '/wp-json' + path }] } });
-  return {
-    '/wc/v3': mk('/wc/v3', ['GET']),
-    '/wc/v3/orders': mk('/wc/v3/orders', ['GET', 'POST']),
-    '/wc/v3/orders/(?P<id>[\\d]+)': mk('/wc/v3/orders/(?P<id>[\\d]+)', ['GET', 'POST', 'PUT', 'PATCH']),
-    '/wc/v3/system_status': mk('/wc/v3/system_status', ['GET']),
-    '/wp-json/': { namespace: '', methods: ['GET'] },
-    '/wp-json/wc/v3': { namespace: 'wc/v3', methods: ['GET'] },
-    '/wp-json/wc/v3/orders': { namespace: 'wc/v3', methods: ['GET', 'POST', 'PUT'] },
-    '/wp-json/wc/v3/orders/<id>': { namespace: 'wc/v3', methods: ['GET', 'PUT'] }
+  const link = (path) => ({ self: [{ href: base + '/wp-json' + path }] });
+  const ep = (methods, args) => ({ methods, args: Object.assign({}, args || {}) });
+  const mk = (ns, path, endpoints, withLinks) => {
+    const o = { namespace: ns, methods: Array.from(new Set([].concat.apply([], endpoints.map((e) => e.methods)))), endpoints };
+    if (withLinks !== false) o._links = link(path);
+    return o;
   };
+  const nsArg = (ns) => Object.assign({ namespace: { default: ns, required: false } }, CTX_ARG);
+  const listArgs = Object.assign({ page: { type: 'integer', default: 1 }, per_page: { type: 'integer', default: 10 }, status: { type: 'array', default: ['any'] }, after: { type: 'string' }, before: { type: 'string' }, modified_after: { type: 'string' }, order: { type: 'string', enum: ['asc', 'desc'], default: 'desc' }, orderby: { type: 'string', default: 'date' }, supplier: { type: 'string' } }, CTX_ARG);
+  const idArg = Object.assign({ id: { type: 'integer', required: false } }, CTX_ARG);
+  const r = {
+    '/': mk('', '/', [ep(['GET'], CTX_ARG)]),
+    '/wp/v2': mk('wp/v2', '/wp/v2', [ep(['GET'], nsArg('wp/v2'))]),
+    '/wc/v3': mk('wc/v3', '/wc/v3', [ep(['GET'], nsArg('wc/v3'))]),
+    '/wc/v3/orders': mk('wc/v3', '/wc/v3/orders', [ep(['GET'], listArgs), ep(['POST'], {})]),
+    '/wc/v3/orders/(?P<id>[\\d]+)': mk('wc/v3', '', [ep(['GET'], idArg), ep(['POST', 'PUT', 'PATCH'], idArg)], false),
+    '/wc/v3/system_status': mk('wc/v3', '/wc/v3/system_status', [ep(['GET'], CTX_ARG)])
+  };
+  /* documented alias keys, same full shape */
+  r['/wp-json/'] = mk('', '/', [ep(['GET'], CTX_ARG)]);
+  r['/wp-json/wc/v3'] = mk('wc/v3', '/wc/v3', [ep(['GET'], nsArg('wc/v3'))]);
+  r['/wp-json/wc/v3/orders'] = mk('wc/v3', '/wc/v3/orders', [ep(['GET'], listArgs), ep(['POST', 'PUT'], {})]);
+  r['/wp-json/wc/v3/orders/<id>'] = mk('wc/v3', '/wc/v3/orders', [ep(['GET', 'PUT'], idArg)], false);
+  return r;
 }
 function discovery(req, res, route) {
   if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -287,17 +305,30 @@ function discovery(req, res, route) {
     return b.wcError(res, 405, 'rest_no_route', 'No route was found matching the URL and request method.');
   }
   const base = b.baseUrlOf(req);
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Content-Type', 'application/json; charset=UTF-8');
   res.setHeader('Link', '<' + base + '/wp-json/>; rel="https://api.w.org/"');
+  res.setHeader('X-Robots-Tag', 'noindex');
+  res.setHeader('Allow', 'GET');
 
   if (route === 'root') {                                          /* public: no auth, never 401 */
     return res.status(200).json({
       name: 'NIKORA Store', description: 'K-Beauty Store',
-      url: base, home: base, gmt_offset: '0', timezone_string: 'UTC',
-      namespaces: ['wc/v3'], authentication: {}, routes: routeMap(base),
+      url: base, home: base, gmt_offset: '0', timezone_string: '',
+      page_for_posts: 0, page_on_front: 0, show_on_front: 'posts',
+      namespaces: ['wp/v2', 'wc/v3'],
+      authentication: {},
+      routes: routeMap(base),
       site_logo: 0, site_icon: 0, site_icon_url: '',
-      _links: { help: [{ href: 'https://woocommerce.github.io/woocommerce-rest-api-docs/' }] }
+      _links: { help: [{ href: 'https://developer.wordpress.org/rest-api/' }] }
     });
+  }
+  if (route === 'wp_namespace') {                                  /* public */
+    return res.status(200).json({ namespace: 'wp/v2', routes: { '/wp/v2': routeMap(base)['/wp/v2'] }, _links: { up: [{ href: base + '/wp-json/' }] } });
+  }
+  if (route === 'wp_other') {                                      /* WordPress core routes this bridge does not provide */
+    const wpPath = String((req.query && req.query.path) || '').replace(/^\/+|\/+$/g, '');
+    if (wpPath === 'users/me') return b.wcError(res, 401, 'rest_not_logged_in', 'You are not currently logged in.');
+    return b.wcError(res, 404, 'rest_no_route', 'No route was found matching the URL and request method.');
   }
   if (route === 'namespace') {                                     /* public: no auth, never 401 */
     return res.status(200).json({
