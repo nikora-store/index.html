@@ -15,7 +15,10 @@
  *  GET  /wp-json/                   route=root           WordPress/WooCommerce REST index, public (no auth, never 401)
  *  GET  /wp-json/wc/v3              route=namespace      wc/v3 namespace index, public (no auth, never 401)
  *  GET  /wp-json/wc/v3/system_status route=system_status minimal status, public (no auth, never 401)
+ *  GET  /wp-json/wc/v3/<products|customers|coupons|...>  route=other  empty-list stubs for connector probes (keys required)
+ *  GET  /?rest_route=/wc/v3/...     route=rest           plain-permalink form of every route above
  *  any other /wp-json/wc/v3/*       route=other          WooCommerce-style 404 JSON
+ *  CORS: every route answers OPTIONS preflight (204, no auth) and sends Access-Control-* headers.
  */
 'use strict';
 
@@ -29,9 +32,17 @@ module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-NIKORA-Bridge', '1');      /* proves a response came from this function and not from a Vercel-level block */
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  /* CORS: a browser-side connection test sends an OPTIONS preflight (never with credentials) before the real call */
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, Accept, X-Requested-With, X-WP-Nonce, X-HTTP-Method-Override');
+  res.setHeader('Access-Control-Expose-Headers', 'X-WP-Total, X-WP-TotalPages, Link, Allow');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  if (req.method === 'OPTIONS') { res.setHeader('Allow', 'GET, POST, PUT, PATCH, OPTIONS'); return res.status(204).end(); }
+
+  mapRestRoute(req);                                  /* ?rest_route=/wc/v3/... (sites with plain permalinks) */
   const route = String((req.query && req.query.route) || 'orders');
   if (route !== 'orders') return discovery(req, res, route);
-  if (req.method === 'OPTIONS') { res.setHeader('Allow', 'GET, POST, PUT, PATCH, OPTIONS'); return res.status(204).end(); }
 
   try {
     const db = b.getDb();
@@ -69,6 +80,10 @@ function parseBody(req) {
   return x && typeof x === 'object' ? x : null;
 }
 function unauthorized(res, code, message) {
+  if (!process.env.WC_CONSUMER_KEY || !process.env.WC_CONSUMER_SECRET) {
+    console.error('[wc/v3/orders] WC_CONSUMER_KEY / WC_CONSUMER_SECRET are not set in Vercel');
+    return b.wcError(res, 500, 'nikora_not_configured', 'The API keys are not configured on the server.');
+  }
   res.setHeader('WWW-Authenticate', 'Basic realm="NIKORA WooCommerce API"');
   return b.wcError(res, 401, code, message);
 }
@@ -233,6 +248,24 @@ async function updateOrder(req, res, db, id, p) {
   return res.status(200).json(b.toWooOrder(key, Object.assign({}, o, upd), b.baseUrlOf(req), { supplier: 'all' }));
 }
 
+/* ------------------------------------------------------------------ ?rest_route= support */
+function mapRestRoute(req) {
+  if (!req.query || String(req.query.route) !== 'rest') return;
+  const rr = String(req.query.rr || '').replace(/^\/?(wp-json)?\/*/i, '').replace(/\/+$/, '');
+  const q = Object.assign({}, req.query); delete q.rr;
+  let m;
+  if (rr === '') q.route = 'root';
+  else if (rr === 'wc/v3') q.route = 'namespace';
+  else if (rr === 'wc/v3/system_status') q.route = 'system_status';
+  else if (rr === 'wc/v3/orders') delete q.route;
+  else if ((m = /^wc\/v3\/orders\/(\d+)$/.exec(rr))) { delete q.route; q.id = m[1]; }
+  else { q.route = 'other'; q.path = rr.replace(/^wc\/v3\/?/, ''); }
+  try { req.query = q; } catch (e) { Object.keys(q).forEach((k) => { req.query[k] = q[k]; }); }
+}
+
+/* Collections some connectors list during setup. We hold no WooCommerce catalog, so they are empty (keys still required). */
+const EMPTY_COLLECTIONS = ['products', 'products/categories', 'products/tags', 'products/attributes', 'customers', 'coupons', 'webhooks', 'refunds', 'shipping/zones', 'payment_gateways'];
+
 /* ------------------------------------------------------------------ discovery + system status */
 function routeMap(base) {
   const ep = (methods) => [{ methods, args: {} }];
@@ -249,8 +282,6 @@ function routeMap(base) {
   };
 }
 function discovery(req, res, route) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  if (req.method === 'OPTIONS') { res.setHeader('Allow', 'GET, HEAD, OPTIONS'); return res.status(204).end(); }
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     res.setHeader('Allow', 'GET, HEAD, OPTIONS');
     return b.wcError(res, 405, 'rest_no_route', 'No route was found matching the URL and request method.');
@@ -295,6 +326,14 @@ function discovery(req, res, route) {
       pages: [],
       _links: { self: [{ href: base + '/wp-json/wc/v3/system_status' }], collection: [{ href: base + '/wp-json/wc/v3/system_status' }] }
     });
+  }
+  if (route === 'other') {
+    const path = String((req.query && req.query.path) || '').replace(/^\/+|\/+$/g, '');
+    if (EMPTY_COLLECTIONS.indexOf(path) !== -1) {
+      if (!b.authenticate(req)) return unauthorized(res, 'woocommerce_rest_cannot_view', 'Sorry, you cannot list resources.');
+      res.setHeader('X-WP-Total', '0'); res.setHeader('X-WP-TotalPages', '1');
+      return res.status(200).json([]);
+    }
   }
   return b.wcError(res, 404, 'rest_no_route', 'No route was found matching the URL and request method.');
 }
