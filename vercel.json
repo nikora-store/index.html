@@ -4,7 +4,18 @@
     "api/checkout/stripe.js": { "maxDuration": 30 },
     "api/wc/v3/orders.js": { "maxDuration": 30 }
   },
+  "headers": [
+    {
+      "source": "/",
+      "headers": [
+        { "key": "Link", "value": "<https://nikora-store.vercel.app/wp-json/>; rel=\"https://api.w.org/\"" }
+      ]
+    }
+  ],
   "rewrites": [
+    { "source": "/", "has": [{ "type": "query", "key": "rest_route", "value": "(?<rr>.*)" }], "destination": "/api/wc/v3/orders?route=rest&rr=:rr" },
+    { "source": "/index.php", "has": [{ "type": "query", "key": "rest_route", "value": "(?<rr>.*)" }], "destination": "/api/wc/v3/orders?route=rest&rr=:rr" },
+
     { "source": "/api/checkout/config", "destination": "/api/router?r=checkout/config" },
     { "source": "/api/checkout/create-stripe-intent", "destination": "/api/router?r=checkout/create-stripe-intent" },
     { "source": "/api/checkout/stripe-complete", "destination": "/api/router?r=checkout/stripe-complete" },
@@ -21,6 +32,6 @@
     { "source": "/wp-json/wc/v3/system_status", "destination": "/api/wc/v3/orders?route=system_status" },
     { "source": "/wp-json/wc/v3/orders/:id", "destination": "/api/wc/v3/orders?id=:id" },
     { "source": "/wp-json/wc/v3/orders", "destination": "/api/wc/v3/orders" },
-    { "source": "/wp-json/wc/v3/:path*", "destination": "/api/wc/v3/orders?route=other" }
+    { "source": "/wp-json/wc/v3/:path*", "destination": "/api/wc/v3/orders?route=other&path=:path*" }
   ]
 }
