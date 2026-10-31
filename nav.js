@@ -749,6 +749,7 @@
     else if (script && script.parentNode && script.parentNode !== document.head) { script.insertAdjacentHTML('beforebegin', HTML); }
     else { document.body.insertAdjacentHTML('afterbegin', HTML); }
     wire();
+    loadAnimations();
     bindPromo();
     startSite();
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountFooter); else mountFooter();
@@ -789,6 +790,14 @@
     var base = SELF_SRC ? SELF_SRC.replace(/[^\\/?#]*([?#].*)?$/, '') : '';
     var el = document.createElement('script');
     el.id = 'nkai-loader'; el.async = true; el.src = base + 'ai-assistant.js';
+    (document.head || document.documentElement).appendChild(el);
+  }
+  /* scroll reveal, radial theme transition, smooth <details> / FAQ: one stand-alone file, loaded from the same folder as nav.js */
+  function loadAnimations() {
+    if (window.NKAnimations || document.getElementById('nk-anim-loader') || document.querySelector('script[src*="animations.js"]')) return;
+    var base = SELF_SRC ? SELF_SRC.replace(/[^\\/?#]*([?#].*)?$/, '') : '';
+    var el = document.createElement('script');
+    el.id = 'nk-anim-loader'; el.async = true; el.src = base + 'animations.js';
     (document.head || document.documentElement).appendChild(el);
   }
   /* Opens the chat; if the widget is still loading (or not requested yet) it waits for it. */
@@ -842,13 +851,19 @@
       b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
   }
-  function applyTheme(mode) {
-    if (typeof window.setTheme === 'function') { window.setTheme(mode); }      /* page's own handler (also stores it) */
-    else {
-      document.documentElement.setAttribute('data-theme', mode);
-      try { localStorage.setItem('theme', mode); } catch (e) {}
+  function applyTheme(mode, origin) {
+    function commit() {
+      if (typeof window.setTheme === 'function') { window.setTheme(mode); }    /* page's own handler (also stores it) */
+      else {
+        document.documentElement.setAttribute('data-theme', mode);
+        try { localStorage.setItem('theme', mode); } catch (e) {}
+      }
+      syncTheme();
     }
-    syncTheme();
+    /* radial "expanding sphere" transition lives in animations.js; without it the theme simply swaps */
+    var A = window.NKAnimations;
+    if (origin && mode !== themeNow() && A && typeof A.themeTransition === 'function') A.themeTransition(commit, origin, mode);
+    else commit();
   }
 
   /* ---- cart badge fallback (the page's cart code normally owns it) ---- */
@@ -883,7 +898,7 @@
 
     document.addEventListener('click', function (e) {
       var t = e.target; if (!t || !t.closest) return;
-      var th = t.closest('[data-nkn-theme]'); if (th) { applyTheme(th.getAttribute('data-nkn-theme')); return; }
+      var th = t.closest('[data-nkn-theme]'); if (th) { applyTheme(th.getAttribute('data-nkn-theme'), th); return; }
       if (t.closest('#nkn-promo-x')) {
         var pr = $('nkn-promo'), key = pr && pr.getAttribute('data-key');
         try { if (key) sessionStorage.setItem(SITE.dismissKey, key.split('|')[0]); } catch (er) {}
