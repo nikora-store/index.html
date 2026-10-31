@@ -659,6 +659,40 @@ h1.g-title em{font-style:italic; color:var(--gold);}
 .cover-big span{font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-faint);}
 .cover-lead{margin:0 0 6px; font-size:14.5px; line-height:1.6; color:var(--text-soft);}
 
+/* ---------------- ICON SYSTEM v2: soft gold-tinted tile + Gold (#C89B54) line icon, adapts to Light / Dark ----------------
+   Light: a pale champagne-gold tile (no black disc). Dark: the same gold tint over the obsidian glass card, with a stronger ring.
+   Each tile is a fixed square that centres its glyph with flexbox; every glyph sits on the same 24x24 grid with one stroke width. */
+:root{--ico-gold:#C89B54; --ico-bg:rgba(200,155,84,.13); --ico-bd:rgba(200,155,84,.40); --ico-hi:rgba(255,255,255,.55); --ico-glow:rgba(200,155,84,.20);}
+:root[data-theme="dark"]{--ico-bg:rgba(200,155,84,.16); --ico-bd:rgba(200,155,84,.50); --ico-hi:rgba(255,255,255,.06); --ico-glow:rgba(200,155,84,.32);}
+.gb-ico, .step-ico, .cover-ico{
+  /* the tile is a flex box whose padding frames the glyph: the SVG fills the content box (100% x 100%), so it can only sit in the exact middle */
+  display:flex; align-items:center; justify-content:center; flex:none; box-sizing:border-box; margin:0; line-height:0; overflow:visible;
+  color:var(--ico-gold); background:var(--ico-bg); border:1px solid var(--ico-bd);
+  box-shadow:inset 0 1px 0 var(--ico-hi), 0 10px 22px -14px var(--ico-glow);
+  transition:background-color .25s ease, border-color .25s ease;
+}
+.gb-ico{width:60px; height:60px; padding:15px; border-radius:50%;}
+.step-ico{width:60px; height:60px; padding:15px; border-radius:18px;}
+.cover-ico{width:44px; height:44px; padding:10px; border-radius:14px;}
+.gb-ico > svg, .step-ico > svg, .cover-ico > svg{
+  display:block; flex:none; width:100%; height:100%; max-width:none; margin:0; padding:0;
+  position:static; inset:auto; float:none; vertical-align:middle; overflow:visible;
+  transform:none; translate:none; rotate:none; scale:none;
+  stroke:var(--ico-gold); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;
+}
+.g-badge{color:var(--ico-gold); border-color:var(--ico-bd); background:var(--ico-bg);}
+.g-badge svg{display:block; stroke:var(--ico-gold);}
+.gbadge{padding:28px 26px 26px; gap:16px; transform-style:flat;}
+.gbadge .gb-ico{margin:0;}
+.gbadge h3{font-size:16px;}
+.gbadge .gb-tag{color:var(--ico-gold); background:var(--ico-bg); border-color:var(--ico-bd);}
+.step{transform-style:flat;}
+.step-head{align-items:center;}
+/* FAQ: fast, smooth reveal (280 ms height + fade) */
+.faq-a{opacity:0; transition:grid-template-rows .28s cubic-bezier(.4,0,.2,1), opacity .28s ease;}
+.faq-item.open .faq-a{opacity:1;}
+.faq-a > div{min-height:0;}
+
 /* ---------- Anchor targets clear the fixed site header (and the sticky return card stays below it) ---------- */
 :root{--hdr-h:73px;}
 html{scroll-padding-top:calc(var(--hdr-h) + 12px);}
@@ -717,37 +751,37 @@ html{scroll-padding-top:calc(var(--hdr-h) + 12px);}
 
       <div class="gb-grid six">
         <div class="glass-card gbadge reveal">
-          <span class="gb-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 109-9 9.7 9.7 0 00-6.7 2.8L3 8"/><path d="M3 3v5h5"/><path d="M9.2 12.4l2.1 2.1 3.6-4"/></svg></span>
+          <span class="gb-ico"><svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><path d="M4 12a8 8 0 1 0 2.6-5.9L4 8.5"/><path d="M4 4v4.5h4.5"/><path d="M9 12.2l2.2 2.2 3.8-4.2"/></svg></span>
           <h3>30-Day Money-Back Guarantee</h3>
           <p>Not the right fit? Return your unopened, unused item in its original packaging within 30 days for a full refund. You cover return shipping on change-of-mind returns.</p>
           <span class="gb-tag">Risk-free</span>
         </div>
         <div class="glass-card gbadge reveal">
-          <span class="gb-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></span>
+          <span class="gb-ico"><svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
           <h3>Defective Items</h3>
           <p>If your device arrives faulty or stops working as it should, we send a free replacement or refund you in full.</p>
           <span class="gb-tag">Free reshipment or refund</span>
         </div>
         <div class="glass-card gbadge reveal">
-          <span class="gb-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/><path d="M15.2 5.4l-3 2.6 2.2 1.6-1.9 2"/></svg></span>
+          <span class="gb-ico"><svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/></svg></span>
           <h3>Shipping Damage</h3>
           <p>Arrived damaged in transit? We cover it with a free reshipment or a full refund, your choice.</p>
           <span class="gb-tag">100% covered</span>
         </div>
         <div class="glass-card gbadge reveal">
-          <span class="gb-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.2A7 7 0 0112 3a7 7 0 017 6.8C19 14.8 12 21 12 21z"/><path d="M10.2 9a1.9 1.9 0 013.6.7c0 1.4-1.8 1.7-1.8 2.9M12 14.4v.1"/></svg></span>
+          <span class="gb-ico"><svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><g transform="translate(0 -.5)"><path d="M12 21s-6.5-5.6-6.5-10.5a6.5 6.5 0 0 1 13 0C18.5 15.4 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.4"/></g></svg></span>
           <h3>Lost Package Protection</h3>
           <p>Each package has its own tracking. If a package&rsquo;s tracking is inactive for more than 14 days, or its transit exceeds 30 days, we reship it free or refund you.</p>
           <span class="gb-tag">14 / 30-day rule</span>
         </div>
         <div class="glass-card gbadge reveal">
-          <span class="gb-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
+          <span class="gb-ico"><svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><g transform="translate(.5 -1)"><path d="M2.5 6.5h11v9h-11z"/><path d="M13.5 9.5h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="2"/><circle cx="17" cy="17.5" r="2"/></g></svg></span>
           <h3>Real-Time Tracking</h3>
           <p>End-to-end tracking on every order. Tracking numbers activate within 1&ndash;3 business days after dispatch from the warehouse.</p>
           <span class="gb-tag">Included free</span>
         </div>
         <div class="glass-card gbadge reveal">
-          <span class="gb-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0116 0v2"/><rect x="2.5" y="14" width="4.5" height="6.5" rx="2"/><rect x="17" y="14" width="4.5" height="6.5" rx="2"/><path d="M20 20.5c0 1-1.5 1.5-4 1.5"/></svg></span>
+          <span class="gb-ico"><svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><g transform="translate(0 -.7)"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="3" y="13" width="4" height="6" rx="1.8"/><rect x="17" y="13" width="4" height="6" rx="1.8"/><path d="M19 19c0 1.6-1.8 2.4-5 2.4"/></g></svg></span>
           <h3>Support That Answers</h3>
           <p>Questions about an order, a delay or a claim? Email us with your order number and we&rsquo;ll make it right.</p>
           <span class="gb-tag">nikora.support@gmail.com</span>
