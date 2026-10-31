@@ -21,6 +21,13 @@
   '.nk-card .nk-badge.best{background:var(--gold);color:#241c0f}',
   '.nk-card .nk-badge.sale{background:var(--rose);color:#fff}',
   '.nk-card .nk-badge.low{background:#e11d48;color:#fff;animation:nkBadgeFlash 1.2s ease-in-out infinite}',
+  '.nk-card .nk-badge.out{background:#2a2a30;color:#f7f4f0;border:1px solid rgba(255,255,255,.18)}',
+  '.nk-card .nk-urgency{display:flex;align-items:center;gap:7px;margin:-6px 0 12px;font-size:12px;font-weight:700;line-height:1.3;color:#e11d48}',
+  '[data-theme="dark"] .nk-card .nk-urgency{color:#ff6b86}',
+  '.nk-card .nk-urgency::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:currentColor;animation:nkBadgeFlash 1.2s ease-in-out infinite}',
+  '.nk-card.is-soldout .nk-media img{filter:grayscale(.85);opacity:.7}',
+  '.nk-card .nk-add[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none}',
+  '.nk-card .nk-add[disabled]:hover{background:transparent;color:var(--gold);box-shadow:none}',
   '@keyframes nkBadgeFlash{0%,100%{opacity:1}50%{opacity:.45}}',
   '.nk-card .bs-thumbs{display:flex;gap:6px;margin:0;padding:10px 18px 0}',
   '.nk-card .bs-thumb{width:38px;height:38px;border-radius:9px;border:1px solid var(--card-border)}',
@@ -40,7 +47,7 @@
   '.nk-card .nk-add:hover{background:var(--gold);color:#241c0f;box-shadow:0 8px 22px -8px rgba(var(--gold-rgb,200,155,84),.6)}',
   '.nk-card .nk-add:focus-visible{outline:2px solid var(--gold);outline-offset:3px}',
   '.nk-card .nk-add svg{width:15px;height:15px;fill:none;stroke:currentColor}',
-  '@media (prefers-reduced-motion:reduce){.nk-card .nk-badge.low{animation:none}.nk-card .nk-media img{transition:none}}'
+  '@media (prefers-reduced-motion:reduce){.nk-card .nk-badge.low,.nk-card .nk-urgency::before{animation:none}.nk-card .nk-media img{transition:none}}'
   ].join('\n');
   var st = document.createElement('style'); st.id = 'nk-card-css'; st.textContent = CSS; document.head.appendChild(st);
 
@@ -56,8 +63,11 @@
     var main = B.imagesOf(p)[0];                       /* the product's Firebase photo, or the branded placeholder (never lib/products.js) */
     var badges = B.badges(p).map(function(t){ return '<span class="nk-badge best">' + esc(t) + '</span>'; }).join('');
     if(sale) badges += '<span class="nk-badge sale">Save $' + (was - price).toFixed(2) + '</span>';
-    if(p.lowStock === true) badges += '<span class="nk-badge low">Low Stock</span>';
-    return '<article class="glass-card product-card nk-card" data-bs-card data-bs-id="' + id + '" data-product-id="' + id + '">' +
+    var st = B.stockOf ? B.stockOf(p) : { state: p.lowStock === true ? 'low' : 'in', left: null, label: 'Low stock' };   /* urgency comes from the product's real stock fields (bestsellers.js stockOf) */
+    if(st.state === 'out') badges += '<span class="nk-badge out">Sold out</span>';
+    else if(st.state === 'low') badges += '<span class="nk-badge low">Low Stock</span>';
+    var urgency = st.state === 'low' ? '<div class="nk-urgency" role="status">' + esc(st.label) + '</div>' : '';
+    return '<article class="glass-card product-card nk-card' + (st.state === 'out' ? ' is-soldout' : '') + '" data-bs-card data-bs-id="' + id + '" data-product-id="' + id + '">' +
       '<a class="nk-media" href="' + href + '" aria-label="' + name + '">' +
         (badges ? '<span class="nk-badges">' + badges + '</span>' : '') +
         '<img data-bs-main data-bs-src0="' + esc(main) + '" src="' + esc(main) + '" alt="' + name + '" loading="lazy" onerror="window.NKImgFail&amp;&amp;NKImgFail(this)">' +
@@ -68,8 +78,11 @@
         '<h3 class="nk-title"><a href="' + href + '">' + name + '</a></h3>' +
         (p.desc ? '<p class="nk-desc">' + esc(p.desc) + '</p>' : '<div class="nk-grow"></div>') +
         '<div class="nk-price-row"><span class="nk-price">$' + price.toFixed(2) + '</span>' + (sale ? '<span class="nk-was">$' + was.toFixed(2) + '</span>' : '') + '</div>' +
+        urgency +
         shipLine +
-        '<button type="button" class="nk-add" ' + (o.addAttr || 'data-action="add-to-cart"') + ' data-id="' + id + '" data-name="' + name + '" data-price="' + price + '">' + ICON + 'Add to Cart</button>' +
+        (st.state === 'out'
+          ? '<button type="button" class="nk-add" disabled aria-disabled="true">Sold out</button>'
+          : '<button type="button" class="nk-add" ' + (o.addAttr || 'data-action="add-to-cart"') + ' data-id="' + id + '" data-name="' + name + '" data-price="' + price + '">' + ICON + 'Add to Cart</button>') +
       '</div></article>';
   }
 
