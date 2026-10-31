@@ -25,7 +25,8 @@
     if (serverList) return Promise.resolve(serverList);
     if (pending) return pending;
     if (typeof fetch !== 'function') return Promise.resolve([]);
-    pending = fetch(ENDPOINT, { headers: { Accept: 'application/json' } })
+    /* no-store + a changing query string: neither the browser nor a CDN may hand back an old copy of the catalog */
+    pending = fetch(ENDPOINT + '?_=' + Date.now(), { headers: { Accept: 'application/json' }, cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function (d) {
         serverList = (d && Array.isArray(d.products)) ? d.products : [];
@@ -51,11 +52,16 @@
     return out;
   }
 
-  /** Copy of p with the server record s laid over it; images stay the admin's own list when it has one. */
+  /** True when the Firebase record carries its own price. The admin panel writes price / oldPrice there, so those are the LIVE values. */
+  function hasLivePrice(p) { var n = num(p && p.price); return n !== null && n > 0; }
+
+  /** Copy of p with the server record s laid over it; images stay the admin's own list when it has one.
+   *  PRICES: when the Firebase record has a price it wins over /api/catalog (a stale or cached server answer used to overwrite
+   *  an admin price edit with the built-in default). The server price is only the fallback for products without a Firebase price. */
   function overlayRecord(p, s) {
-    var o = {}, k;
+    var o = {}, k, live = hasLivePrice(p);
     for (k in p) if (Object.prototype.hasOwnProperty.call(p, k)) o[k] = p[k];
-    SERVER_FIELDS.forEach(function (f) { o[f] = s[f]; });
+    SERVER_FIELDS.forEach(function (f) { if (live && (f === 'price' || f === 'oldPrice')) return; o[f] = s[f]; });
     var own = ownImages(p);
     o.images = own; o.img = own[0] || '';          /* Firebase photos only; empty means the placeholder is shown */
     return o;
@@ -95,6 +101,21 @@
     for (k in p) if (Object.prototype.hasOwnProperty.call(p, k)) o[k] = p[k];
     o.bestseller = false; o.bestsellerRank = null; o.bestsellerLabel = null;
     return o;
+  }
+
+  /* ---- stock / urgency (same rules as stockStateOf() in lib/products.js) ----
+   * Fields on the Firebase product: stockCount (real units), lowStockThreshold (1..99, default 6), scarcityMode (false = badges off),
+   * stockStatus ('in' | 'low' | null), lowStock (legacy). Returns { state: 'in' | 'low' | 'out', left, label }. */
+  var DEFAULT_LOW_THRESHOLD = 6;
+  function stockOf(p) {
+    p = p || {};
+    var c = num(p.stockCount); c = (c !== null && c >= 0) ? Math.floor(c) : null;
+    var t = num(p.lowStockThreshold); t = (t !== null && t >= 1 && t <= 99) ? Math.floor(t) : DEFAULT_LOW_THRESHOLD;
+    if (c === 0) return { state: 'out', left: 0, label: 'Sold out' };
+    if (p.stockStatus === 'in' || p.scarcityMode === false) return { state: 'in', left: c, label: '' };
+    if (c !== null && c <= t) return { state: 'low', left: c, label: 'Only ' + c + ' left in stock' };
+    if (p.stockStatus === 'low' || (c === null && p.lowStock === true)) return { state: 'low', left: null, label: 'Low stock' };
+    return { state: 'in', left: c, label: '' };
   }
 
   /** Sort comparator: bestsellerRank 1, 2, 3 ... then unranked products by id. */
@@ -205,7 +226,7 @@
     });
   }
 
-  var api = { placeholder: PLACEHOLDER, imgFail: imgFail, source: function () { return rankingSource; }, ownImages: ownImages, overlayOne: overlayOne, bundles: bundles, load: load, get: get, thumbUrl: thumbUrl, apply: apply, compare: compare, ranked: ranked, badges: badges, imagesOf: imagesOf, thumbsHtml: thumbsHtml, bindGallery: bindGallery, esc: esc };
+  var api = { stockOf: stockOf, placeholder: PLACEHOLDER, imgFail: imgFail, source: function () { return rankingSource; }, ownImages: ownImages, overlayOne: overlayOne, bundles: bundles, load: load, get: get, thumbUrl: thumbUrl, apply: apply, compare: compare, ranked: ranked, badges: badges, imagesOf: imagesOf, thumbsHtml: thumbsHtml, bindGallery: bindGallery, esc: esc };
   root.NKBestsellers = api;
   if (typeof module !== 'undefined' && module.exports) { module.exports = api; api._setServerList = function (l) { serverList = l; }; }
 })(typeof window !== 'undefined' ? window : this);
