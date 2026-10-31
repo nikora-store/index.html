@@ -28,6 +28,7 @@
   '.nk-card.is-soldout .nk-media img{filter:grayscale(.85);opacity:.7}',
   '.nk-card .nk-add[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none}',
   '.nk-card .nk-add[disabled]:hover{background:transparent;color:var(--gold);box-shadow:none}',
+  '.nk-card [data-nk-mascot-tip]:empty{display:none}',
   '@keyframes nkBadgeFlash{0%,100%{opacity:1}50%{opacity:.45}}',
   '.nk-card .bs-thumbs{display:flex;gap:6px;margin:0;padding:10px 18px 0}',
   '.nk-card .bs-thumb{width:38px;height:38px;border-radius:9px;border:1px solid var(--card-border)}',
@@ -63,10 +64,13 @@
     var main = B.imagesOf(p)[0];                       /* the product's Firebase photo, or the branded placeholder (never lib/products.js) */
     var badges = B.badges(p).map(function(t){ return '<span class="nk-badge best">' + esc(t) + '</span>'; }).join('');
     if(sale) badges += '<span class="nk-badge sale">Save $' + (was - price).toFixed(2) + '</span>';
-    var st = B.stockOf ? B.stockOf(p) : { state: p.lowStock === true ? 'low' : 'in', left: null, label: 'Low stock' };   /* urgency comes from the product's real stock fields (bestsellers.js stockOf) */
+    var st = B.stockOf ? B.stockOf(p) : { state: p.lowStock === true ? 'low' : 'in', left: null, label: 'Low stock' };   /* real stock fields (bestsellers.js stockOf) */
     if(st.state === 'out') badges += '<span class="nk-badge out">Sold out</span>';
     else if(st.state === 'low') badges += '<span class="nk-badge low">Low Stock</span>';
     var urgency = st.state === 'low' ? '<div class="nk-urgency" role="status">' + esc(st.label) + '</div>' : '';
+    /* NIKORA Rabbit tip: the product's own `mascotTip` text (admin field, <= 140 chars). mascot.js turns this placeholder into the one-line callout. */
+    var tipTxt = String(p.mascotTip || '').trim().slice(0, 140);
+    var tip = tipTxt ? '<div data-nk-mascot-tip="' + esc(tipTxt) + '" data-nk-mascot-mini></div>' : '';
     return '<article class="glass-card product-card nk-card' + (st.state === 'out' ? ' is-soldout' : '') + '" data-bs-card data-bs-id="' + id + '" data-product-id="' + id + '">' +
       '<a class="nk-media" href="' + href + '" aria-label="' + name + '">' +
         (badges ? '<span class="nk-badges">' + badges + '</span>' : '') +
@@ -77,6 +81,7 @@
         '<div class="nk-cat">' + esc(p.category || '') + '</div>' +
         '<h3 class="nk-title"><a href="' + href + '">' + name + '</a></h3>' +
         (p.desc ? '<p class="nk-desc">' + esc(p.desc) + '</p>' : '<div class="nk-grow"></div>') +
+        tip +
         '<div class="nk-price-row"><span class="nk-price">$' + price.toFixed(2) + '</span>' + (sale ? '<span class="nk-was">$' + was.toFixed(2) + '</span>' : '') + '</div>' +
         urgency +
         shipLine +
