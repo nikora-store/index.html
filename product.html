@@ -276,7 +276,8 @@ button{font-family:inherit;cursor:pointer;}
 .accordion-head svg{width:16px;height:16px; stroke:var(--text-soft); transition:transform .25s ease; flex-shrink:0;}
 .accordion-item.open .accordion-head svg{transform:rotate(45deg);}
 .accordion-item.open .accordion-head{color:var(--gold);}
-.accordion-panel{max-height:0; overflow:hidden; transition:max-height .35s ease;}
+.accordion-panel{max-height:0; overflow:hidden; opacity:0; transition:max-height .28s cubic-bezier(.4,0,.2,1), opacity .28s ease;}
+.accordion-item.open .accordion-panel{opacity:1;}
 .accordion-panel-inner{padding:0 2px 22px; font-size:13.5px; color:var(--text-soft); line-height:1.75;}
 .accordion-panel-inner ul, .accordion-panel-inner ol{margin:0; padding-left:20px;}
 .accordion-panel-inner li{margin-bottom:8px;}
@@ -874,6 +875,7 @@ footer.site{border-top:1px solid var(--line); padding:56px 0 28px; margin-top:20
               <li>Glide the device in slow, upward, outward motions for 5–10 minutes.</li>
               <li>Use 3–5 times per week for best results, and wipe the device clean after each use.</li>
             </ol>
+            <div data-nk-mascot-tip="Apply on damp skin for maximum Glass Skin absorption"></div>
           </div>
         </div>
       </div>
