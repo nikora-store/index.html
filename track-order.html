@@ -562,7 +562,7 @@ h1.t-title em{font-style:italic; color:var(--gold);}
 /* timeline */
 .timeline-card{padding:clamp(24px,3.4vw,40px) clamp(18px,3vw,36px); border-radius:28px;}
 .tl-title{font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint); margin:0 0 28px;}
-.tl{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(5,1fr);}
+.tl{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(4,1fr);}
 .tl li{position:relative; display:flex; flex-direction:column; align-items:center; text-align:center; padding:0 8px;}
 .tl li::before{content:""; position:absolute; top:28px; right:50%; width:100%; height:3px; border-radius:3px; background:var(--line); z-index:0;}
 .tl li:first-child::before{display:none;}
@@ -579,6 +579,10 @@ h1.t-title em{font-style:italic; color:var(--gold);}
   content:""; position:absolute; inset:-2px; border-radius:50%; border:2px solid var(--gold);
   animation:tPulse 2.2s ease-out infinite; pointer-events:none;
 }
+/* NIKORA Rabbit: a small badge on the current step + a guide line under the timeline */
+.tl-mascot{position:absolute; top:-12px; right:-12px; z-index:2; width:28px; height:28px; display:flex; align-items:center; justify-content:center; box-sizing:border-box; padding:5px; border-radius:50%; background:var(--canvas); border:1.5px solid var(--gold); box-shadow:0 4px 12px -4px rgba(0,0,0,.3);}
+.tl-mascot .nkm{width:100%; height:100%;}
+#tl-guide .nkm-tip{margin-top:26px;}
 @keyframes tPulse{0%{transform:scale(1); opacity:.7;} 100%{transform:scale(1.5); opacity:0;}}
 .tl-label{margin-top:16px; font-size:14px; font-weight:700; line-height:1.3; color:var(--text-soft);}
 .tl li.done .tl-label, .tl li.active .tl-label{color:var(--text);}
@@ -681,7 +685,7 @@ h1.t-title em{font-style:italic; color:var(--gold);}
 }
 
 /* ---------------- LIVE TRACKING ADDITIONS ---------------- */
-@media (min-width:761px){ .tl{grid-template-columns:repeat(3,1fr);} }
+@media (min-width:761px){ .tl{grid-template-columns:repeat(4,1fr);} }
 .t-trk-note{display:flex; align-items:flex-start; gap:10px; margin:18px 0 0; padding:12px 16px; border-radius:16px; font-size:13px; line-height:1.55; color:var(--text-soft);
   background:rgba(var(--gold-rgb),.07); border:1px solid rgba(var(--gold-rgb),.28); backdrop-filter:blur(12px); text-align:left;}
 .t-trk-note svg{flex:none; width:18px; height:18px; margin-top:1px; stroke:var(--gold); fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
@@ -726,6 +730,7 @@ h1.t-title em{font-style:italic; color:var(--gold);}
 .recap-side p{margin:0 0 22px; font-size:15px; line-height:1.6;}
 .recap-side a.rs-mail{color:var(--gold); font-weight:700; border-bottom:1px solid rgba(var(--gold-rgb),.6); word-break:break-all;}
 </style>
+<script src="mascot.js"></script>
 </head>
 <body>
 <script src="nav.js"></script>
@@ -837,6 +842,7 @@ h1.t-title em{font-style:italic; color:var(--gold);}
       <div class="glass-card timeline-card">
         <h3 class="tl-title">Order progress</h3>
         <ol class="tl" id="tl" aria-label="Shipment progress"></ol>
+        <div id="tl-guide" aria-live="polite"></div>
       </div>
 
       <!-- detailed log -->
@@ -1689,14 +1695,19 @@ var T_ICONS = {
   box:  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/><path d="M7.5 5.5l9 5"/></svg>',
   hub:  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
   pin:  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.2A7 7 0 0112 3a7 7 0 017 6.8C19 14.8 12 21 12 21z"/><circle cx="12" cy="10" r="2.6"/></svg>',
-  home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9.5 15l2 2 3.5-4"/></svg>'
+  prep: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6M10 3v5.2L5.6 16.4A2.5 2.5 0 0 0 7.8 20h8.4a2.5 2.5 0 0 0 2.2-3.6L14 8.2V3"/><path d="M7.6 14h8.8"/></svg>',
+  home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/><path d="M9.5 14l2 2 3.5-3.6"/></svg>'
 };
+/* Four mascot-guided stages built on the three real fulfilment states (Processing / Shipped / Delivered):
+   1 Order Confirmed (the order exists)  2 Preparing K-Beauty Essentials (status Processing)  3 In Transit (status Shipped)  4 In Your Cosmetics Bag (status Delivered).
+   `say` is what the NIKORA Rabbit tells the customer while that stage is current. Only stages 1, 3 and 4 have timestamps in Firebase; stage 2 shows none. */
 var T_STEPS = [
-  { key:'box',  label:'Order Confirmed',  sub:'Being prepared at our fulfillment hub' },
-  { key:'hub',  label:'Shipped',          sub:'Handed to the carrier' },
-  { key:'home', label:'Delivered',        sub:'Enjoy your NIKORA ritual' }
+  { key:'box',  label:'Order Confirmed',                sub:'We received your order',            say:'Got it! Your order is in and our team has it.' },
+  { key:'prep', label:'Preparing K-Beauty Essentials',  sub:'Quality check and careful packing', say:'Your essentials are being checked and packed with care. Hang tight!' },
+  { key:'hub',  label:'In Transit',                     sub:'Handed to the carrier',             say:'On its way to you! Use the tracking link below to follow the journey.' },
+  { key:'home', label:'In Your Cosmetics Bag',          sub:'Enjoy your NIKORA ritual',          say:'Delivered. Time to start your glow ritual!' }
 ];
-var T_STATUS = ['Processing', 'Shipped', 'Delivered'];
+var T_STATUS = ['Processing', 'Processing', 'Shipped', 'Delivered'];            /* indexed by stage - 1 */
 var T_WATCH = { ref: null, handler: null };
 
 function tFmtDate(d){ return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }); }
@@ -1744,7 +1755,7 @@ function nkSha256(msg){
 function tOrderFromRecord(r){
   var delivered = r.status === 'Delivered' || !!r.deliveredAt;
   var shipped = delivered || r.status === 'Shipped' || !!r.shippedAt;
-  var step = delivered ? 3 : (shipped ? 2 : 1);
+  var step = delivered ? 4 : (shipped ? 3 : 2);
   var items = r.items ? (Array.isArray(r.items) ? r.items : Object.keys(r.items).map(function(k){ return r.items[k]; })) : [];
   return {
     id: '#' + r.orderId, key: r.orderId, status: T_STATUS[step - 1], step: step,
@@ -1790,7 +1801,7 @@ function nkLookupOrder(key, email){
 
 /* ---------------- rendering ---------------- */
 function tRender(o){
-  var cur = o.step, delivered = cur === 3, shipped = cur >= 2;
+  var cur = o.step, delivered = cur === 4, shipped = cur >= 3;
   tSet('res-order', o.id);
 
   if(delivered){ tSet('sum-eta', 'Delivered'); tSet('sum-eta-sub', o.deliveredAt ? tFmtFull(o.deliveredAt) : ''); }
@@ -1805,7 +1816,7 @@ function tRender(o){
   tSet('sum-status-text', o.status);
   document.getElementById('sum-status').classList.toggle('delivered', delivered);
 
-  document.getElementById('notice-card').hidden = cur !== 1;
+  document.getElementById('notice-card').hidden = cur > 2;
   var ship = document.getElementById('ship-card'), hasTrack = shipped && o.trackingNumber;
   ship.hidden = !hasTrack;
   if(hasTrack){
@@ -1814,18 +1825,22 @@ function tRender(o){
     document.getElementById('ship-track').href = 'https://www.17track.net/en/track?nums=' + encodeURIComponent(o.trackingNumber);
   }
 
-  var whenAt = [o.placed, o.shippedAt, o.deliveredAt];
+  var whenAt = [o.placed, null, o.shippedAt, o.deliveredAt];
   document.getElementById('tl').innerHTML = T_STEPS.map(function(def, i){
     var n = i + 1;
     var state = delivered || n < cur ? 'done' : (n === cur ? 'active' : 'pending');
     var stateText = state === 'done' ? 'Completed' : (state === 'active' ? 'In progress' : 'Pending');
     var at = whenAt[i], when = (state !== 'pending' && at) ? ' \u00b7 ' + tFmtDate(at) : '';
-    var sub = (n === 2 && o.carrier && shipped) ? 'With ' + o.carrier : def.sub;
+    var sub = (n === 3 && o.carrier && shipped) ? 'With ' + o.carrier : def.sub;
+    var rabbit = (n === cur && window.NKMascot) ? '<span class="tl-mascot" aria-hidden="true">' + NKMascot.svg('head', { size: 24 }) + '</span>' : '';
     return '<li class="' + state + '"' + (state === 'active' ? ' aria-current="step"' : '') + '>' +
-      '<span class="tl-node">' + T_ICONS[def.key] + '</span>' +
+      '<span class="tl-node">' + T_ICONS[def.key] + rabbit + '</span>' +
       '<div class="tl-body"><div class="tl-label">' + nkEsc(def.label) + '</div><div class="tl-sub">' + nkEsc(sub) + '</div>' +
       '<div class="tl-state">' + stateText + nkEsc(when) + '</div></div></li>';
   }).join('');
+
+  var guide = document.getElementById('tl-guide');
+  if(guide) guide.innerHTML = window.NKMascot ? NKMascot.tip(T_STEPS[cur - 1].say, { title: 'NIKORA Rabbit says' }) : '';
 
   /* log: only events that really happened, with the timestamps stored in Firebase (newest first) */
   var ev = [];
